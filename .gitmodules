@@ -1,9 +1,6 @@
 [submodule "deps/libmicro"]
 	path = deps/libmicro
 	url = git@github.com:iwasz/libmicro.git
-[submodule "deps/gp8-stopwatch-common-firmware-libstopwatch"]
-	path = deps/gp8-stopwatch-common-firmware-libstopwatch
-	url = git@bitbucket.org:iwasz/gp8-stopwatch-common-firmware-libstopwatch.git
 [submodule "deps/libstopwatch"]
 	path = deps/libstopwatch
 	url = git@bitbucket.org:iwasz/gp8-stopwatch-common-firmware-libstopwatch.git
