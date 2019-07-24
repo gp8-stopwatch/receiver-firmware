@@ -65,7 +65,7 @@ ADD_EXECUTABLE(${CMAKE_PROJECT_NAME}.elf
     #"${LIB_STOPWATCH_ROOT}/PCF85176Driver.h"
     "${LIB_STOPWATCH_ROOT}/StopWatch.cc"
     "${LIB_STOPWATCH_ROOT}/StopWatch.h"
-    "${LIB_STOPWATCH_ROOT}/T145003.cc"
+    #"${LIB_STOPWATCH_ROOT}/T145003.cc"
     "${LIB_STOPWATCH_ROOT}/T145003.h"
     "${LIB_STOPWATCH_ROOT}/Led7SegmentDisplay.cc"
     "${LIB_STOPWATCH_ROOT}/Led7SegmentDisplay.h"

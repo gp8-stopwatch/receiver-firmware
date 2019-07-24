@@ -16,6 +16,7 @@
 #include "History.h"
 #include "I2CLcdDataLink.h"
 #include "InfraRedBeam.h"
+#include "Led7SegmentDisplay.h"
 #include "PCF85176Driver.h"
 #include "StopWatch.h"
 #include "T145003.h"
@@ -57,8 +58,12 @@ int main ()
         // lcdd->setDataLink (link);
         // lcdd->init (3, 4, true);
 
-        Gpio d1 (GPIOB, GPIO_PIN_13);
-        d1 = false;
+        Gpio d1 (GPIOB, GPIO_PIN_11/*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
+        Gpio d2 (GPIOB, GPIO_PIN_12/*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
+        Gpio d3 (GPIOB, GPIO_PIN_13/*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
+        Gpio d4 (GPIOB, GPIO_PIN_10/*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
+        Gpio d5 (GPIOB, GPIO_PIN_2 /*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
+        Gpio d6 (GPIOA, GPIO_PIN_5 /*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
 
         Gpio sa (GPIOA, GPIO_PIN_0);
         Gpio sb (GPIOA, GPIO_PIN_1);
@@ -68,14 +73,22 @@ int main ()
         Gpio sf (GPIOA, GPIO_PIN_7);
         Gpio sg (GPIOB, GPIO_PIN_0);
         Gpio sdp (GPIOB, GPIO_PIN_1);
-        sa = sb = sc = sd = se = sf = sg = sdp = true;
 
-        while (true) {
-        }
+//        // True = hi-z, false = 0
+//        d1 = d2 = d3 = d4 = d5 = d6 = false;
+//        //d6 = false;
+//        sa = sb = sc = sd = se = sf = sg = sdp = true;
 
-        T145003 *screen = nullptr; // T145003::singleton ();
-        // screen->setLcdDriver (lcdd);
-        // screen->init ();
+//        while (true) {
+//        }
+
+        Led7SegmentDisplay screen (sa, sb, sc, sd, se, sf, sg, sdp, d1, d2, d3, d4, d5, d6);
+        // screen.setDigit (0, 0xa);
+        // screen.setDigit (1, 0xb);
+        // screen.setDigit (2, 0xc);
+        // screen.setDigit (3, 0xd);
+        // screen.setDigit (4, 0xe);
+        // screen.setDigit (5, 0xf);
 
         /*+-------------------------------------------------------------------------+*/
         /*| Backlight, beeper                                                       |*/
@@ -84,7 +97,7 @@ int main ()
         Buzzer *buzzer = Buzzer::singleton ();
         buzzer->init ();
 
-#if 1
+#if 0
         Gpio debugUartGpios (GPIOA, GPIO_PIN_9 | GPIO_PIN_10, GPIO_MODE_AF_OD, GPIO_PULLUP, GPIO_SPEED_FREQ_HIGH, GPIO_AF1_USART1);
         Usart debugUart (USART1, 115200);
 
@@ -108,8 +121,9 @@ int main ()
         // history->init ();
         // history->printHistory ();
 
+#if 0
         StopWatch *stopWatch = StopWatch::singleton ();
-        stopWatch->setDisplay (screen);
+        stopWatch->setDisplay (&screen);
         FastStateMachine *fStateMachine = FastStateMachine::singleton ();
         fStateMachine->setStopWatch (stopWatch);
         stopWatch->setStateMachine (fStateMachine);
@@ -118,13 +132,14 @@ int main ()
         //        Button *button = Button::singleton ();
         //        button->init (GPIOB, GPIO_PIN_8);
         fStateMachine->setIr (beam);
-        fStateMachine->setDisplay (screen);
+        fStateMachine->setDisplay (&screen);
         fStateMachine->setBuzzer (buzzer);
         // fStateMachine->setHistory (history);
         //        fStateMachine->setButton (button);
 
         beam->init ();
         stopWatch->init ();
+#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| Battery, light sensor                                                   |*/
@@ -160,7 +175,7 @@ int main ()
 #endif
 
         while (1) {
-                screen->refresh ();
+                screen.refresh ();
                 buzzer->run ();
                 //                button->run ();
 
@@ -260,17 +275,13 @@ extern "C" void __cxa_pure_virtual ()
         }
 }
 
-extern "C" void __cxa_guard_acquire ()
-{
-        while (true) {
-        }
-}
+// extern "C" void __cxa_guard_acquire ()
+//{
+//}
 
-extern "C" void __cxa_guard_release ()
-{
-        while (true) {
-        }
-}
+// extern "C" void __cxa_guard_release ()
+//{
+//}
 
 namespace std {
 void __throw_bad_function_call ()
