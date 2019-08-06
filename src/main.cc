@@ -11,6 +11,7 @@
 #include "Button.h"
 #include "Buzzer.h"
 #include "Can.h"
+#include "CanProtocol.h"
 #include "Debug.h"
 #include "FastStateMachine.h"
 #include "Gpio.h"
@@ -44,24 +45,35 @@ USBD_HandleTypeDef usbdDevice;
  * TODO input in console
  * TODO RTC
  * TODO 2 or 3? contestants
- * TODO LED multiplexing driven by hardware timer to prevent frying it in case of program hang.
  * TODO Time bigger than 16b in history and everywhere else.
+ * TODO demko . Cyfry pokazują się od prawej. Najpierw segmenty 1, potem do 0, potem 8. Wszystkie 6. Potem znów od prawej znikają. Tak było w
+ * Fz1, Fz6 i Xj6
+ * TODO Wyświetlanie zegara.
+ *
+ * CAN:
+ * Start
+ * Stop + time
+ *
+ *
+ * DONE LED multiplexing driven by hardware timer to prevent frying it in case of program hang.
  */
 int main ()
 {
         HAL_Init ();
         SystemClock_Config ();
 
+        const uint32_t *MICRO_CONTROLLER_UID = new (reinterpret_cast<void *> (0x1FFFF7AC)) uint32_t;
+
         /*+-------------------------------------------------------------------------+*/
         /*| Screen                                                                  |*/
         /*+-------------------------------------------------------------------------+*/
 
-        Gpio d1 (GPIOB, GPIO_PIN_11 /*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
-        Gpio d2 (GPIOB, GPIO_PIN_12 /*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
-        Gpio d3 (GPIOB, GPIO_PIN_13 /*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
-        Gpio d4 (GPIOB, GPIO_PIN_10 /*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
-        Gpio d5 (GPIOB, GPIO_PIN_2 /*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
-        Gpio d6 (GPIOA, GPIO_PIN_5 /*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
+        Gpio d1 (GPIOB, GPIO_PIN_11);
+        Gpio d2 (GPIOB, GPIO_PIN_12);
+        Gpio d3 (GPIOB, GPIO_PIN_13);
+        Gpio d4 (GPIOB, GPIO_PIN_10);
+        Gpio d5 (GPIOB, GPIO_PIN_2 );
+        Gpio d6 (GPIOA, GPIO_PIN_5 );
 
         Gpio sa (GPIOA, GPIO_PIN_0);
         Gpio sb (GPIOA, GPIO_PIN_1);
@@ -96,7 +108,7 @@ int main ()
         }
 #endif
 
-        HardwareTimer tim15 (TIM15, 48 - 1, 1000 - 1); // Update 1kHz
+        HardwareTimer tim15 (TIM15, 48 - 1, 200 - 1); // Update 5kHz
         HAL_NVIC_SetPriority (TIM15_IRQn, 0, 0);
         HAL_NVIC_EnableIRQ (TIM15_IRQn);
         tim15.setOnUpdate ([&screen] { screen.refresh (); });
@@ -114,10 +126,24 @@ int main ()
         Debug debug (&debugUart);
         Debug::singleton () = &debug;
         ::debug = Debug::singleton ();
-        ::debug->print ("gp8 stopwatch ready\n");
+        ::debug->print ("gp8 stopwatch ready. UID : ");
+        ::debug->println (*MICRO_CONTROLLER_UID);
 
         /*+-------------------------------------------------------------------------+*/
-        /*| StopWatch, machine and IR                                               |*/
+        /*| CAN                                                                     |*/
+        /*+-------------------------------------------------------------------------+*/
+
+        Gpio canGpios (GPIOB, GPIO_PIN_8 | GPIO_PIN_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH, GPIO_AF4_CAN);
+
+        // 24 - 125kbps ?
+        Can can (nullptr, 24, CAN_SJW_3TQ, CAN_BS1_12TQ, CAN_BS2_3TQ);
+        HAL_NVIC_SetPriority (CEC_CAN_IRQn, 2, 0);
+        HAL_NVIC_EnableIRQ (CEC_CAN_IRQn);
+
+        CanProtocol protocol (can, *MICRO_CONTROLLER_UID);
+
+        /*+-------------------------------------------------------------------------+*/
+        /*| History saved in the flash                                              |*/
         /*+-------------------------------------------------------------------------+*/
 
         History *history = History::singleton (/*3*/);
@@ -130,14 +156,16 @@ int main ()
         history->init ();
         history->printHistory ();
 
+        /*+-------------------------------------------------------------------------+*/
+        /*| StopWatch, machine and IR                                               |*/
+        /*+-------------------------------------------------------------------------+*/
+
         StopWatch *stopWatch = StopWatch::singleton ();
         stopWatch->setDisplay (&screen);
         FastStateMachine *fStateMachine = FastStateMachine::singleton ();
         fStateMachine->setStopWatch (stopWatch);
         stopWatch->setStateMachine (fStateMachine);
         InfraRedBeam beam;
-
-        /*****************************************************************************/
 
         HardwareTimer tim1 (TIM1, 48 - 1, 100 - 1);
         Gpio encoderPins (GPIOA, GPIO_PIN_8, GPIO_MODE_AF_PP, GPIO_PULLDOWN, GPIO_SPEED_FREQ_HIGH, GPIO_AF2_TIM1);
@@ -193,18 +221,6 @@ int main ()
         /* Start Device Process */
         USBD_Start (&usbdDevice);
 #endif
-        /*+-------------------------------------------------------------------------+*/
-        /*| CAN                                                                     |*/
-        /*+-------------------------------------------------------------------------+*/
-
-        Gpio canGpios (GPIOB, GPIO_PIN_8 | GPIO_PIN_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH, GPIO_AF4_CAN);
-
-        // 24 - 125kbps ?
-        Can can (nullptr, 24, CAN_SJW_3TQ, CAN_BS1_12TQ, CAN_BS2_3TQ);
-        HAL_NVIC_SetPriority (CEC_CAN_IRQn, 2, 0);
-        HAL_NVIC_EnableIRQ (CEC_CAN_IRQn);
-
-        Timer canTimer{ 1000 };
 
         while (1) {
                 buzzer.run ();
@@ -240,15 +256,23 @@ int main ()
                         //                        }
 
                         uint32_t ambientLightVoltage = ambientLightVoltMeter.getValue ();
-                        debug.print ("Ambient light voltage : ");
-                        debug.println (ambientLightVoltage);
 
-                        //                        if (!screen->getBacklight () && ambientLightVoltage < 50) {
-                        //                                screen->setBacklight (true);
-                        //                        }
-                        //                        else if (screen->getBacklight () && ambientLightVoltage > 80) {
-                        //                                screen->setBacklight (false);
-                        //                        }
+                        /*
+                         * 50- : 1
+                         * 50-100 : 2
+                         * 100-150 : 3
+                         * 150-200 : 4
+                         * 200+ : 5
+                         */
+
+                        uint8_t newBrightness = (std::max<uint8_t> ((ambientLightVoltage - 1), 0) / 50) + 1;
+
+                        debug.print ("Ambient : ");
+                        debug.print (ambientLightVoltage);
+                        debug.print (", brightness : ");
+                        debug.println (newBrightness);
+
+                        screen.setBrightness (newBrightness);
                 }
         }
 }

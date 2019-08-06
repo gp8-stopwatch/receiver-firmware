@@ -59,9 +59,10 @@ ADD_EXECUTABLE(${CMAKE_PROJECT_NAME}.elf
     "${LIB_STOPWATCH_ROOT}/InfraRedBeam.h"
     "${LIB_STOPWATCH_ROOT}/StopWatch.cc"
     "${LIB_STOPWATCH_ROOT}/StopWatch.h"
-    "${LIB_STOPWATCH_ROOT}/T145003.h"
     "${LIB_STOPWATCH_ROOT}/Led7SegmentDisplay.cc"
     "${LIB_STOPWATCH_ROOT}/Led7SegmentDisplay.h"
+    "${LIB_STOPWATCH_ROOT}/CanProtocol.cc"
+    "${LIB_STOPWATCH_ROOT}/CanProtocol.h"
 
 
     #"${LIB_STOPWATCH_ROOT}/usbd_cdc_interface.c"
