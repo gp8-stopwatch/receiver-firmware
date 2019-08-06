@@ -10,19 +10,17 @@
 #include "AdcChannel.h"
 #include "Button.h"
 #include "Buzzer.h"
+#include "Can.h"
 #include "Debug.h"
 #include "FastStateMachine.h"
 #include "Gpio.h"
+#include "HardwareTimer.h"
 #include "History.h"
-#include "I2CLcdDataLink.h"
 #include "InfraRedBeam.h"
 #include "Led7SegmentDisplay.h"
-#include "PCF85176Driver.h"
 #include "StopWatch.h"
-#include "T145003.h"
 #include "Timer.h"
 #include "Usart.h"
-#include "config.h"
 #include "usbd_cdc.h"
 #include "usbd_cdc_interface.h"
 #include "usbd_core.h"
@@ -40,8 +38,15 @@ USBD_HandleTypeDef usbdDevice;
 #endif
 
 /*****************************************************************************/
-
-#if 1
+/**
+ * TODO battery level sensing.
+ * TODO loop measurements
+ * TODO input in console
+ * TODO RTC
+ * TODO 2 or 3? contestants
+ * TODO LED multiplexing driven by hardware timer to prevent frying it in case of program hang.
+ * TODO Time bigger than 16b in history and everywhere else.
+ */
 int main ()
 {
         HAL_Init ();
@@ -51,17 +56,10 @@ int main ()
         /*| Screen                                                                  |*/
         /*+-------------------------------------------------------------------------+*/
 
-        // I2CLcdDataLink *link = I2CLcdDataLink::singleton ();
-        // link->init ();
-        //
-        // PCF85176Driver *lcdd = PCF85176Driver::singleton ();
-        // lcdd->setDataLink (link);
-        // lcdd->init (3, 4, true);
-
-        Gpio d1 (GPIOB, GPIO_PIN_11/*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
-        Gpio d2 (GPIOB, GPIO_PIN_12/*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
-        Gpio d3 (GPIOB, GPIO_PIN_13/*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
-        Gpio d4 (GPIOB, GPIO_PIN_10/*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
+        Gpio d1 (GPIOB, GPIO_PIN_11 /*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
+        Gpio d2 (GPIOB, GPIO_PIN_12 /*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
+        Gpio d3 (GPIOB, GPIO_PIN_13 /*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
+        Gpio d4 (GPIOB, GPIO_PIN_10 /*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
         Gpio d5 (GPIOB, GPIO_PIN_2 /*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
         Gpio d6 (GPIOA, GPIO_PIN_5 /*, GPIO_MODE_AF_OD, GPIO_PULLUP*/);
 
@@ -71,33 +69,45 @@ int main ()
         Gpio sd (GPIOA, GPIO_PIN_3);
         Gpio se (GPIOA, GPIO_PIN_6);
         Gpio sf (GPIOA, GPIO_PIN_7);
-        Gpio sg (GPIOB, GPIO_PIN_0);
+        Gpio sg (GPIOB, GPIO_PIN_5);
         Gpio sdp (GPIOB, GPIO_PIN_1);
 
-//        // True = hi-z, false = 0
-//        d1 = d2 = d3 = d4 = d5 = d6 = false;
-//        //d6 = false;
-//        sa = sb = sc = sd = se = sf = sg = sdp = true;
+#if 0
+        // !!!WARNING!!!
+        // Uncomenting this will pass 100mA continuous through all displays and burn them.
+        d1 = d2 = d3 = d4 = d5 = d6 = false;
+        sa = sb = sc = sd = se = sf = sg = sdp = true;
 
-//        while (true) {
-//        }
+        while (true) {
+        }
+#endif
 
         Led7SegmentDisplay screen (sa, sb, sc, sd, se, sf, sg, sdp, d1, d2, d3, d4, d5, d6);
-        // screen.setDigit (0, 0xa);
-        // screen.setDigit (1, 0xb);
-        // screen.setDigit (2, 0xc);
-        // screen.setDigit (3, 0xd);
-        // screen.setDigit (4, 0xe);
-        // screen.setDigit (5, 0xf);
+
+#if 0
+        screen.setDigit (0, 0xa);
+        screen.setDigit (1, 0xb);
+        screen.setDigit (2, 0xc);
+        screen.setDigit (3, 0xd);
+        screen.setDigit (4, 0xe);
+        screen.setDigit (5, 0xf);
+
+        while (true) {
+        }
+#endif
+
+        HardwareTimer tim15 (TIM15, 48 - 1, 1000 - 1); // Update 1kHz
+        HAL_NVIC_SetPriority (TIM15_IRQn, 0, 0);
+        HAL_NVIC_EnableIRQ (TIM15_IRQn);
+        tim15.setOnUpdate ([&screen] { screen.refresh (); });
 
         /*+-------------------------------------------------------------------------+*/
         /*| Backlight, beeper                                                       |*/
         /*+-------------------------------------------------------------------------+*/
 
-        Buzzer *buzzer = Buzzer::singleton ();
-        buzzer->init ();
+        Gpio buzzerPin (GPIOB, GPIO_PIN_14);
+        Buzzer buzzer (buzzerPin);
 
-#if 0
         Gpio debugUartGpios (GPIOA, GPIO_PIN_9 | GPIO_PIN_10, GPIO_MODE_AF_OD, GPIO_PULLUP, GPIO_SPEED_FREQ_HIGH, GPIO_AF1_USART1);
         Usart debugUart (USART1, 115200);
 
@@ -105,55 +115,65 @@ int main ()
         Debug::singleton () = &debug;
         ::debug = Debug::singleton ();
         ::debug->print ("gp8 stopwatch ready\n");
-#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| StopWatch, machine and IR                                               |*/
         /*+-------------------------------------------------------------------------+*/
 
-        // History *history = History::singleton (/*3*/);
-        // FlashEepromStorage<2048> hiScoreStorage (2, 1, 0x801E800 /*0x08020000 - 3 * 2048*/);
-        // hiScoreStorage.init ();
-        // history->setHiScoreStorage (&hiScoreStorage);
-        // FlashEepromStorage<2048> historyStorage (2, 2, 0x801F000 /*0x08020000 - 2 * 2048*/);
-        // historyStorage.init ();
-        // history->setHistoryStorage (&historyStorage);
-        // history->init ();
-        // history->printHistory ();
+        History *history = History::singleton (/*3*/);
+        FlashEepromStorage<2048> hiScoreStorage (2, 1, 0x801E800 /*0x08020000 - 3 * 2048*/);
+        hiScoreStorage.init ();
+        history->setHiScoreStorage (&hiScoreStorage);
+        FlashEepromStorage<2048> historyStorage (2, 2, 0x801F000 /*0x08020000 - 2 * 2048*/);
+        historyStorage.init ();
+        history->setHistoryStorage (&historyStorage);
+        history->init ();
+        history->printHistory ();
 
-#if 0
         StopWatch *stopWatch = StopWatch::singleton ();
         stopWatch->setDisplay (&screen);
         FastStateMachine *fStateMachine = FastStateMachine::singleton ();
         fStateMachine->setStopWatch (stopWatch);
         stopWatch->setStateMachine (fStateMachine);
-        InfraRedBeam *beam = InfraRedBeam::singleton ();
+        InfraRedBeam beam;
+
+        /*****************************************************************************/
+
+        HardwareTimer tim1 (TIM1, 48 - 1, 100 - 1);
+        Gpio encoderPins (GPIOA, GPIO_PIN_8, GPIO_MODE_AF_PP, GPIO_PULLDOWN, GPIO_SPEED_FREQ_HIGH, GPIO_AF2_TIM1);
+        InputCaptureChannel inputCapture0 (&tim1, 0, true);
+        HAL_NVIC_SetPriority (TIM1_BRK_UP_TRG_COM_IRQn, 6, 0);
+        HAL_NVIC_EnableIRQ (TIM1_BRK_UP_TRG_COM_IRQn);
+
+        // TODO those are implemented using std::function internally which in turn can cause dynamic allocation
+        inputCapture0.setOnIrq ([&beam] { beam.on1kHz (); });
+        tim1.setOnUpdate ([&beam] { beam.on10kHz (); });
+
+        /*****************************************************************************/
 
         //        Button *button = Button::singleton ();
-        //        button->init (GPIOB, GPIO_PIN_8);
-        fStateMachine->setIr (beam);
+        //        button->init (GPIOB, GPIO_PIN_15);
+        fStateMachine->setIr (&beam);
         fStateMachine->setDisplay (&screen);
-        fStateMachine->setBuzzer (buzzer);
-        // fStateMachine->setHistory (history);
+        fStateMachine->setBuzzer (&buzzer);
+        fStateMachine->setHistory (history);
         //        fStateMachine->setButton (button);
 
-        beam->init ();
         stopWatch->init ();
-#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| Battery, light sensor                                                   |*/
         /*+-------------------------------------------------------------------------+*/
 
-        // Adc *adc = Adc::instance (2);
-        // adc->init ();
-        //
-        // AdcChannel ambientLightVoltMeter (GPIOA, GPIO_PIN_2, ADC_CHANNEL_2);
-        // adc->addChannel (&ambientLightVoltMeter);
-        //
-        // AdcChannel batteryVoltMeter (GPIOA, GPIO_PIN_3, ADC_CHANNEL_3);
-        // adc->addChannel (&batteryVoltMeter);
-        // Timer batteryTimer;
+        Adc *adc = Adc::instance (2);
+        adc->init ();
+
+        AdcChannel ambientLightVoltMeter (GPIOA, GPIO_PIN_4, ADC_CHANNEL_4);
+        adc->addChannel (&ambientLightVoltMeter);
+
+        AdcChannel batteryVoltMeter (GPIOB, GPIO_PIN_0, ADC_CHANNEL_8);
+        adc->addChannel (&batteryVoltMeter);
+        Timer batteryTimer;
 
         /*+-------------------------------------------------------------------------+*/
         /*| USB                                                                     |*/
@@ -173,49 +193,69 @@ int main ()
         /* Start Device Process */
         USBD_Start (&usbdDevice);
 #endif
+        /*+-------------------------------------------------------------------------+*/
+        /*| CAN                                                                     |*/
+        /*+-------------------------------------------------------------------------+*/
+
+        Gpio canGpios (GPIOB, GPIO_PIN_8 | GPIO_PIN_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH, GPIO_AF4_CAN);
+
+        // 24 - 125kbps ?
+        Can can (nullptr, 24, CAN_SJW_3TQ, CAN_BS1_12TQ, CAN_BS2_3TQ);
+        HAL_NVIC_SetPriority (CEC_CAN_IRQn, 2, 0);
+        HAL_NVIC_EnableIRQ (CEC_CAN_IRQn);
+
+        Timer canTimer{ 1000 };
 
         while (1) {
-                screen.refresh ();
-                buzzer->run ();
+                buzzer.run ();
+
+                //                if (canTimer.isExpired ()) {
+                //                        can.send (CanFrame{ 0x9ABCDEF, true, 1, 0x37 });
+                //                        canTimer.start (1000);
+                //                }
+
                 //                button->run ();
 
-                //                if (batteryTimer.isExpired ()) {
-                //                        adc->run ();
-                //                        batteryTimer.start (1000);
-                //                        uint8_t batteryVoltage = batteryVoltMeter.getValue ();
+                if (batteryTimer.isExpired ()) {
+                        adc->run ();
+                        batteryTimer.start (1000);
+                        uint32_t batteryVoltage = batteryVoltMeter.getValue ();
+                        debug.print ("Battery voltage : ");
+                        debug.println (batteryVoltage);
 
-                //                        if (batteryVoltage <= 125) {
-                //                                screen->setBatteryLevel (1);
-                //                        }
-                //                        else if (batteryVoltage <= 130) {
-                //                                screen->setBatteryLevel (2);
-                //                        }
-                //                        else if (batteryVoltage <= 140) {
-                //                                screen->setBatteryLevel (3);
-                //                        }
-                //                        else if (batteryVoltage <= 148) {
-                //                                screen->setBatteryLevel (4);
-                //                        }
-                //                        else {
-                //                                screen->setBatteryLevel (5);
-                //                        }
+                        //                        if (batteryVoltage <= 125) {
+                        //                                screen->setBatteryLevel (1);
+                        //                        }
+                        //                        else if (batteryVoltage <= 130) {
+                        //                                screen->setBatteryLevel (2);
+                        //                        }
+                        //                        else if (batteryVoltage <= 140) {
+                        //                                screen->setBatteryLevel (3);
+                        //                        }
+                        //                        else if (batteryVoltage <= 148) {
+                        //                                screen->setBatteryLevel (4);
+                        //                        }
+                        //                        else {
+                        //                                screen->setBatteryLevel (5);
+                        //                        }
 
-                //                        uint8_t ambientLightVoltage = ambientLightVoltMeter.getValue ();
+                        uint32_t ambientLightVoltage = ambientLightVoltMeter.getValue ();
+                        debug.print ("Ambient light voltage : ");
+                        debug.println (ambientLightVoltage);
 
-                //                        if (!screen->getBacklight () && ambientLightVoltage < 50) {
-                //                                screen->setBacklight (true);
-                //                        }
-                //                        else if (screen->getBacklight () && ambientLightVoltage > 80) {
-                //                                screen->setBacklight (false);
-                //                        }
-                //                }
+                        //                        if (!screen->getBacklight () && ambientLightVoltage < 50) {
+                        //                                screen->setBacklight (true);
+                        //                        }
+                        //                        else if (screen->getBacklight () && ambientLightVoltage > 80) {
+                        //                                screen->setBacklight (false);
+                        //                        }
+                }
         }
 }
-#endif
 
 /*****************************************************************************/
 
-void SystemClock_Config (void)
+void SystemClock_Config ()
 {
         RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
         RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
@@ -236,6 +276,7 @@ void SystemClock_Config (void)
         RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
         RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
         RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV1;
+
         if (HAL_RCC_OscConfig (&RCC_OscInitStruct) != HAL_OK) {
                 Error_Handler ();
         }
@@ -249,6 +290,7 @@ void SystemClock_Config (void)
         if (HAL_RCC_ClockConfig (&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
                 Error_Handler ();
         }
+
         PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB | RCC_PERIPHCLK_USART1 | RCC_PERIPHCLK_RTC;
         PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
         PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
@@ -291,9 +333,11 @@ void __throw_bad_function_call ()
 }
 } // namespace std
 
+#if 0
 void *operator new (size_t size) { return nullptr; }
 
 void operator delete (void *p) {}
 void operator delete (void *p, unsigned int) {}
+#endif
 
 // extern "C" void _init () {}
