@@ -51,6 +51,7 @@ USBD_HandleTypeDef usbdDevice;
  * TODO Wyświetlanie zegara.
  * TODO Kiedy nie ma IR, to wyświetlać same kreski, albo -no ir-
  * TODO buzzer volume or if buzzer at all.
+ * TODO Optimize spaghetti code in the FastState machine
  *
  * CAN:
  * Start
@@ -121,7 +122,7 @@ int main ()
 
         Gpio buzzerPin (GPIOB, GPIO_PIN_14);
         Buzzer buzzer (buzzerPin);
-        buzzer.setActive (false);
+        // buzzer.setActive (false);
         buzzer.beep (20, 0, 1);
 
         Gpio debugUartGpios (GPIOA, GPIO_PIN_9 | GPIO_PIN_10, GPIO_MODE_AF_OD, GPIO_PULLUP, GPIO_SPEED_FREQ_HIGH, GPIO_AF1_USART1);
@@ -187,14 +188,17 @@ int main ()
 
         /*****************************************************************************/
 
-        //        Button *button = Button::singleton ();
-        //        button->init (GPIOB, GPIO_PIN_15);
+        Gpio buttonPin (GPIOB, GPIO_PIN_15, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLUP);
+        HAL_NVIC_SetPriority (EXTI4_15_IRQn, 2, 0);
+        HAL_NVIC_EnableIRQ (EXTI4_15_IRQn);
+        Button button (buttonPin);
+
         fStateMachine->setIr (&beam);
         fStateMachine->setDisplay (&screen);
         fStateMachine->setBuzzer (&buzzer);
         fStateMachine->setHistory (history);
         fStateMachine->setCanProtocol (&protocol);
-        //        fStateMachine->setButton (button);
+        // fStateMachine->setButton (&button);
 
         stopWatch->init ();
 
@@ -234,13 +238,15 @@ int main ()
         while (1) {
                 buzzer.run ();
                 protocol.run ();
+                button.run ();
 
-                //                if (canTimer.isExpired ()) {
-                //                        can.send (CanFrame{ 0x9ABCDEF, true, 1, 0x37 });
-                //                        canTimer.start (1000);
-                //                }
+                if (button.getPressClear ()) {
+                        buzzer.beep (20, 0, 1);
+                }
 
-                //                button->run ();
+                if (button.getLongPressClear ()) {
+                        buzzer.beep (20, 20, 2);
+                }
 
                 if (batteryTimer.isExpired ()) {
                         adc->run ();
