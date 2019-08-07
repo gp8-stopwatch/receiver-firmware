@@ -49,6 +49,8 @@ USBD_HandleTypeDef usbdDevice;
  * TODO demko . Cyfry pokazują się od prawej. Najpierw segmenty 1, potem do 0, potem 8. Wszystkie 6. Potem znów od prawej znikają. Tak było w
  * Fz1, Fz6 i Xj6
  * TODO Wyświetlanie zegara.
+ * TODO Kiedy nie ma IR, to wyświetlać same kreski, albo -no ir-
+ * TODO buzzer volume or if buzzer at all.
  *
  * CAN:
  * Start
@@ -72,8 +74,8 @@ int main ()
         Gpio d2 (GPIOB, GPIO_PIN_12);
         Gpio d3 (GPIOB, GPIO_PIN_13);
         Gpio d4 (GPIOB, GPIO_PIN_10);
-        Gpio d5 (GPIOB, GPIO_PIN_2 );
-        Gpio d6 (GPIOA, GPIO_PIN_5 );
+        Gpio d5 (GPIOB, GPIO_PIN_2);
+        Gpio d6 (GPIOA, GPIO_PIN_5);
 
         Gpio sa (GPIOA, GPIO_PIN_0);
         Gpio sb (GPIOA, GPIO_PIN_1);
@@ -86,7 +88,7 @@ int main ()
 
 #if 0
         // !!!WARNING!!!
-        // Uncomenting this will pass 100mA continuous through all displays and burn them.
+        // Uncomenting this will pass 100mA continuous through all displays and can damage them.
         d1 = d2 = d3 = d4 = d5 = d6 = false;
         sa = sb = sc = sd = se = sf = sg = sdp = true;
 
@@ -135,12 +137,15 @@ int main ()
 
         Gpio canGpios (GPIOB, GPIO_PIN_8 | GPIO_PIN_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH, GPIO_AF4_CAN);
 
-        // 24 - 125kbps ?
+        // 24 - 125kbps
         Can can (nullptr, 24, CAN_SJW_3TQ, CAN_BS1_12TQ, CAN_BS2_3TQ);
         HAL_NVIC_SetPriority (CEC_CAN_IRQn, 2, 0);
         HAL_NVIC_EnableIRQ (CEC_CAN_IRQn);
 
         CanProtocol protocol (can, *MICRO_CONTROLLER_UID);
+        can.setCanCallback(&protocol);
+        can.setFilterAndMask (0x00000000, 0x00000000, true);
+        can.interrupts (true);
 
         /*+-------------------------------------------------------------------------+*/
         /*| History saved in the flash                                              |*/
@@ -166,6 +171,7 @@ int main ()
         fStateMachine->setStopWatch (stopWatch);
         stopWatch->setStateMachine (fStateMachine);
         InfraRedBeam beam;
+        beam.setActive (false);
 
         HardwareTimer tim1 (TIM1, 48 - 1, 100 - 1);
         Gpio encoderPins (GPIOA, GPIO_PIN_8, GPIO_MODE_AF_PP, GPIO_PULLDOWN, GPIO_SPEED_FREQ_HIGH, GPIO_AF2_TIM1);
@@ -185,6 +191,7 @@ int main ()
         fStateMachine->setDisplay (&screen);
         fStateMachine->setBuzzer (&buzzer);
         fStateMachine->setHistory (history);
+        fStateMachine->setCanProtocol (&protocol);
         //        fStateMachine->setButton (button);
 
         stopWatch->init ();
@@ -224,6 +231,7 @@ int main ()
 
         while (1) {
                 buzzer.run ();
+                protocol.run ();
 
                 //                if (canTimer.isExpired ()) {
                 //                        can.send (CanFrame{ 0x9ABCDEF, true, 1, 0x37 });
@@ -236,9 +244,10 @@ int main ()
                         adc->run ();
                         batteryTimer.start (1000);
                         uint32_t batteryVoltage = batteryVoltMeter.getValue ();
+#if 0
                         debug.print ("Battery voltage : ");
                         debug.println (batteryVoltage);
-
+#endif
                         //                        if (batteryVoltage <= 125) {
                         //                                screen->setBatteryLevel (1);
                         //                        }
@@ -267,11 +276,12 @@ int main ()
 
                         uint8_t newBrightness = (std::max<uint8_t> ((ambientLightVoltage - 1), 0) / 50) + 1;
 
+#if 0
                         debug.print ("Ambient : ");
                         debug.print (ambientLightVoltage);
                         debug.print (", brightness : ");
                         debug.println (newBrightness);
-
+#endif
                         screen.setBrightness (newBrightness);
                 }
         }
