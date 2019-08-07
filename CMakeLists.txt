@@ -46,8 +46,6 @@ ADD_EXECUTABLE(${CMAKE_PROJECT_NAME}.elf
     "${LIB_STOPWATCH_ROOT}/Button.h"
     "${LIB_STOPWATCH_ROOT}/Buzzer.cc"
     "${LIB_STOPWATCH_ROOT}/Buzzer.h"
-    "${LIB_STOPWATCH_ROOT}/config.h"
-    "${LIB_STOPWATCH_ROOT}/config-proto0.h"
     "${LIB_STOPWATCH_ROOT}/FastStateMachine.cc"
     "${LIB_STOPWATCH_ROOT}/FastStateMachine.h"
     "${LIB_STOPWATCH_ROOT}/History.cc"
@@ -63,6 +61,8 @@ ADD_EXECUTABLE(${CMAKE_PROJECT_NAME}.elf
     "${LIB_STOPWATCH_ROOT}/Led7SegmentDisplay.h"
     "${LIB_STOPWATCH_ROOT}/CanProtocol.cc"
     "${LIB_STOPWATCH_ROOT}/CanProtocol.h"
+    "${LIB_STOPWATCH_ROOT}/DisplayMenu.cc"
+    "${LIB_STOPWATCH_ROOT}/DisplayMenu.h"
 
 
     #"${LIB_STOPWATCH_ROOT}/usbd_cdc_interface.c"

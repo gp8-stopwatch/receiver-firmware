@@ -12,7 +12,9 @@
 #include "Buzzer.h"
 #include "Can.h"
 #include "CanProtocol.h"
+#include "Config.h"
 #include "Debug.h"
+#include "DisplayMenu.h"
 #include "FastStateMachine.h"
 #include "Gpio.h"
 #include "HardwareTimer.h"
@@ -65,8 +67,6 @@ int main ()
         HAL_Init ();
         SystemClock_Config ();
 
-        const uint32_t *MICRO_CONTROLLER_UID = new (reinterpret_cast<void *> (0x1FFFF7AC)) uint32_t;
-
         /*+-------------------------------------------------------------------------+*/
         /*| Screen                                                                  |*/
         /*+-------------------------------------------------------------------------+*/
@@ -115,6 +115,13 @@ int main ()
         HAL_NVIC_SetPriority (TIM15_IRQn, 0, 0);
         HAL_NVIC_EnableIRQ (TIM15_IRQn);
         tim15.setOnUpdate ([&screen] { screen.refresh (); });
+
+        /*+-------------------------------------------------------------------------+*/
+        /*| Config                                                                  |*/
+        /*+-------------------------------------------------------------------------+*/
+
+        const uint32_t *MICRO_CONTROLLER_UID = new (reinterpret_cast<void *> (0x1FFFF7AC)) uint32_t;
+        Config config; // TODO read config from FLASH memory.
 
         /*+-------------------------------------------------------------------------+*/
         /*| Backlight, beeper                                                       |*/
@@ -174,12 +181,11 @@ int main ()
         fStateMachine->setStopWatch (stopWatch);
         stopWatch->setStateMachine (fStateMachine);
         InfraRedBeam beam;
-        beam.setActive (false);
 
         HardwareTimer tim1 (TIM1, 48 - 1, 100 - 1);
         Gpio encoderPins (GPIOA, GPIO_PIN_8, GPIO_MODE_AF_PP, GPIO_PULLDOWN, GPIO_SPEED_FREQ_HIGH, GPIO_AF2_TIM1);
         InputCaptureChannel inputCapture0 (&tim1, 0, true);
-        HAL_NVIC_SetPriority (TIM1_BRK_UP_TRG_COM_IRQn, 6, 0);
+        HAL_NVIC_SetPriority (TIM1_BRK_UP_TRG_COM_IRQn, 1, 0);
         HAL_NVIC_EnableIRQ (TIM1_BRK_UP_TRG_COM_IRQn);
 
         // TODO those are implemented using std::function internally which in turn can cause dynamic allocation
@@ -189,7 +195,7 @@ int main ()
         /*****************************************************************************/
 
         Gpio buttonPin (GPIOB, GPIO_PIN_15, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLUP);
-        HAL_NVIC_SetPriority (EXTI4_15_IRQn, 2, 0);
+        HAL_NVIC_SetPriority (EXTI4_15_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ (EXTI4_15_IRQn);
         Button button (buttonPin);
 
@@ -235,17 +241,33 @@ int main ()
         USBD_Start (&usbdDevice);
 #endif
 
+        /*+-------------------------------------------------------------------------+*/
+        /*| USB                                                                     |*/
+        /*+-------------------------------------------------------------------------+*/
+
+        DisplayMenu menu (config, screen, *fStateMachine);
+
         while (1) {
                 buzzer.run ();
                 protocol.run ();
                 button.run ();
 
                 if (button.getPressClear ()) {
+                        menu.onShortPress ();
                         buzzer.beep (20, 0, 1);
                 }
 
                 if (button.getLongPressClear ()) {
+                        menu.onLongPress ();
                         buzzer.beep (20, 20, 2);
+                }
+
+                if (config.hasChanged) {
+                        config.hasChanged = false;
+
+                        //screen.setFlip (config.orientationFlip);
+                        beam.setActive (config.irSensorOn);
+                        buzzer.setActive (config.buzzerOn);
                 }
 
                 if (batteryTimer.isExpired ()) {
