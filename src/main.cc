@@ -121,6 +121,8 @@ int main ()
 
         Gpio buzzerPin (GPIOB, GPIO_PIN_14);
         Buzzer buzzer (buzzerPin);
+        buzzer.setActive (false);
+        buzzer.beep (20, 0, 1);
 
         Gpio debugUartGpios (GPIOA, GPIO_PIN_9 | GPIO_PIN_10, GPIO_MODE_AF_OD, GPIO_PULLUP, GPIO_SPEED_FREQ_HIGH, GPIO_AF1_USART1);
         Usart debugUart (USART1, 115200);
@@ -143,7 +145,7 @@ int main ()
         HAL_NVIC_EnableIRQ (CEC_CAN_IRQn);
 
         CanProtocol protocol (can, *MICRO_CONTROLLER_UID);
-        can.setCanCallback(&protocol);
+        can.setCanCallback (&protocol);
         can.setFilterAndMask (0x00000000, 0x00000000, true);
         can.interrupts (true);
 
