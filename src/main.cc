@@ -54,6 +54,7 @@ USBD_HandleTypeDef usbdDevice;
  * TODO Kiedy nie ma IR, to wyświetlać same kreski, albo -no ir-
  * TODO buzzer volume or if buzzer at all.
  * TODO Optimize spaghetti code in the FastState machine
+ * TODO When other CAN devices are absent, we should deal with it gracefully. Now I throw hundreds of error messages driving system useless.
  *
  * CAN:
  * Start
@@ -204,8 +205,6 @@ int main ()
         fStateMachine->setBuzzer (&buzzer);
         fStateMachine->setHistory (history);
         fStateMachine->setCanProtocol (&protocol);
-        // fStateMachine->setButton (&button);
-
         stopWatch->init ();
 
         /*+-------------------------------------------------------------------------+*/
@@ -265,7 +264,7 @@ int main ()
                 if (config.hasChanged) {
                         config.hasChanged = false;
 
-                        //screen.setFlip (config.orientationFlip);
+                        screen.setFlip (config.orientationFlip);
                         beam.setActive (config.irSensorOn);
                         buzzer.setActive (config.buzzerOn);
                 }
