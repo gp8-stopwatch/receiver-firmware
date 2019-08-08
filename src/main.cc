@@ -48,20 +48,16 @@ USBD_HandleTypeDef usbdDevice;
  * TODO RTC
  * TODO 2 or 3? contestants
  * TODO Time bigger than 16b in history and everywhere else.
- * TODO demko . Cyfry pokazują się od prawej. Najpierw segmenty 1, potem do 0, potem 8. Wszystkie 6. Potem znów od prawej znikają. Tak było w
+ * TODO EWENTUALNIE demko . Cyfry pokazują się od prawej. Najpierw segmenty 1, potem do 0, potem 8. Wszystkie 6. Potem znów od prawej znikają. Tak było w
  * Fz1, Fz6 i Xj6
  * TODO Wyświetlanie zegara.
  * TODO Kiedy nie ma IR, to wyświetlać same kreski, albo -no ir-
- * TODO buzzer volume or if buzzer at all.
  * TODO Optimize spaghetti code in the FastState machine
- * TODO When other CAN devices are absent, we should deal with it gracefully. Now I throw hundreds of error messages driving system useless.
- *
- * CAN:
- * Start
- * Stop + time
- *
  *
  * DONE LED multiplexing driven by hardware timer to prevent frying it in case of program hang.
+ * DONE When other CAN devices are absent, we should deal with it gracefully. Now I throw hundreds of error messages driving system useless.
+ * DONE buzzer volume or if buzzer at all.
+ * DONE Screen dims itself to 0 sometimes.
  */
 int main ()
 {
@@ -303,9 +299,9 @@ int main ()
                          * 200+ : 5
                          */
 
-                        uint8_t newBrightness = (std::max<uint8_t> ((ambientLightVoltage - 1), 0) / 50) + 1;
+                        uint8_t newBrightness = (std::max<int> ((int (ambientLightVoltage) - 1), 0) / 50) + 1;
 
-#if 0
+#if 1
                         debug.print ("Ambient : ");
                         debug.print (ambientLightVoltage);
                         debug.print (", brightness : ");
