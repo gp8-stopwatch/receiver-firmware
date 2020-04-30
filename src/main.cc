@@ -301,7 +301,7 @@ int main ()
 
                         uint8_t newBrightness = (std::max<int> ((int (ambientLightVoltage) - 1), 0) / 50) + 1;
 
-#if 1
+#if 0
                         debug.print ("Ambient : ");
                         debug.print (ambientLightVoltage);
                         debug.print (", brightness : ");
