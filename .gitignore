@@ -3,3 +3,5 @@ build-firmware-stm32f042xB-Debug
 build-firmware-stm32f042xB-Release
 build-firmware-stm32f072xB-Debug
 build
+.clangd
+misc/cubeMx

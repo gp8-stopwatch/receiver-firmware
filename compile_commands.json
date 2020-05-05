@@ -1,0 +1,499 @@
+[
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/src/main.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/main.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/main.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/src/Adc.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/Adc.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/Adc.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/src/AdcChannel.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/AdcChannel.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/AdcChannel.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/src/Button.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/Button.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/Button.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/src/Buzzer.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/Buzzer.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/Buzzer.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/src/FastStateMachine.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/FastStateMachine.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/FastStateMachine.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/src/History.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/History.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/History.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/src/InfraRedBeam.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/InfraRedBeam.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/InfraRedBeam.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/src/StopWatch.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/StopWatch.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/StopWatch.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/src/Led7SegmentDisplay.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/Led7SegmentDisplay.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/Led7SegmentDisplay.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/src/CanProtocol.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/CanProtocol.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/CanProtocol.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/src/DisplayMenu.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/DisplayMenu.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/DisplayMenu.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/libmicro/src/ErrorHandler.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/ErrorHandler.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/ErrorHandler.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/deps/libmicro/src/TimerF.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/TimerF.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/TimerF.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/deps/libmicro/src/HardwareTimer.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/HardwareTimer.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/HardwareTimer.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/deps/libmicro/src/Debug.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/Debug.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/Debug.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/deps/libmicro/src/GpioF.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/GpioF.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/GpioF.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/deps/libmicro/src/GpioF0.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/GpioF0.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/GpioF0.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/deps/libmicro/src/UsartF.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/UsartF.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/UsartF.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/deps/libmicro/src/UsartF0.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/UsartF0.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/UsartF0.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/deps/libmicro/src/SpiF.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/SpiF.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/SpiF.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/deps/libmicro/src/SpiF0.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/SpiF0.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/SpiF0.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/deps/libmicro/src/CanF.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/CanF.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/CanF.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-g++  -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c++17 -fno-rtti -fno-exceptions -Wall -fdata-sections -ffunction-sections -Wall -Werror=return-type -Wno-register -g   -o CMakeFiles/receiver.elf.dir/deps/libmicro/src/CanFrame.cc.obj -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/CanFrame.cc",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/libmicro/src/CanFrame.cc"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-as -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src    -o CMakeFiles/receiver.elf.dir/startup_stm32f072xb.s.obj /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/startup_stm32f072xb.s",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/startup_stm32f072xb.s"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/src/stm32f0xx_it.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/stm32f0xx_it.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/stm32f0xx_it.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/src/system_stm32f0xx.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/system_stm32f0xx.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/src/system_stm32f0xx.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc_ex.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc_ex.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc_ex.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/Legacy/stm32f0xx_hal_can.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/Legacy/stm32f0xx_hal_can.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/Legacy/stm32f0xx_hal_can.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_cec.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_cec.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_cec.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_comp.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_comp.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_comp.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_cortex.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_cortex.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_cortex.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_crc.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_crc.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_crc.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_crc_ex.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_crc_ex.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_crc_ex.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dac.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dac.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dac.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dac_ex.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dac_ex.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dac_ex.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dma.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dma.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dma.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash_ex.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash_ex.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash_ex.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_gpio.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_gpio.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_gpio.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c_ex.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c_ex.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c_ex.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2s.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2s.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2s.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_irda.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_irda.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_irda.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_iwdg.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_iwdg.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_iwdg.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pcd.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pcd.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pcd.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pcd_ex.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pcd_ex.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pcd_ex.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr_ex.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr_ex.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr_ex.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc_ex.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc_ex.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc_ex.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rtc.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rtc.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rtc.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rtc_ex.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rtc_ex.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rtc_ex.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_smartcard.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_smartcard.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_smartcard.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_smartcard_ex.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_smartcard_ex.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_smartcard_ex.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_smbus.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_smbus.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_smbus.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi_ex.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi_ex.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi_ex.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tim.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tim.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tim.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tim_ex.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tim_ex.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tim_ex.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tsc.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tsc.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tsc.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart_ex.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart_ex.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart_ex.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_usart.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_usart.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_usart.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_wwdg.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_wwdg.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_wwdg.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_adc.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_adc.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_adc.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_comp.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_comp.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_comp.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_crc.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_crc.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_crc.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_crs.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_crs.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_crs.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_dac.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_dac.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_dac.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_dma.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_dma.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_dma.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_exti.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_exti.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_exti.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_gpio.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_gpio.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_gpio.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_i2c.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_i2c.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_i2c.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_pwr.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_pwr.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_pwr.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_rcc.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_rcc.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_rcc.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_rtc.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_rtc.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_rtc.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_spi.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_spi.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_spi.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_tim.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_tim.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_tim.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_usart.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_usart.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_usart.c"
+},
+
+{
+  "directory": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/build",
+  "command": "/home/iwasz/local/share/cortex-m0/arm-none-eabi/bin/arm-none-eabi-gcc -DHSE_VALUE=8000000 -DSTM32F072xB -I../src -I../deps/etl/include -I../deps/GSL/include -I../deps/STM32F0xx_HAL_Driver/Inc -I../deps/CMSIS/Device/ST/STM32F0xx/Include -I../deps/CMSIS/Include -I../deps/STM32_USB_Device_Library/Core/Inc -I../deps/STM32_USB_Device_Library/Class/CDC/Inc -I../deps/libmicro/src  -std=c11 -fdata-sections -ffunction-sections -Wall -Werror=return-type -g   -o CMakeFiles/receiver.elf.dir/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_utils.c.obj   -c /home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_utils.c",
+  "file": "/home/iwasz/workspace/gp8-stopwatch/receiver/firmware/deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_utils.c"
+}
+]
