@@ -1,0 +1,18 @@
+File suffixes tell which µCs the file is compatible with. Always compile all available files for a µC.
+
+For STM32F:
+
+Gpio.cc
+GpioF.cc
+GpioF4.cc
+GpioF407.cc
+GpioF407VG.cc
+
+
+For BlueNRG:
+
+Gpio.cc
+GpioNRG.cc
+GpioNRG1.cc
+
+You get the idea.
