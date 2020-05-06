@@ -41,24 +41,7 @@ USBD_HandleTypeDef usbdDevice;
 #endif
 
 /*****************************************************************************/
-/**
- * TODO battery level sensing.
- * TODO loop measurements
- * TODO input in console
- * TODO RTC
- * TODO 2 or 3? contestants
- * TODO Time bigger than 16b in history and everywhere else.
- * TODO EWENTUALNIE demko . Cyfry pokazują się od prawej. Najpierw segmenty 1, potem do 0, potem 8. Wszystkie 6. Potem znów od prawej znikają. Tak było w
- * Fz1, Fz6 i Xj6
- * TODO Wyświetlanie zegara.
- * TODO Kiedy nie ma IR, to wyświetlać same kreski, albo -no ir-
- * TODO Optimize spaghetti code in the FastState machine
- *
- * DONE LED multiplexing driven by hardware timer to prevent frying it in case of program hang.
- * DONE When other CAN devices are absent, we should deal with it gracefully. Now I throw hundreds of error messages driving system useless.
- * DONE buzzer volume or if buzzer at all.
- * DONE Screen dims itself to 0 sometimes.
- */
+
 int main ()
 {
         HAL_Init ();
@@ -111,7 +94,9 @@ int main ()
         HardwareTimer tim15 (TIM15, 48 - 1, 200 - 1); // Update 5kHz
         HAL_NVIC_SetPriority (TIM15_IRQn, 0, 0);
         HAL_NVIC_EnableIRQ (TIM15_IRQn);
-        tim15.setOnUpdate ([&screen] { screen.refresh (); });
+
+        // Comment theline below to turn the screen OFF during debugging!
+        // tim15.setOnUpdate ([&screen] { screen.refresh (); });
 
         /*+-------------------------------------------------------------------------+*/
         /*| Config                                                                  |*/
@@ -191,7 +176,7 @@ int main ()
 
         /*****************************************************************************/
 
-        Gpio buttonPin (GPIOB, GPIO_PIN_15, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLUP);
+        Gpio buttonPin (GPIOB, GPIO_PIN_15, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
         HAL_NVIC_SetPriority (EXTI4_15_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ (EXTI4_15_IRQn);
         Button button (buttonPin);
@@ -242,7 +227,7 @@ int main ()
 
         DisplayMenu menu (config, screen, *fStateMachine);
 
-        while (1) {
+        while (true) {
                 buzzer.run ();
                 protocol.run ();
                 button.run ();
@@ -316,9 +301,9 @@ int main ()
 
 void SystemClock_Config ()
 {
-        RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
-        RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
-        RCC_PeriphCLKInitTypeDef PeriphClkInit = { 0 };
+        RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+        RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+        RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
         /**Configure LSE Drive Capability
          */

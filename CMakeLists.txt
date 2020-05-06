@@ -119,5 +119,7 @@ ADD_EXECUTABLE(${CMAKE_PROJECT_NAME}.elf
 FIND_PROGRAM (OPENOCD openocd)
 ADD_CUSTOM_TARGET("upload" DEPENDS ${CMAKE_PROJECT_NAME}.elf COMMAND ${OPENOCD} -f /home/iwasz/local/share/openocd/scripts/interface/stlink.cfg -f /home/iwasz/local/share/openocd/scripts/target/stm32f0x.cfg -c 'program ${CMAKE_PROJECT_NAME}.elf verify reset exit')
 ADD_CUSTOM_TARGET("debug" DEPENDS ${CMAKE_PROJECT_NAME}.elf COMMAND ${OPENOCD} -f /home/iwasz/local/share/openocd/scripts/interface/stlink.cfg -f /home/iwasz/local/share/openocd/scripts/target/stm32f0x.cfg)
+ADD_CUSTOM_TARGET(${CMAKE_PROJECT_NAME}.bin ALL DEPENDS ${CMAKE_PROJECT_NAME}.elf COMMAND ${CMAKE_OBJCOPY} -Obinary ${CMAKE_PROJECT_NAME}.elf ${CMAKE_PROJECT_NAME}.bin)
 
-
+FIND_PROGRAM (ELF2DFUSE elf2dfuse)
+ADD_CUSTOM_TARGET(${CMAKE_PROJECT_NAME}.dfu ALL DEPENDS ${CMAKE_PROJECT_NAME}.elf COMMAND ${ELF2DFUSE} ${CMAKE_PROJECT_NAME}.elf ${CMAKE_PROJECT_NAME}.dfu)

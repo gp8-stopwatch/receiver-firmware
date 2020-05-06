@@ -5,3 +5,5 @@ build-firmware-stm32f072xB-Debug
 build
 .clangd
 misc/cubeMx
+compile_commands.json
+.vscode

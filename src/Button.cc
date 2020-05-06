@@ -48,24 +48,24 @@ Button::Button (Gpio &pin) : pin (pin)
 
 void Button::onToggle ()
 {
-                if (!debounceTimer.isExpired ()) {
+        if (!debounceTimer.isExpired ()) {
+                return;
+        }
+        debounceTimer.start (50);
+
+        // Button pressed (button gpio is normally pulled up)
+        if (pin) {
+                longPressTimer.start (1000);
+                pressed = true;
+        }
+        else {
+                if (!pressed) {
                         return;
                 }
-                debounceTimer.start (50);
 
-                // Button pressed (button gpio is normally pulled up)
-                if (!pin) {
-                        longPressTimer.start (1000);
-                        pressed = true;
-                }
-                else {
-                        if (!pressed) {
-                                return;
-                        }
-
-                        pressed = false;
-                        pressedEvent = true;
-                }
+                pressed = false;
+                pressedEvent = true;
+        }
 }
 
 /*****************************************************************************/
