@@ -19,7 +19,6 @@ struct IDisplay;
 class StopWatch {
 public:
         StopWatch ();
-        virtual ~StopWatch () {}
 
         static StopWatch *singleton ()
         {
@@ -36,7 +35,8 @@ public:
         void setDisplay (IDisplay *d) { this->display = d; }
         void setStateMachine (FastStateMachine *s) { this->stateMachine = s; }
 
-        const unsigned int MAX_TIME = 100u * 60u * 100u;
+        // 100 minutes
+        static constexpr unsigned int MAX_TIME = 100U * 60U * 100U;
 
 private:
         friend void TIM14_IRQHandler ();

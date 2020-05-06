@@ -58,6 +58,8 @@ public:
         void setButton (Button *b) { this->button = b; }
         void setCanProtocol (CanProtocol *cp) { protocol = cp; }
 
+        void setButtonPending () { buttonPending = true; }
+
 private:
         void ready_entryAction (bool loop = false);
         void running_entryAction ();
@@ -75,6 +77,7 @@ private:
         History *history = nullptr;
         Button *button = nullptr;
         CanProtocol *protocol = nullptr;
+        bool buttonPending{};
 };
 
 #endif // FASTSTATEMACHINE_H

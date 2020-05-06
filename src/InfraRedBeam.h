@@ -25,16 +25,8 @@
 
 class InfraRedBeam {
 public:
-        //        static InfraRedBeam *singleton ()
-        //        {
-        //                static InfraRedBeam i;
-        //                return &i;
-        //        }
-
-        //        void init ();
-
         /// If any IR signal rise was observed at all.
-        bool isBeamPresent () { return beamPresent; }
+        bool isBeamPresent () const { return beamPresent; }
 
         bool isBeamInterrupted ()
         {
@@ -42,9 +34,8 @@ public:
                         beamInterrupted = false;
                         return true;
                 }
-                else {
-                        return false;
-                } /*noOfUpdateEventsSinceLastRise > UPDATE_EVENT_TRESHOLD;*/
+
+                return false;
         }
 
         // To be in 10kHz
@@ -57,11 +48,11 @@ public:
         void on1kHz ();
 
         bool isActive () const { return active; }
-        void setActive (bool b) ;
+        void setActive (bool b);
         void reset ();
 
 private:
-        TIM_HandleTypeDef timHandle;
+        TIM_HandleTypeDef timHandle{};
         uint32_t noOfUpdateEventsSinceLastRise = 0;
         uint32_t noOfRises = 0;
 

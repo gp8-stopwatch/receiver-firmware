@@ -96,7 +96,7 @@ int main ()
         HAL_NVIC_EnableIRQ (TIM15_IRQn);
 
         // Comment theline below to turn the screen OFF during debugging!
-        // tim15.setOnUpdate ([&screen] { screen.refresh (); });
+        tim15.setOnUpdate ([&screen] { screen.refresh (); });
 
         /*+-------------------------------------------------------------------------+*/
         /*| Config                                                                  |*/
@@ -174,12 +174,20 @@ int main ()
         inputCapture0.setOnIrq ([&beam] { beam.on1kHz (); });
         tim1.setOnUpdate ([&beam] { beam.on10kHz (); });
 
-        /*****************************************************************************/
+        /*--------------------------------------------------------------------------*/
 
         Gpio buttonPin (GPIOB, GPIO_PIN_15, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
         HAL_NVIC_SetPriority (EXTI4_15_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ (EXTI4_15_IRQn);
         Button button (buttonPin);
+
+        // Test trigger
+        Gpio testTriggerPin (GPIOB, GPIO_PIN_3, GPIO_MODE_IT_RISING, GPIO_PULLDOWN);
+        HAL_NVIC_SetPriority (EXTI2_3_IRQn, 6, 0);
+        HAL_NVIC_EnableIRQ (EXTI2_3_IRQn);
+        testTriggerPin.setOnToggle ([fStateMachine] {
+                fStateMachine->setButtonPending (); //
+        });
 
         fStateMachine->setIr (&beam);
         fStateMachine->setDisplay (&screen);

@@ -17,10 +17,22 @@
 #include "StopWatch.h"
 //#define DEBUG_STATES 1
 
+#ifdef DEBUG_STATES
+#warning "DEBUG_STATES is ON - fast state machine operation may be disturbed."
+#endif
+
 /*****************************************************************************/
 
 void FastStateMachine::run ()
 {
+        bool buttonPendingCopy{};
+
+        // Read and clear the test trigger.
+        if (buttonPending) {
+                buttonPendingCopy = true;
+                buttonPending = false;
+        }
+
 #if 0
         uint8_t i = display->getIcons ();
 
@@ -81,7 +93,7 @@ void FastStateMachine::run ()
 #ifdef DEBUG_STATES
                 debug->print ("r");
 #endif
-                if (ir->isBeamInterrupted ()) {
+                if (ir->isBeamInterrupted () || buttonPendingCopy) {
                         state = GP8_RUNNING;
                         running_entryAction ();
                         protocol->sendStart ();
@@ -108,7 +120,7 @@ void FastStateMachine::run ()
 #ifdef DEBUG_STATES
                 debug->print ("u");
 #endif
-                if (ir->isBeamPresent () && ir->isBeamInterrupted () && startTimeout.isExpired ()) {
+                if (((ir->isBeamPresent () && ir->isBeamInterrupted ()) || buttonPendingCopy) && startTimeout.isExpired ()) {
                         state = GP8_STOP;
                         stop_entryAction ({});
                         protocol->sendStop (stopWatch->getTime ());
@@ -130,7 +142,7 @@ void FastStateMachine::run ()
 #ifdef DEBUG_STATES
                 debug->print ("s");
 #endif
-                if (ir->isBeamPresent () && ir->isBeamInterrupted () && startTimeout.isExpired ()) {
+                if (((ir->isBeamPresent () && ir->isBeamInterrupted ()) || buttonPendingCopy) && startTimeout.isExpired ()) {
                         state = GP8_RUNNING;
                         running_entryAction ();
                         protocol->sendStart ();
@@ -168,7 +180,7 @@ void FastStateMachine::run ()
                 break;
 
         case LOOP_RUNNING:
-                if (ir->isBeamPresent () && ir->isBeamInterrupted () && startTimeout.isExpired ()) {
+                if ((ir->isBeamPresent () && ir->isBeamInterrupted () && startTimeout.isExpired ()) || buttonPendingCopy) {
                         state = LOOP_STOP;
                         stop_entryAction ({});
                 }
@@ -176,7 +188,7 @@ void FastStateMachine::run ()
                 break;
 
         case LOOP_STOP:
-                if (ir->isBeamPresent () && ir->isBeamInterrupted () && startTimeout.isExpired ()) {
+                if ((ir->isBeamPresent () && ir->isBeamInterrupted () && startTimeout.isExpired ()) || buttonPendingCopy) {
                         state = LOOP_RUNNING;
                         running_entryAction ();
                 }
