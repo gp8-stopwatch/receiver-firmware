@@ -47,7 +47,97 @@ Very first results (v3r2 with QCL8.00000F18B23B 20ppm, 8MHz crystal) show that t
 | 08:35:45 | ***08:35:50*** (0.01% = +100ppm) |
 
 ## Oscillator test
-Turning two identical receivers at the same time (using a test GPIO trigger). This way we eliminate the IR trigger and we test only one thing at a time which is the oscillator accuracy in this case.
+Turning two identical receivers at the same time (using a test GPIO trigger). This way we eliminate the IR trigger and we test (almost) only one thing at a time which is the oscillator accuracy in this case. Though there still is a part of code which drives the general-purpose timer, and a bit of state machine which decides whether to stop or start the stopwatch. The deeper through the rabbit hole, the more problems became apparent, read on.
+
+Initial results (before optimizations):
+
+10ms resolution, short term.
+| Timer 1   |    Timer2 |
+| --------- | --------: |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     | **04:01** |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| **04:01** |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     | **04:01** |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     | **04:01** |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| 04:00     |     04:00 |
+| **04:01** |     04:00 |
+ 
+
+100µs resolution, short term.
+| Timer 1  |   Timer2 |
+| -------- | -------: |
+| 04:00:04 | 04:00:05 |
+| 04:00:04 | 04:00:07 |
+| 04:00:04 | 04:00:07 |
+| 04:00:03 | 04:00:07 |
+| 04:00:03 | 04:00:06 |
+| 04:00:02 | 04:00:04 |
+| 04:00:02 | 04:00:06 |
+| 04:00:02 | 04:00:05 |
+| 04:00:02 | 04:00:06 |
+| 04:00:02 | 04:00:06 |
+| 04:00:02 | 04:00:06 |
+| 04:00:02 | 04:00:06 |
+| 04:00:02 | 04:00:06 |
+| 04:00:02 | 04:00:06 |
+| 04:00:02 | 04:00:08 |
+| 04:00:02 | 04:00:06 |
+| 04:00:02 | 04:00:06 |
+| 04:00:02 | 04:00:06 |
+| 04:00:01 | 04:00:05 |
+| 04:00:02 | 04:00:06 |
+
+100µs resolution (*1s:*10ms:*100µs), long term.
+| Timer 1  |   Timer2 |
+| -------- | -------: |
+| 58:54:17 | 58:30:07 |
+| 58:54:24 | 58:42:36 |
+| 58:54:03 | 58:41:85 |
+| 58:54:17 | 58:42:40 |
+| 58:54:37 | 58:36:60 |
+| 58:54:49 | 58:41:55 |
+| 58:54:17 | 58:41:55 |
+| 58:54:38 | 58:41:61 |
+| 58:54:51 | 58:41:63 |
+| 58:54:27 | 58:41:91 |
+
 
 ## Absolute test
 Testing against some stable source like (ntpd synchronized computer or some OCXO or even GPS disciplined OCXO like [this one](https://www.tindie.com/products/nsayer/gps-disciplined-ocxo/?pt=ac_prod_search). But they are relatively too expensive) over a course of, say, 5 minutes. External trigger GPIO.

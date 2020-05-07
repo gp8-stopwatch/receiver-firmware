@@ -96,7 +96,9 @@ int main ()
         HAL_NVIC_EnableIRQ (TIM15_IRQn);
 
         // Comment theline below to turn the screen OFF during debugging!
+#ifdef WITH_DISPLAY
         tim15.setOnUpdate ([&screen] { screen.refresh (); });
+#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| Config                                                                  |*/
@@ -111,7 +113,13 @@ int main ()
 
         Gpio buzzerPin (GPIOB, GPIO_PIN_14);
         Buzzer buzzer (buzzerPin);
+#if !defined(WITH_SOUND)
+        buzzer.setActive (false);
+        config.buzzerOn = false;
+#else
         buzzer.beep (20, 0, 1);
+
+#endif
 
         Gpio debugUartGpios (GPIOA, GPIO_PIN_9 | GPIO_PIN_10, GPIO_MODE_AF_OD, GPIO_PULLUP, GPIO_SPEED_FREQ_HIGH, GPIO_AF1_USART1);
         Usart debugUart (USART1, 115200);
@@ -194,7 +202,8 @@ int main ()
         fStateMachine->setBuzzer (&buzzer);
         fStateMachine->setHistory (history);
         fStateMachine->setCanProtocol (&protocol);
-        stopWatch->init ();
+        stopWatch->setResolution (config.resolution);
+        screen.setResolution (config.resolution);
 
         /*+-------------------------------------------------------------------------+*/
         /*| Battery, light sensor                                                   |*/

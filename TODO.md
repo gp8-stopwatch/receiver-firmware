@@ -7,6 +7,7 @@
 * [ ] Make unit-tests possible. GPIO external trigger.
   * [ ] Make USB output with 1m resolution - for trigger testing.
 * [ ] Use TXCO obviously. Pick one and change the footprint.
+* [ ] There has to be a bug in the trigger algorithm. When the resolution was set to 10ms there have been off by 10ms errors on 4s runs (1 in 20 aprox). But when the resolution was set to 100µs, the error fluctuates between 300 and 600µs (-O0). When -O3 and 100µs resolution, the error is smaller like 200-400µs but it also fluctuates. 10ms = 10000µs. Divided by 20 gives 500µs, so it is almost like in the first scenario the errors accumulated somehow. 
 
 # Hardware
 * [ ] Boot pin easy accessible (for DFU).

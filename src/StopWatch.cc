@@ -15,15 +15,34 @@ StopWatch::StopWatch () : running (false), time (0) {}
 
 /*****************************************************************************/
 
-void StopWatch::init ()
+void StopWatch::setResolution (Resolution res)
 {
         /*+-------------------------------------------------------------------------+*/
         /*| Stopwatch timer 100Hz                                                   |*/
         /*+-------------------------------------------------------------------------+*/
 
+        int div = 10000;
+
+        switch (res) {
+        case Resolution::ms_10:
+                div = 10000; // 100Hz
+                break;
+
+        case Resolution::ms_1:
+                div = 100000; // 1kHz
+                break;
+
+        case Resolution::ms_01:
+                div = 1000000; // 10kHz
+                break;
+
+        default:
+                break;
+        }
+
         stopWatchTimHandle.Instance = TIM14;
-        stopWatchTimHandle.Init.Period = 100 - 1; // 100Hz
-        stopWatchTimHandle.Init.Prescaler = (uint32_t) (HAL_RCC_GetHCLKFreq () / 10000) - 1;
+        stopWatchTimHandle.Init.Prescaler = (uint32_t) (HAL_RCC_GetHCLKFreq () / div) - 1;
+        stopWatchTimHandle.Init.Period = 100 - 1;
         stopWatchTimHandle.Init.ClockDivision = 0;
         stopWatchTimHandle.Init.CounterMode = TIM_COUNTERMODE_UP;
         stopWatchTimHandle.Init.RepetitionCounter = 0;
@@ -66,25 +85,5 @@ void StopWatch::onInterrupt ()
                 time = 0;
         }
 
-//        unsigned int cntTmp = time;
-
-//        // 2nd digit of 1/100-s of second (0-99)
-//        display->setDigit (5, cntTmp % 10);
-//        cntTmp /= 10;
-//        // First digit of 1/100-s of second (0-99)
-//        display->setDigit (4, cntTmp % 10);
-//        cntTmp /= 10;
-
-//        // Second digit of second (0-99)
-//        display->setDigit (3, cntTmp % 10);
-//        cntTmp /= 10;
-//        // First digit of second (0-99)
-//        display->setDigit (2, cntTmp % 6);
-//        cntTmp /= 6;
-
-//        // Second digit of miniutes
-//        display->setDigit (1, cntTmp % 10);
-//        cntTmp /= 10;
-//        display->setDigit (0, cntTmp);
         display->setTime (time);
 }

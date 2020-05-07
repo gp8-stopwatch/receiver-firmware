@@ -7,6 +7,7 @@
  ****************************************************************************/
 
 #include "Led7SegmentDisplay.h"
+#include <array>
 
 /*****************************************************************************/
 
@@ -72,7 +73,7 @@ void Led7SegmentDisplay::outputDigit (uint8_t position)
         }
 
         for (uint8_t seg = 0; seg < 7; ++seg) {
-                *segment.at (seg) = bool(font & (1 << seg));
+                *segment.at (seg) = bool (font & (1 << seg));
         }
 
         *segment.at (7) = dots & (1 << position);
@@ -83,25 +84,32 @@ void Led7SegmentDisplay::outputDigit (uint8_t position)
 void Led7SegmentDisplay::setTime (uint32_t time)
 {
         unsigned int cntTmp = time;
+        auto factorIndexCopy = factorIndex;
 
-        // 2nd digit of 1/100-s of second (0-99)
-        setDigit (5, cntTmp % 10);
-        cntTmp /= 10;
-        // First digit of 1/100-s of second (0-99)
-        setDigit (4, cntTmp % 10);
-        cntTmp /= 10;
+        for (int i = 5; i >= 0; --i, ++factorIndexCopy) {
+                auto factor = FACTORS.at (factorIndexCopy);
+                setDigit (i, cntTmp % factor);
+                cntTmp /= factor;
+        }
 
-        // Second digit of second (0-99)
-        setDigit (3, cntTmp % 10);
-        cntTmp /= 10;
-        // First digit of second (0-99)
-        setDigit (2, cntTmp % 6);
-        cntTmp /= 6;
+        // // 2nd digit of 1/100-s of second (0-99)
+        // setDigit (5, cntTmp % 10);
+        // cntTmp /= 10;
+        // // First digit of 1/100-s of second (0-99)
+        // setDigit (4, cntTmp % 10);
+        // cntTmp /= 10;
 
-        // Second digit of miniutes
-        setDigit (1, cntTmp % 10);
-        cntTmp /= 10;
-        setDigit (0, cntTmp);
+        // // Second digit of second (0-99)
+        // setDigit (3, cntTmp % 10);
+        // cntTmp /= 10;
+        // // First digit of second (0-99)
+        // setDigit (2, cntTmp % 6);
+        // cntTmp /= 6;
+
+        // // Second digit of miniutes
+        // setDigit (1, cntTmp % 10);
+        // cntTmp /= 10;
+        // setDigit (0, cntTmp);
 }
 
 /*****************************************************************************/
@@ -146,4 +154,28 @@ void Led7SegmentDisplay::clear ()
         }
 
         dots = 0;
+}
+
+/*****************************************************************************/
+
+void Led7SegmentDisplay::setResolution (Resolution res)
+{
+        resolution = res;
+
+        switch (res) {
+        case Resolution::ms_10:
+                factorIndex = 2; // 100Hz
+                break;
+
+        case Resolution::ms_1:
+                factorIndex = 1; // 1kHz
+                break;
+
+        case Resolution::ms_01:
+                factorIndex = 0; // 10kHz
+                break;
+
+        default:
+                break;
+        }
 }

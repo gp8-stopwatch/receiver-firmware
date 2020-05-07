@@ -9,6 +9,7 @@
 #ifndef STOPWATCH_H
 #define STOPWATCH_H
 
+#include "Config.h"
 #include <cstdint>
 #include <stm32f0xx_hal.h>
 
@@ -26,7 +27,7 @@ public:
                 return &st;
         }
 
-        void init ();
+        void setResolution (Resolution res);
         void reset () { time = 0; }
         void start () { running = true; }
         void stop () { running = false; }
@@ -43,11 +44,11 @@ private:
         void onInterrupt ();
 
 private:
-        IDisplay *display;
+        IDisplay *display{};
         TIM_HandleTypeDef stopWatchTimHandle;
         bool running;
         unsigned int time = 0;
-        FastStateMachine *stateMachine;
+        FastStateMachine *stateMachine{};
 };
 
 #endif // STOPWATCH_H

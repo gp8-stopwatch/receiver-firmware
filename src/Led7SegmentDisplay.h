@@ -96,6 +96,8 @@ public:
                 0b00000000, // [space] 36
         };
 
+        void setResolution (Resolution res) override;
+
 private:
         /// Turns a single display on or fof
         void turnDisplay (uint8_t d, bool b) { *common.at (d) = !b; }
@@ -115,4 +117,7 @@ private:
         uint8_t brightnessCycle = 0;
 
         bool flip = false;
+        Resolution resolution{};
+        static constexpr std::array<int8_t, 8> FACTORS{10, 10, 10, 10, 10, 6, 10, 1};
+        int factorIndex{};
 };

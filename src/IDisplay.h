@@ -7,6 +7,7 @@
  ****************************************************************************/
 
 #pragma once
+#include "Config.h"
 #include <cstdint>
 
 struct IDisplay {
@@ -43,4 +44,6 @@ struct IDisplay {
 
         virtual void clear () = 0;
         virtual void setFlip (bool b) = 0;
+
+        virtual void setResolution (Resolution res) = 0;
 };
