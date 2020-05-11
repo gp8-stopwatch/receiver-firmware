@@ -234,6 +234,8 @@ int main ()
 
         /* Start Device Process */
         USBD_Start (&usbdDevice);
+
+        usbWrite ("test\r\n", 6);
 #endif
 
         /*+-------------------------------------------------------------------------+*/

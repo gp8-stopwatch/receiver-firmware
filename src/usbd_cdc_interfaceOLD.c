@@ -2,27 +2,52 @@
  ******************************************************************************
  * @file    USB_Device/CDC_Standalone/Src/usbd_cdc_interface.c
  * @author  MCD Application Team
+ * @version V1.7.0
+ * @date    04-November-2016
  * @brief   Source file for USBD CDC interface
  ******************************************************************************
  * @attention
  *
- * <h2><center>&copy; Copyright (c) 2015 STMicroelectronics.
+ * <h2><center>&copy; Copyright (c) 2016 STMicroelectronics International N.V.
  * All rights reserved.</center></h2>
  *
- * This software component is licensed by ST under Ultimate Liberty license
- * SLA0044, the "License"; You may not use this file except in compliance with
- * the License. You may obtain a copy of the License at:
- *                             www.st.com/SLA0044
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted, provided that the following conditions are met:
+ *
+ * 1. Redistribution of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name of STMicroelectronics nor the names of other
+ *    contributors to this software may be used to endorse or promote products
+ *    derived from this software without specific written permission.
+ * 4. This software, including modifications and/or derivative works of this
+ *    software, must execute solely and exclusively on microcontroller or
+ *    microprocessor devices manufactured by or for STMicroelectronics.
+ * 5. Redistribution and use of this software other than as permitted under
+ *    this license is void and will automatically terminate your rights under
+ *    this license.
+ *
+ * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL PROPERTY
+ * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT
+ * SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+ * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  ******************************************************************************
  */
 
 /* Includes ------------------------------------------------------------------*/
+#include "ErrorHandler.h"
 #include "usbd_cdc_interface.h"
-#include "usbd_cdc.h"
-#include "usbd_core.h"
-#include "usbd_desc.h"
-#include <stm32f0xx_hal.h>
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
  * @{
@@ -49,7 +74,7 @@ USBD_CDC_LineCodingTypeDef LineCoding = {
 
 uint8_t usbTxBuffer[APP_TX_DATA_SIZE];
 uint8_t usbRxBuffer[APP_RX_DATA_SIZE];
-uint32_t BuffLength;
+
 uint32_t usbTxBufPtrIn = 0;  /* Increment this pointer or roll it back to
                                  start address when data are received over USART */
 uint32_t usbTxBufPtrOut = 0; /* Increment this pointer or roll it back to
@@ -66,7 +91,7 @@ static int8_t CDC_Itf_DeInit (void);
 static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t *pbuf, uint16_t length);
 static int8_t CDC_Itf_Receive (uint8_t *pbuf, uint32_t *Len);
 
-static void Error_Handler (void);
+void Error_Handler (void);
 // static void ComPort_Config (void);
 static void TIM_Config (void);
 
@@ -106,12 +131,8 @@ static int8_t CDC_Itf_Init (void)
  */
 static int8_t CDC_Itf_DeInit (void)
 {
-        /* DeInitialize the UART peripheral */
-        // if (HAL_UART_DeInit (&usbTimHandle) != HAL_OK) {
-        //         /* Initialization Error */
-        //         Error_Handler ();
-        // }
-        return (USBD_OK);
+        HAL_NVIC_DisableIRQ (TIMx_IRQn);
+        return USBD_OK;
 }
 
 /**
@@ -204,18 +225,18 @@ void usbWrite (const char *buf, size_t len)
 //  * @retval None
 //  */
 // void HAL_UART_RxCpltCallback (UART_HandleTypeDef *huart)
-// {
-//         /* Increment Index for buffer writing */
-//         usbTxBufPtrIn++;
+//{
+//        /* Increment Index for buffer writing */
+//        UserTxBufPtrIn++;
 
-//         /* To avoid buffer overflow */
-//         if (usbTxBufPtrIn == APP_RX_DATA_SIZE) {
-//                 usbTxBufPtrIn = 0;
-//         }
+//        /* To avoid buffer overflow */
+//        if (UserTxBufPtrIn == APP_RX_DATA_SIZE) {
+//                UserTxBufPtrIn = 0;
+//        }
 
-//         /* Start another reception: provide the buffer pointer with offset and the buffer size */
-//         HAL_UART_Receive_IT (huart, (uint8_t *)(usbTxBuffer + usbTxBufPtrIn), 1);
-// }
+//        /* Start another reception: provide the buffer pointer with offset and the buffer size */
+//        HAL_UART_Receive_IT (huart, (uint8_t *)(UserTxBuffer + UserTxBufPtrIn), 1);
+//}
 
 /**
  * @brief  CDC_Itf_DataRx
@@ -225,11 +246,7 @@ void usbWrite (const char *buf, size_t len)
  * @param  Len: Number of data received (in bytes)
  * @retval Result of the opeartion: USBD_OK if all operations are OK else USBD_FAIL
  */
-static int8_t CDC_Itf_Receive (uint8_t *Buf, uint32_t *Len)
-{
-        // HAL_UART_Transmit_DMA (&usbTimHandle, Buf, *Len);
-        return (USBD_OK);
-}
+static int8_t CDC_Itf_Receive (uint8_t *Buf, uint32_t *Len) { return (USBD_OK); }
 
 /**
  * @brief  Tx Transfer completed callback
@@ -237,10 +254,10 @@ static int8_t CDC_Itf_Receive (uint8_t *Buf, uint32_t *Len)
  * @retval None
  */
 // void HAL_UART_TxCpltCallback (UART_HandleTypeDef *huart)
-// {
-//         /* Initiate next USB packet transfer once UART completes transfer (transmitting data over Tx line) */
-//         USBD_CDC_ReceivePacket (&usbdDevice);
-// }
+//{
+//        /* Initiate next USB packet transfer once UART completes transfer (transmitting data over Tx line) */
+//        USBD_CDC_ReceivePacket (&USBD_Device);
+//}
 
 /**
  * @brief  TIM_Config: Configure TIMx timer
@@ -281,25 +298,6 @@ static void TIM_Config (void)
  */
 void HAL_UART_ErrorCallback (UART_HandleTypeDef *UartHandle)
 {
-        /* Transfer error occurred in reception and/or transmission process */
+        /* Transfer error occured in reception and/or transmission process */
         Error_Handler ();
 }
-
-/**
- * @brief  This function is executed in case of error occurrence.
- * @param  None
- * @retval None
- */
-static void Error_Handler (void)
-{ /* Add your own code here */
-}
-
-/**
- * @}
- */
-
-/**
- * @}
- */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
