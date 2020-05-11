@@ -2,16 +2,27 @@
 * [ ] Make 10
 * [ ] Put on sale
 
+# Possible features
+* µC in the transmitter
+  * Battery sensing in the transmitter
+* Hardware battery protection in both devices
+* Test trigger in the transmitter (same as receiver)
+
 # Accuracy
 * [ ] Make sure fw is compiled with -O3 (trigger algorithm)
 * [ ] Make unit-tests possible. GPIO external trigger.
   * [ ] Make USB output with 1m resolution - for trigger testing.
 * [ ] Use TXCO obviously. Pick one and change the footprint.
 * [ ] There has to be a bug in the trigger algorithm. When the resolution was set to 10ms there have been off by 10ms errors on 4s runs (1 in 20 aprox). But when the resolution was set to 100µs, the error fluctuates between 300 and 600µs (-O0). When -O3 and 100µs resolution, the error is smaller like 200-400µs but it also fluctuates. 10ms = 10000µs. Divided by 20 gives 500µs, so it is almost like in the first scenario the errors accumulated somehow. 
+* [x] Timer should be restarted (counting from 0) when start event happens.
+  * [ ] test
+* [x] Value of the counter should be taken into account when system stops. It's value should be rounded, not discarded like now.
+  * [ ] test
 
 # Hardware
-* [ ] Boot pin easy accessible (for DFU).
+* [x] Boot pin easy accessible (for DFU).
 * [ ] Crystal resonator footprint suitable for modern resonators, not this THT crap.
+* [ ] Reduce holes for CAN socket supports (thise 2 plastic one sticking out)
 
 # GUI 
 * [ ] On screen menu

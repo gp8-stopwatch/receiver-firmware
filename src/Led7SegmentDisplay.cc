@@ -160,22 +160,6 @@ void Led7SegmentDisplay::clear ()
 
 void Led7SegmentDisplay::setResolution (Resolution res)
 {
-        resolution = res;
-
-        switch (res) {
-        case Resolution::ms_10:
-                factorIndex = 2; // 100Hz
-                break;
-
-        case Resolution::ms_1:
-                factorIndex = 1; // 1kHz
-                break;
-
-        case Resolution::ms_01:
-                factorIndex = 0; // 10kHz
-                break;
-
-        default:
-                break;
-        }
+        static constexpr std::array FACTORS{2, 1, 0};
+        factorIndex = FACTORS.at (int (res));
 }

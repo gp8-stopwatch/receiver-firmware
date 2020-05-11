@@ -7,6 +7,7 @@
  ****************************************************************************/
 
 #pragma once
+#include <exception>
 
 enum class OperationMode {
         NORMAL, // First break in IR barrier turns the stopwatch ON, second OFF and so on
@@ -17,6 +18,9 @@ enum class ContestantsNumber { ONE = 1, TWO };
 
 enum class Resolution { ms_10, ms_1, ms_01 };
 
+/**
+ * System wide configuration. Available to the user and stored in the flash.
+ */
 struct Config {
 
         OperationMode mode = OperationMode::NORMAL;
@@ -26,7 +30,5 @@ struct Config {
         bool orientationFlip = false;
         bool irSensorOn = true;
         bool buzzerOn = true;
-
-        /// Says if the system should pay attention for settings that has been changed.
-        bool hasChanged = false;
+        bool hasChanged = false; /// Says if the system should pay attention for settings that has been changed. Not a setting.
 };

@@ -77,7 +77,7 @@ int main ()
         }
 #endif
 
-        Led7SegmentDisplay screen (sa, sb, sc, sd, se, sf, sg, sdp, d1, d2, d3, d4, d5, d6);
+        Led7SegmentDisplay display (sa, sb, sc, sd, se, sf, sg, sdp, d1, d2, d3, d4, d5, d6);
 
 #if 0
         screen.setDigit (0, 0xa);
@@ -92,12 +92,12 @@ int main ()
 #endif
 
         HardwareTimer tim15 (TIM15, 48 - 1, 200 - 1); // Update 5kHz
-        HAL_NVIC_SetPriority (TIM15_IRQn, 0, 0);
+        HAL_NVIC_SetPriority (TIM15_IRQn, 1, 0);
         HAL_NVIC_EnableIRQ (TIM15_IRQn);
 
         // Comment theline below to turn the screen OFF during debugging!
 #ifdef WITH_DISPLAY
-        tim15.setOnUpdate ([&screen] { screen.refresh (); });
+        tim15.setOnUpdate ([&display] { display.refresh (); });
 #endif
 
         /*+-------------------------------------------------------------------------+*/
@@ -166,11 +166,11 @@ int main ()
         /*+-------------------------------------------------------------------------+*/
 
         StopWatch *stopWatch = StopWatch::singleton ();
-        stopWatch->setDisplay (&screen);
         FastStateMachine *fStateMachine = FastStateMachine::singleton ();
         fStateMachine->setStopWatch (stopWatch);
-        stopWatch->setStateMachine (fStateMachine);
-        InfraRedBeam beam;
+
+        // TODO remove setOnUpdate
+        // stopWatch->setOnUpdate ([fStateMachine] { fStateMachine->run (Event::timePassed); });
 
         HardwareTimer tim1 (TIM1, 48 - 1, 100 - 1);
         Gpio encoderPins (GPIOA, GPIO_PIN_8, GPIO_MODE_AF_PP, GPIO_PULLDOWN, GPIO_SPEED_FREQ_HIGH, GPIO_AF2_TIM1);
@@ -178,7 +178,7 @@ int main ()
         HAL_NVIC_SetPriority (TIM1_BRK_UP_TRG_COM_IRQn, 1, 0);
         HAL_NVIC_EnableIRQ (TIM1_BRK_UP_TRG_COM_IRQn);
 
-        // TODO those are implemented using std::function internally which in turn can cause dynamic allocation
+        InfraRedBeam beam;
         inputCapture0.setOnIrq ([&beam] { beam.on1kHz (); });
         tim1.setOnUpdate ([&beam] { beam.on10kHz (); });
 
@@ -193,17 +193,15 @@ int main ()
         Gpio testTriggerPin (GPIOB, GPIO_PIN_3, GPIO_MODE_IT_RISING, GPIO_PULLDOWN);
         HAL_NVIC_SetPriority (EXTI2_3_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ (EXTI2_3_IRQn);
-        testTriggerPin.setOnToggle ([fStateMachine] {
-                fStateMachine->setButtonPending (); //
-        });
+        testTriggerPin.setOnToggle ([fStateMachine] { fStateMachine->run (Event::testTrigger); });
 
         fStateMachine->setIr (&beam);
-        fStateMachine->setDisplay (&screen);
+        fStateMachine->setDisplay (&display);
         fStateMachine->setBuzzer (&buzzer);
         fStateMachine->setHistory (history);
         fStateMachine->setCanProtocol (&protocol);
         stopWatch->setResolution (config.resolution);
-        screen.setResolution (config.resolution);
+        display.setResolution (config.resolution);
 
         /*+-------------------------------------------------------------------------+*/
         /*| Battery, light sensor                                                   |*/
@@ -239,15 +237,26 @@ int main ()
 #endif
 
         /*+-------------------------------------------------------------------------+*/
-        /*| USB                                                                     |*/
+        /*| Menu                                                                    |*/
         /*+-------------------------------------------------------------------------+*/
 
-        DisplayMenu menu (config, screen, *fStateMachine);
+        DisplayMenu menu (config, display, *fStateMachine);
+
+        Timer displayTimer;
+        // static constexpr std::array REFRESH_RATES{10, 1, 1};
+        // int refreshRate = REFRESH_RATES.at (int (config.resolution));
+        int refreshRate = 9; // Something different than 10 so the screen is a little bit out of sync. This way the last digit changes.
 
         while (true) {
                 buzzer.run ();
                 protocol.run ();
                 button.run ();
+
+                if (displayTimer.isExpired ()) {
+                        // display.setTime (stopWatch->getTime ());
+                        fStateMachine->run (Event::timePassed);
+                        displayTimer.start (refreshRate);
+                }
 
                 if (button.getPressClear ()) {
                         menu.onShortPress ();
@@ -262,7 +271,7 @@ int main ()
                 if (config.hasChanged) {
                         config.hasChanged = false;
 
-                        screen.setFlip (config.orientationFlip);
+                        display.setFlip (config.orientationFlip);
                         beam.setActive (config.irSensorOn);
                         buzzer.setActive (config.buzzerOn);
                 }
@@ -309,7 +318,7 @@ int main ()
                         debug.print (", brightness : ");
                         debug.println (newBrightness);
 #endif
-                        screen.setBrightness (newBrightness);
+                        display.setBrightness (newBrightness);
                 }
         }
 }

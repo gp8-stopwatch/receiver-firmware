@@ -22,10 +22,19 @@ struct ICircullarQueueStorage;
 struct IRandomAccessStorage;
 class CanProtocol;
 
-#define BEAM_INTERRUPTION_EVENT 3000
+/**
+ * Events for the state machine
+ */
+enum class Event {
+        timePassed, /// Every 10ms / 1ms / 100µs
+        irTrigger,  /// IR beam interrupted
+        testTrigger /// Test GPIO state changed
+};
 
 class FastStateMachine {
 public:
+        static constexpr int BEAM_INTERRUPTION_EVENT = 3000;
+
         enum State {
                 INIT,
                 WAIT_FOR_BEAM,
@@ -46,7 +55,7 @@ public:
                 return &s;
         }
 
-        void run ();
+        void run (Event event);
         void pause () { state = PAUSED; }
         void resume () { state = INIT; }
 
@@ -58,8 +67,6 @@ public:
         void setButton (Button *b) { this->button = b; }
         void setCanProtocol (CanProtocol *cp) { protocol = cp; }
 
-        void setButtonPending () { buttonPending = true; }
-
 private:
         void ready_entryAction (bool loop = false);
         void running_entryAction ();
@@ -67,17 +74,17 @@ private:
         void hiClearReady_entryAction ();
         void resultsClearReady_entryAction ();
 
-private:
-        State state = INIT;
-        InfraRedBeam *ir = nullptr;
-        StopWatch *stopWatch = nullptr;
+        /*--------------------------------------------------------------------------*/
+
+        State state{INIT};
+        InfraRedBeam *ir{};
+        StopWatch *stopWatch{};
         Timer startTimeout;
-        IDisplay *display = nullptr;
-        Buzzer *buzzer = nullptr;
-        History *history = nullptr;
-        Button *button = nullptr;
-        CanProtocol *protocol = nullptr;
-        bool buttonPending{};
+        IDisplay *display{};
+        Buzzer *buzzer{};
+        History *history{};
+        Button *button{};
+        CanProtocol *protocol{};
 };
 
 #endif // FASTSTATEMACHINE_H

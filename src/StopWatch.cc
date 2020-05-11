@@ -10,35 +10,22 @@
 #include "ErrorHandler.h"
 #include "FastStateMachine.h"
 #include "IDisplay.h"
+#include <array>
 
-StopWatch::StopWatch () : running (false), time (0) {}
-
-/*****************************************************************************/
+/****************************************************************************/
 
 void StopWatch::setResolution (Resolution res)
 {
+        if (running) {
+                std::terminate ();
+        }
+
         /*+-------------------------------------------------------------------------+*/
         /*| Stopwatch timer 100Hz                                                   |*/
         /*+-------------------------------------------------------------------------+*/
 
-        int div = 10000;
-
-        switch (res) {
-        case Resolution::ms_10:
-                div = 10000; // 100Hz
-                break;
-
-        case Resolution::ms_1:
-                div = 100000; // 1kHz
-                break;
-
-        case Resolution::ms_01:
-                div = 1000000; // 10kHz
-                break;
-
-        default:
-                break;
-        }
+        static constexpr std::array PRESCALERS{10000, 100000, 1000000};
+        int div = PRESCALERS.at (int (res));
 
         stopWatchTimHandle.Instance = TIM14;
         stopWatchTimHandle.Init.Prescaler = (uint32_t) (HAL_RCC_GetHCLKFreq () / div) - 1;
@@ -47,9 +34,10 @@ void StopWatch::setResolution (Resolution res)
         stopWatchTimHandle.Init.CounterMode = TIM_COUNTERMODE_UP;
         stopWatchTimHandle.Init.RepetitionCounter = 0;
 
-        // Uwaga! Zapisać to!!! Msp init jest wywoływane PRZED TIM_Base_SetConfig
         __HAL_RCC_TIM14_CLK_ENABLE ();
-        HAL_NVIC_SetPriority (TIM14_IRQn, 1, 0);
+
+        // Highest priority.
+        HAL_NVIC_SetPriority (TIM14_IRQn, 0, 0);
         HAL_NVIC_EnableIRQ (TIM14_IRQn);
 
         if (HAL_TIM_Base_Init (&stopWatchTimHandle) != HAL_OK) {
@@ -63,7 +51,7 @@ void StopWatch::setResolution (Resolution res)
 
 /**
  * Stop-watch ISR.
- * Here the value displayed is updated. 100Hz
+ * Here the value displayed is updated. 100Hz / 1kHz / 10kHz.
  */
 extern "C" void TIM14_IRQHandler ()
 {
@@ -75,7 +63,9 @@ extern "C" void TIM14_IRQHandler ()
 
 void StopWatch::onInterrupt ()
 {
-        stateMachine->run ();
+        // if (onUpdate) {
+        //         onUpdate ();
+        // }
 
         if (!running) {
                 return;
@@ -84,6 +74,4 @@ void StopWatch::onInterrupt ()
         if (++time >= MAX_TIME) {
                 time = 0;
         }
-
-        display->setTime (time);
 }

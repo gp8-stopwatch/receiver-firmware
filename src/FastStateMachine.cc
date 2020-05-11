@@ -23,16 +23,8 @@
 
 /*****************************************************************************/
 
-void FastStateMachine::run ()
+void FastStateMachine::run (Event event)
 {
-        bool buttonPendingCopy{};
-
-        // Read and clear the test trigger.
-        if (buttonPending) {
-                buttonPendingCopy = true;
-                buttonPending = false;
-        }
-
 #if 0
         uint8_t i = display->getIcons ();
 
@@ -93,7 +85,7 @@ void FastStateMachine::run ()
 #ifdef DEBUG_STATES
                 debug->print ("r");
 #endif
-                if (ir->isBeamInterrupted () || buttonPendingCopy) {
+                if (ir->isBeamInterrupted () || event == Event::testTrigger) {
                         state = GP8_RUNNING;
                         running_entryAction ();
                         protocol->sendStart ();
@@ -120,7 +112,7 @@ void FastStateMachine::run ()
 #ifdef DEBUG_STATES
                 debug->print ("u");
 #endif
-                if (((ir->isBeamPresent () && ir->isBeamInterrupted ()) || buttonPendingCopy) && startTimeout.isExpired ()) {
+                if (((ir->isBeamPresent () && ir->isBeamInterrupted ()) || event == Event::testTrigger) && startTimeout.isExpired ()) {
                         state = GP8_STOP;
                         stop_entryAction ({});
                         protocol->sendStop (stopWatch->getTime ());
@@ -136,13 +128,14 @@ void FastStateMachine::run ()
                         stop_entryAction (p.second);
                 }
 
+                display->setTime (stopWatch->getTime ());
                 break;
 
         case GP8_STOP:
 #ifdef DEBUG_STATES
                 debug->print ("s");
 #endif
-                if (((ir->isBeamPresent () && ir->isBeamInterrupted ()) || buttonPendingCopy) && startTimeout.isExpired ()) {
+                if (((ir->isBeamPresent () && ir->isBeamInterrupted ()) || event == Event::testTrigger) && startTimeout.isExpired ()) {
                         state = GP8_RUNNING;
                         running_entryAction ();
                         protocol->sendStart ();
@@ -255,35 +248,6 @@ void FastStateMachine::running_entryAction ()
         buzzer->beep (100, 0, 1);
         startTimeout.start (BEAM_INTERRUPTION_EVENT);
 }
-
-/*****************************************************************************/
-
-// void FastStateMachine::hiClearReady_entryAction ()
-//{
-//        buzzer->beep (10, 10, 1);
-//        display->setDigit (0, 0x0c);
-//        display->setDigit (1, IDisplay::LETTER_L);
-//        display->setDigit (2, IDisplay::LETTER_r);
-//        display->setDigit (3, IDisplay::LETTER_H);
-//        display->setDigit (4, 0x01);
-//        // display->setDots (IDisplay::DOT3);
-//        display->setIcons (0);
-//}
-
-/*****************************************************************************/
-
-// void FastStateMachine::resultsClearReady_entryAction ()
-//{
-//        buzzer->beep (10, 10, 1);
-//        display->setDigit (0, 0x0c);
-//        display->setDigit (1, IDisplay::LETTER_L);
-//        display->setDigit (2, IDisplay::LETTER_r);
-//        display->setDigit (3, IDisplay::LETTER_r);
-//        display->setDigit (4, 0x0e);
-//        // display->setDots (IDisplay::DOT3);
-//        display->setIcons (0);
-//        history->printHistory ();
-//}
 
 /*****************************************************************************/
 

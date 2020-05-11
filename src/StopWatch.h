@@ -11,16 +11,18 @@
 
 #include "Config.h"
 #include <cstdint>
+#include <functional>
 #include <stm32f0xx_hal.h>
 
 extern "C" void TIM14_IRQHandler ();
 class FastStateMachine;
 struct IDisplay;
 
+/**
+ * Responsible solely for measuring time.
+ */
 class StopWatch {
 public:
-        StopWatch ();
-
         static StopWatch *singleton ()
         {
                 static StopWatch st;
@@ -29,12 +31,32 @@ public:
 
         void setResolution (Resolution res);
         void reset () { time = 0; }
-        void start () { running = true; }
-        void stop () { running = false; }
-        unsigned int getTime () const { return time; }
 
-        void setDisplay (IDisplay *d) { this->display = d; }
-        void setStateMachine (FastStateMachine *s) { this->stateMachine = s; }
+        /**
+         * Starts the timer immediatelly.
+         */
+        void start ()
+        {
+                running = true;
+                TIM14->CNT = 0;
+        }
+
+        void stop ()
+        {
+                running = false;
+
+                // It has value [0, 99]
+                if (TIM14->CNT > 49) {
+                        // Rounding
+                        ++time;
+                }
+        }
+
+        unsigned int getTime () const { return time; }
+        // void setStateMachine (FastStateMachine *s) { this->stateMachine = s; }
+
+        /// Callback gets fired each an every time the time is increased by 1
+        // template <typename Fun> void setOnUpdate (Fun &&fun) { onUpdate = std::forward<Fun> (fun); }
 
         // 100 minutes
         static constexpr unsigned int MAX_TIME = 100U * 60U * 100U;
@@ -44,11 +66,12 @@ private:
         void onInterrupt ();
 
 private:
-        IDisplay *display{};
-        TIM_HandleTypeDef stopWatchTimHandle;
-        bool running;
-        unsigned int time = 0;
-        FastStateMachine *stateMachine{};
+        // IDisplay *display{};
+        TIM_HandleTypeDef stopWatchTimHandle{};
+        bool running{};
+        unsigned int time{};
+        // FastStateMachine *stateMachine{};
+        // std::function<void ()> onUpdate;
 };
 
 #endif // STOPWATCH_H

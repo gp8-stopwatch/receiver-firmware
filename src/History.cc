@@ -8,7 +8,6 @@
 
 #include "History.h"
 #include "Debug.h"
-#include "utils.h"
 #include <algorithm>
 #include <stm32f0xx_hal.h>
 

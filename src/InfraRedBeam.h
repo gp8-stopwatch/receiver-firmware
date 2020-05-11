@@ -39,7 +39,7 @@ public:
         }
 
         // To be in 10kHz
-        void run ();
+        // void run ();
 
         /// Call from a timer
         void on10kHz ();

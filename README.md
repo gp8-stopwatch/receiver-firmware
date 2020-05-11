@@ -12,3 +12,17 @@ git clone git@github.com:majbthrd/elf2dfuse.git
 elf2dfuse receiver.elf receiver.dfu
 
 dfu-util -D receiver.dfu -a0
+
+# Key elements
+```StopWatch``` class implements the time measurement. It uses TIM14 which runs at 100Hz, 1kHz or 10kHz depending on ```Config.resolution```. Its ```start``` method clears the ```TIM14->CNT``` (timer runs all the time), and sets a variable so that we know that tiome measurement is taking place. Upon ```stop``` call remaining value from ```TIM14->CNT``` is rounded and basing on this 1 is added to the ```time``` field.
+
+```InfraRedBeam```
+
+```FastStateMachine```
+
+
+# Features
+* X ppm accuracy
+* Screen brightness auto adjusts according to a ambient light sensor.
+
+Maximum error between the devices should not exceed 2*20ppm (worst case).

@@ -74,53 +74,53 @@
 
 /*****************************************************************************/
 
-#if 0
-void InfraRedBeam::run ()
-{
-        static uint32_t time = 0;
-        static uint32_t timeOfLastRise = 0;
-        static uint32_t noOfSuccesiveRises = 0;
+// #if 0
+// void InfraRedBeam::run ()
+// {
+//         static uint32_t time = 0;
+//         static uint32_t timeOfLastRise = 0;
+//         static uint32_t noOfSuccesiveRises = 0;
 
-        /*
-         * I.C. ~1kHz
-         * Uwaga! Makro __HAL_TIM_GET_IT_SOURCE ma mylną nazwę, bo ono sprawdza rejestr DIER, czyli
-         * sprawdza, czy dane przerwanie jest WŁĄCZONE czy nie. Jeśli by nie było włączone, to byśmy
-         * nigdy się nie znaleźli w ISR z powodu tego konkretnego przerwania.
-         */
-        if (__HAL_TIM_GET_FLAG (&timHandle, TIM_FLAG_CC1) /*&& __HAL_TIM_GET_IT_SOURCE (&timHandle, TIM_IT_CC1)*/) {
-                __HAL_TIM_CLEAR_IT (&timHandle, TIM_IT_CC1);
+//         /*
+//          * I.C. ~1kHz
+//          * Uwaga! Makro __HAL_TIM_GET_IT_SOURCE ma mylną nazwę, bo ono sprawdza rejestr DIER, czyli
+//          * sprawdza, czy dane przerwanie jest WŁĄCZONE czy nie. Jeśli by nie było włączone, to byśmy
+//          * nigdy się nie znaleźli w ISR z powodu tego konkretnego przerwania.
+//          */
+//         if (__HAL_TIM_GET_FLAG (&timHandle, TIM_FLAG_CC1) /*&& __HAL_TIM_GET_IT_SOURCE (&timHandle, TIM_IT_CC1)*/) {
+//                 __HAL_TIM_CLEAR_IT (&timHandle, TIM_IT_CC1);
 
-                timeOfLastRise = time;
+//                 timeOfLastRise = time;
 
-                if (time - timeOfLastRise <= 12) {
-                        if (++noOfSuccesiveRises >= 10) {
-                                beamPresent = true;
-                        }
-                }
+//                 if (time - timeOfLastRise <= 12) {
+//                         if (++noOfSuccesiveRises >= 10) {
+//                                 beamPresent = true;
+//                         }
+//                 }
 
-                return;
-        }
+//                 return;
+//         }
 
-        // 10kHz
-        if (__HAL_TIM_GET_FLAG (&timHandle, TIM_FLAG_UPDATE) && __HAL_TIM_GET_IT_SOURCE (&timHandle, TIM_IT_UPDATE)) {
-                __HAL_TIM_CLEAR_IT (&timHandle, TIM_IT_UPDATE);
+//         // 10kHz
+//         if (__HAL_TIM_GET_FLAG (&timHandle, TIM_FLAG_UPDATE) && __HAL_TIM_GET_IT_SOURCE (&timHandle, TIM_IT_UPDATE)) {
+//                 __HAL_TIM_CLEAR_IT (&timHandle, TIM_IT_UPDATE);
 
-                // Will re-wind to 0 after ~120hours
-                ++time;
+//                 // Will re-wind to 0 after ~120hours
+//                 ++time;
 
-                // Znikło na 100ms
-                if (time - timeOfLastRise > 1000) {
-                        beamPresent = false;
-                        noOfSuccesiveRises = 0;
-                }
+//                 // Znikło na 100ms
+//                 if (time - timeOfLastRise > 1000) {
+//                         beamPresent = false;
+//                         noOfSuccesiveRises = 0;
+//                 }
 
-                // Znikło na 7ms
-                if (time - timeOfLastRise > 70) {
-                        beamInterrupted = true;
-                }
-        }
-}
-#endif
+//                 // Znikło na 7ms
+//                 if (time - timeOfLastRise > 70) {
+//                         beamInterrupted = true;
+//                 }
+//         }
+// }
+// #endif
 
 void InfraRedBeam::on10kHz ()
 {
