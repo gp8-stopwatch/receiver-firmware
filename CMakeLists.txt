@@ -36,6 +36,7 @@ ADD_EXECUTABLE(${CMAKE_PROJECT_NAME}.elf
     "src/Led7SegmentDisplay.cc"
     "src/CanProtocol.cc"
     "src/DisplayMenu.cc"
+    "src/Rtc.cc"
 
     "src/usbd_cdc_interface.c"
     "src/usbd_conf.c"

@@ -45,7 +45,7 @@ void Debug::println (const char *str)
 #else
 #ifdef GLOBAL_DEBUG
         print (str);
-        print ("\n");
+        print ("\r\n");
 #endif
 #endif
 }
@@ -69,7 +69,7 @@ void Debug::print (uint8_t const *data, size_t len)
 void Debug::println (uint8_t const *data, size_t len)
 {
         print (data, len);
-        print ("\n");
+        print ("\r\n");
 }
 
 /*****************************************************************************/
@@ -160,7 +160,7 @@ void Debug::println (int i)
 {
 #ifdef GLOBAL_DEBUG
         print (i);
-        print ("\n");
+        print ("\r\n");
 #endif
 }
 
@@ -174,7 +174,7 @@ void Debug::println (int i)
 // void Debug::println (unsigned int i)
 //{
 //        print (i);
-//        print ("\n");
+//        print ("\r\n");
 //}
 
 /*****************************************************************************/

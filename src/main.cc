@@ -21,6 +21,7 @@
 #include "History.h"
 #include "InfraRedBeam.h"
 #include "Led7SegmentDisplay.h"
+#include "Rtc.h"
 #include "StopWatch.h"
 #include "Timer.h"
 #include "Usart.h"
@@ -207,15 +208,15 @@ int main ()
         /*| Battery, light sensor                                                   |*/
         /*+-------------------------------------------------------------------------+*/
 
-        Adc *adc = Adc::instance (2);
-        adc->init ();
+        // Adc *adc = Adc::instance (2);
+        // adc->init ();
 
-        AdcChannel ambientLightVoltMeter (GPIOA, GPIO_PIN_4, ADC_CHANNEL_4);
-        adc->addChannel (&ambientLightVoltMeter);
+        // AdcChannel ambientLightVoltMeter (GPIOA, GPIO_PIN_4, ADC_CHANNEL_4);
+        // adc->addChannel (&ambientLightVoltMeter);
 
-        AdcChannel batteryVoltMeter (GPIOB, GPIO_PIN_0, ADC_CHANNEL_8);
-        adc->addChannel (&batteryVoltMeter);
-        Timer batteryTimer;
+        // AdcChannel batteryVoltMeter (GPIOB, GPIO_PIN_0, ADC_CHANNEL_8);
+        // adc->addChannel (&batteryVoltMeter);
+        // Timer batteryTimer;
 
         /*+-------------------------------------------------------------------------+*/
         /*| USB                                                                     |*/
@@ -242,6 +243,13 @@ int main ()
 
         DisplayMenu menu (config, display, *fStateMachine);
 
+        /*+-------------------------------------------------------------------------+*/
+        /*| RTC                                                                     |*/
+        /*+-------------------------------------------------------------------------+*/
+
+        Rtc rtc;
+        rtc.init ();
+
         Timer displayTimer;
         Timer usbTimer;
         // static constexpr std::array REFRESH_RATES{10, 1, 1};
@@ -254,8 +262,11 @@ int main ()
                 button.run ();
 
                 if (usbTimer.isExpired ()) {
-                        usbWrite ("1234567890", 10);
-                        usbTimer.start (10);
+                        usbWrite ("12", 2);
+                        // ::debug->print ("34");
+                        rtc.getDate ();
+
+                        usbTimer.start (1000);
                 }
 
                 if (displayTimer.isExpired ()) {
@@ -282,50 +293,50 @@ int main ()
                         buzzer.setActive (config.buzzerOn);
                 }
 
-                if (batteryTimer.isExpired ()) {
-                        adc->run ();
-                        batteryTimer.start (1000);
-                        uint32_t batteryVoltage = batteryVoltMeter.getValue ();
-#if 0
-                        debug.print ("Battery voltage : ");
-                        debug.println (batteryVoltage);
-#endif
-                        //                        if (batteryVoltage <= 125) {
-                        //                                screen->setBatteryLevel (1);
-                        //                        }
-                        //                        else if (batteryVoltage <= 130) {
-                        //                                screen->setBatteryLevel (2);
-                        //                        }
-                        //                        else if (batteryVoltage <= 140) {
-                        //                                screen->setBatteryLevel (3);
-                        //                        }
-                        //                        else if (batteryVoltage <= 148) {
-                        //                                screen->setBatteryLevel (4);
-                        //                        }
-                        //                        else {
-                        //                                screen->setBatteryLevel (5);
-                        //                        }
+                //                 if (batteryTimer.isExpired ()) {
+                //                         adc->run ();
+                //                         batteryTimer.start (1000);
+                //                         uint32_t batteryVoltage = batteryVoltMeter.getValue ();
+                // #if 0
+                //                         debug.print ("Battery voltage : ");
+                //                         debug.println (batteryVoltage);
+                // #endif
+                //                         //                        if (batteryVoltage <= 125) {
+                //                         //                                screen->setBatteryLevel (1);
+                //                         //                        }
+                //                         //                        else if (batteryVoltage <= 130) {
+                //                         //                                screen->setBatteryLevel (2);
+                //                         //                        }
+                //                         //                        else if (batteryVoltage <= 140) {
+                //                         //                                screen->setBatteryLevel (3);
+                //                         //                        }
+                //                         //                        else if (batteryVoltage <= 148) {
+                //                         //                                screen->setBatteryLevel (4);
+                //                         //                        }
+                //                         //                        else {
+                //                         //                                screen->setBatteryLevel (5);
+                //                         //                        }
 
-                        uint32_t ambientLightVoltage = ambientLightVoltMeter.getValue ();
+                //                         uint32_t ambientLightVoltage = ambientLightVoltMeter.getValue ();
 
-                        /*
-                         * 50- : 1
-                         * 50-100 : 2
-                         * 100-150 : 3
-                         * 150-200 : 4
-                         * 200+ : 5
-                         */
+                //                         /*
+                //                          * 50- : 1
+                //                          * 50-100 : 2
+                //                          * 100-150 : 3
+                //                          * 150-200 : 4
+                //                          * 200+ : 5
+                //                          */
 
-                        uint8_t newBrightness = (std::max<int> ((int (ambientLightVoltage) - 1), 0) / 50) + 1;
+                //                         uint8_t newBrightness = (std::max<int> ((int (ambientLightVoltage) - 1), 0) / 50) + 1;
 
-#if 0
-                        debug.print ("Ambient : ");
-                        debug.print (ambientLightVoltage);
-                        debug.print (", brightness : ");
-                        debug.println (newBrightness);
-#endif
-                        display.setBrightness (newBrightness);
-                }
+                // #if 0
+                //                         debug.print ("Ambient : ");
+                //                         debug.print (ambientLightVoltage);
+                //                         debug.print (", brightness : ");
+                //                         debug.println (newBrightness);
+                // #endif
+                //                         display.setBrightness (newBrightness);
+                //                 }
         }
 }
 
