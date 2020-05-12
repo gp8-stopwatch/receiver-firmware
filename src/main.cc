@@ -234,8 +234,6 @@ int main ()
 
         /* Start Device Process */
         USBD_Start (&usbdDevice);
-
-        usbWrite ("test\r\n", 6);
 #endif
 
         /*+-------------------------------------------------------------------------+*/
@@ -245,6 +243,7 @@ int main ()
         DisplayMenu menu (config, display, *fStateMachine);
 
         Timer displayTimer;
+        Timer usbTimer;
         // static constexpr std::array REFRESH_RATES{10, 1, 1};
         // int refreshRate = REFRESH_RATES.at (int (config.resolution));
         int refreshRate = 9; // Something different than 10 so the screen is a little bit out of sync. This way the last digit changes.
@@ -253,6 +252,11 @@ int main ()
                 buzzer.run ();
                 protocol.run ();
                 button.run ();
+
+                if (usbTimer.isExpired ()) {
+                        usbWrite ("1234567890", 10);
+                        usbTimer.start (10);
+                }
 
                 if (displayTimer.isExpired ()) {
                         // display.setTime (stopWatch->getTime ());
@@ -279,7 +283,6 @@ int main ()
                 }
 
                 if (batteryTimer.isExpired ()) {
-                        usbWrite ("test\n", 5);
                         adc->run ();
                         batteryTimer.start (1000);
                         uint32_t batteryVoltage = batteryVoltMeter.getValue ();

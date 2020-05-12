@@ -35,7 +35,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define APP_RX_DATA_SIZE 128
+#define APP_RX_DATA_SIZE 2048
 #define APP_TX_DATA_SIZE 2048
 
 /* Private macro -------------------------------------------------------------*/
@@ -111,7 +111,8 @@ static int8_t CDC_Itf_DeInit (void)
         //         /* Initialization Error */
         //         Error_Handler ();
         // }
-        return (USBD_OK);
+        HAL_NVIC_DisableIRQ (TIMx_IRQn);
+        return USBD_OK;
 }
 
 /**
@@ -152,8 +153,8 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t *pbuf, uint16_t length)
  */
 void HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef *htim)
 {
-        uint32_t buffptr;
-        uint32_t buffsize;
+        uint32_t buffptr = 0;
+        uint32_t buffsize = 0;
 
         if (usbTxBufPtrOut != usbTxBufPtrIn) {
                 if (usbTxBufPtrOut > usbTxBufPtrIn) /* rollback */
