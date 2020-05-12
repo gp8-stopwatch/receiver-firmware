@@ -274,6 +274,8 @@ static void TIM_Config (void)
         }
 }
 
+void TIMx_IRQHandler () { HAL_TIM_IRQHandler (&usbTimHandle); }
+
 /**
  * @brief  UART error callbacks
  * @param  UartHandle: UART handle

@@ -305,7 +305,7 @@ void HardwareTimer::serviceIrq (HardwareTimer *that)
 // TODO przenieść do plików HAL, zaimplementować dla F0 i F4, zaimplementować inne zegary niż TIM3
 extern "C" void TIM1_BRK_UP_TRG_COM_IRQHandler () { HardwareTimer::serviceIrq (HardwareTimer::timer1); }
 extern "C" void TIM2_IRQHandler () { HardwareTimer::serviceIrq (HardwareTimer::timer2); }
-extern "C" void TIM3_IRQHandler () { HardwareTimer::serviceIrq (HardwareTimer::timer3); }
+// extern "C" void TIM3_IRQHandler () { HardwareTimer::serviceIrq (HardwareTimer::timer3); }
 extern "C" void TIM15_IRQHandler () { HardwareTimer::serviceIrq (HardwareTimer::timer15); }
 
 /*****************************************************************************/

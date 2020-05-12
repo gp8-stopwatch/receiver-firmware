@@ -279,6 +279,7 @@ int main ()
                 }
 
                 if (batteryTimer.isExpired ()) {
+                        usbWrite ("test\n", 5);
                         adc->run ();
                         batteryTimer.start (1000);
                         uint32_t batteryVoltage = batteryVoltMeter.getValue ();

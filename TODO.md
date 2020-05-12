@@ -7,6 +7,7 @@
   * Battery sensing in the transmitter
 * Hardware battery protection in both devices
 * Test trigger in the transmitter (same as receiver)
+* Speed trap. Receivers connected together would measure the speed.
 
 # Accuracy
 * [ ] Make sure fw is compiled with -O3 (trigger algorithm)
