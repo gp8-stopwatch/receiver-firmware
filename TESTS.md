@@ -246,7 +246,7 @@ After code optimizations the result was always the same :
 ## IR trigger + oscillator test
 As the previous test, but now the external trigger is connected to the transmitter instead of the receiver, thus testing the system as a whole (excluding the reflections from the environment and the beam interrupting object itself). These tests were performed after TIM14 configuration was improved.
 
-100µs resolution 4s (TSOP 38338).
+100µs resolution 4s (TSOP 38338, 20ppm crystal).
 | Timer 1  |   Timer2 |
 | -------- | -------: |
 | 03:00:99 | 04:00:02 |

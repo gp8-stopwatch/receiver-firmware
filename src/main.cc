@@ -93,7 +93,6 @@ int main ()
         HAL_NVIC_SetPriority (TIM15_IRQn, 1, 0);
         HAL_NVIC_EnableIRQ (TIM15_IRQn);
 
-        // Comment theline below to turn the screen OFF during debugging!
 #ifdef WITH_DISPLAY
         tim15.setOnUpdate ([&display] { display.refresh (); });
 #endif
@@ -254,7 +253,7 @@ int main ()
         Timer usbTimer;
         // static constexpr std::array REFRESH_RATES{10, 1, 1};
         // int refreshRate = REFRESH_RATES.at (int (config.resolution));
-        int refreshRate = 100; // Something different than 10 so the screen is a little bit out of sync. This way the last digit changes.
+        int refreshRate = 9; // Something different than 10 so the screen is a little bit out of sync. This way the last digit changes.
 
         while (true) {
                 buzzer.run ();

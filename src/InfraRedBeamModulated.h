@@ -105,7 +105,8 @@ public:
 
         /// Returns false if the beam was interrupted for more than 3s. True otherwise.
         bool isBeamPresent () const override { return !(lastState == true && lastStateChange.elapsed () >= 3000); }
-        bool isBeamInterrupted () const override { return lastState == true; }
+        /// This metod does not make sense when using EXTI (this method is for polling)
+        bool isBeamInterrupted () const override { return false; }
 
         bool isActive () const override { return active; }
         void setActive (bool b) override
