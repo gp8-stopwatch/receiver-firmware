@@ -1,7 +1,7 @@
 # The goal
 It is very easy to demand too much from yourself... Especially when one dove into the rabbit hole, and dug into the topic for a long time striving for better and better results. So I have to establish a clear boundary and to know when to stop. 
 
-* [ ] Superb : sub 1ppm - no error between 2 stop-watches running for 99 minutes, 99 seconds and 99 100th of a second (tested against a reference source also).
+* [ ] Superb : sub 1ppm - no error between 2 stop-watches running for 99 minutes, 99 seconds and 99 100th of a second (tested against a reference source as well).
 * [ ] Satisfactory : 2ppm ?
 * [ ] Absolute required : no difference on two random stopwatches running say 2 minutes with 10ms resolution (this is about 80ppm).
 
@@ -10,7 +10,7 @@ The above goals are important to be able to show off the product. The simplest t
 # Factors affecting accuracy of measured time in GP8 stopwatch.
 
 ## Oscillator *Relative test, Absolute test*
-This problem is quite straightforward, use the most accurate and stable resonator / oscillator there is, while maintaining the cost on a viable level. I'm in the process of testing 2ppm TCXOs now.
+This problem is quite straightforward, use the most accurate and stable resonator / oscillator there is, while maintaining the cost on a viable level. I'm in the process of testing ~~2ppm~~ 0.5ppm TCXOs now.
 
 ## Trigger
 ### Trigger algorithm 
@@ -28,9 +28,32 @@ So seems like we can't use a continuous signal (my tests showed otherwise, at le
 
 ![Datasheet](doc/output-response-tsal-38338.png)
 
-According to the datasheet (fig 1 page 2), td is between 3/f0 and 9/f0, in other words we can expect a response (low level) from 79µs to 237µs after an IR diode started to transmit a burst, and I assume the same goes for when a diode stops the transmission (which is interesting for us). So the error here is about 150µs in the worst case. My crude observations showed it to be even smaller (the lag was 150µs on average spanning from about 125µs to 175µs). Note : the lag itself is not a huge problem since a stopwatch is stopped and started **usually** using the same trigger, so those lags cancel each other out, but the variance between them.
+According to the datasheet (fig 1 page 2), td is between 3/f0 and 9/f0, in other words we can expect a response (low level) from 79µs to 237µs after an IR diode started to transmit a burst, and I assume the same goes for when a diode stops the transmission (which is interesting for us). So the error here is about 150µs in the worst case (for one receiver. For two, the total error can be as bad as 300µs). My crude observations showed it to be even smaller (the lag was 150µs on average spanning from about 125µs to 175µs). Note : the lag itself is not a huge problem since a stopwatch is stopped and started **usually** using the same trigger, so those lags cancel each other out, but the problem is a latency variance between them.
 
 ![My observations](doc/tsal-response.png)
+
+[Application note](https://www.vishay.com/docs/82741/tssp4056sensor.pdf)
+Next I performed some *rough* latency tests. Results:
+
+| Lag (td) TSSP4056 µs | TSMP 58138  (6 pulses of 56kHz carrier)            | TSOP 38338                                                          |
+| -------------------- | -------------------------------------------------- | ------------------------------------------------------------------- |
+| 210                  | 110                                                |
+| 130                  | 110                                                |
+| 210                  | 110                                                |
+| 210                  | 95                                                 |
+| 210                  | 90                                                 |
+| 200                  |                                                    |
+| 210                  |                                                    |
+| 130                  |                                                    |
+| 140                  |                                                    |
+| 140                  |                                                    |
+| 140                  |                                                    |
+| 210                  |                                                    |
+| Measured : **80µs**  | **20µs** (theoretical not fouhn) but modulation is | measured **~40µs**, theoretical 160 @ 6cycles                       |
+| Datasheet **142µs**  | required. 50% duty @ 56kHz is ~100µs,              | + modulation errors (~160) so in total IMHO 160+(160/2) = **240µs** |
+|                      | so IMHO the total error is **90-110µs**            |
+
+Latency depends on IR strength, so I
 
 
 | Part                                   | Notes                                                                                                   |
@@ -220,7 +243,7 @@ After code optimizations the result was always the same :
 ## IR trigger + oscillator test
 As the previous test, but now the external trigger is connected to the transmitter instead of the receiver, thus testing the system as a whole (excluding the reflections from the environment and the beam interrupting object itself). These tests were performed after TIM14 configuration was improved.
 
-100µs resolution 4s.
+100µs resolution 4s (TSOP 38338).
 | Timer 1  |   Timer2 |
 | -------- | -------: |
 | 03:00:99 | 04:00:02 |
@@ -248,7 +271,7 @@ As the previous test, but now the external trigger is connected to the transmitt
 Fastest Timer1 : 03:00:97s, slowest : 04:00:08s. Erorr x2 (start+stop) = 1.1ms, trigger error = +/- 0.55ms
 Fastest Timer2 : 04:00:00s, slowest : 04:00:11s. Erorr x2 (start+stop) = 1.1ms, trigger error = +/- 0.55ms
 
-100µs resolution, nominal 59s.
+100µs resolution, nominal 59s (TSOP 38338).
 | Timer 1  |   Timer2 |
 | -------- | -------: |
 | 59:00:31 | 59:00:79 |

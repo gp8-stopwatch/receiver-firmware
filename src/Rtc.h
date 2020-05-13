@@ -14,8 +14,7 @@
  */
 class Rtc {
 public:
-        void init ();
-        void deinit ();
+        Rtc ();
         void activateWakeup (uint32_t timeUnits);
         void deactivateWakeup ();
         // void setDate (MicroDate d);

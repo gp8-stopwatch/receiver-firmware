@@ -35,11 +35,8 @@
 #include <stm32f0xx_hal.h>
 #include <storage/FlashEepromStorage.h>
 
-static void SystemClock_Config (void);
-
-#ifdef WITH_USB
+static void SystemClock_Config ();
 USBD_HandleTypeDef usbdDevice;
-#endif
 
 /*****************************************************************************/
 
@@ -248,7 +245,6 @@ int main ()
         /*+-------------------------------------------------------------------------+*/
 
         Rtc rtc;
-        rtc.init ();
 
         Timer displayTimer;
         Timer usbTimer;
