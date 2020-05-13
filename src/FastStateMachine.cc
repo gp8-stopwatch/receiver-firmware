@@ -13,7 +13,7 @@
 #include "Debug.h"
 #include "History.h"
 #include "IDisplay.h"
-#include "InfraRedBeam.h"
+#include "InfraRedBeamModulated.h"
 #include "StopWatch.h"
 //#define DEBUG_STATES 1
 
@@ -25,16 +25,16 @@
 
 void FastStateMachine::run (Event event)
 {
-#if 0
-        uint8_t i = display->getIcons ();
+        // #if 0
+        //         uint8_t i = display->getIcons ();
 
-        if (!ir->isBeamPresent ()) {
-                display->setIcons (i | IDisplay::MINUS_SIGN);
-        }
-        else {
-                display->setIcons (i & ~IDisplay::MINUS_SIGN);
-        }
-#endif
+        //         if (!ir->isBeamPresent ()) {
+        //                 display->setIcons (i | IDisplay::MINUS_SIGN);
+        //         }
+        //         else {
+        //                 display->setIcons (i & ~IDisplay::MINUS_SIGN);
+        //         }
+        // #endif
         switch (state) {
         case INIT:
 #ifdef DEBUG_STATES
@@ -128,6 +128,7 @@ void FastStateMachine::run (Event event)
                         stop_entryAction (p.second);
                 }
 
+                // Refresh the screen
                 display->setTime (stopWatch->getTime ());
                 break;
 
@@ -158,65 +159,65 @@ void FastStateMachine::run (Event event)
 
                 break;
 
-#if 0
-        case LOOP_READY:
-                if (ir->isBeamPresent () && ir->isBeamInterrupted ()) {
-                        state = LOOP_RUNNING;
-                        running_entryAction ();
-                }
+                // #if 0
+                //         case LOOP_READY:
+                //                 if (ir->isBeamPresent () && ir->isBeamInterrupted ()) {
+                //                         state = LOOP_RUNNING;
+                //                         running_entryAction ();
+                //                 }
 
-                if (button && button->getPressClear ()) {
-                        state = HI_CLEAR_READY;
-                        hiClearReady_entryAction ();
-                }
+                //                 if (button && button->getPressClear ()) {
+                //                         state = HI_CLEAR_READY;
+                //                         hiClearReady_entryAction ();
+                //                 }
 
-                break;
+                //                 break;
 
-        case LOOP_RUNNING:
-                if ((ir->isBeamPresent () && ir->isBeamInterrupted () && startTimeout.isExpired ()) || buttonPendingCopy) {
-                        state = LOOP_STOP;
-                        stop_entryAction ({});
-                }
+                //         case LOOP_RUNNING:
+                //                 if ((ir->isBeamPresent () && ir->isBeamInterrupted () && startTimeout.isExpired ()) || buttonPendingCopy) {
+                //                         state = LOOP_STOP;
+                //                         stop_entryAction ({});
+                //                 }
 
-                break;
+                //                 break;
 
-        case LOOP_STOP:
-                if ((ir->isBeamPresent () && ir->isBeamInterrupted () && startTimeout.isExpired ()) || buttonPendingCopy) {
-                        state = LOOP_RUNNING;
-                        running_entryAction ();
-                }
+                //         case LOOP_STOP:
+                //                 if ((ir->isBeamPresent () && ir->isBeamInterrupted () && startTimeout.isExpired ()) || buttonPendingCopy) {
+                //                         state = LOOP_RUNNING;
+                //                         running_entryAction ();
+                //                 }
 
-                if (button && button->getPressClear ()) {
-                        state = HI_CLEAR_READY;
-                        hiClearReady_entryAction ();
-                }
+                //                 if (button && button->getPressClear ()) {
+                //                         state = HI_CLEAR_READY;
+                //                         hiClearReady_entryAction ();
+                //                 }
 
-                break;
+                //                 break;
 
-        case HI_CLEAR_READY:
-                if (button && button->getLongPressClear ()) {
-                        buzzer->beep (200, 0, 1);
-                        history->clearHiScore ();
-                }
+                //         case HI_CLEAR_READY:
+                //                 if (button && button->getLongPressClear ()) {
+                //                         buzzer->beep (200, 0, 1);
+                //                         history->clearHiScore ();
+                //                 }
 
-                if (button && button->getPressClear ()) {
-                        state = RES_CLEAR_READY;
-                        resultsClearReady_entryAction ();
-                }
-                break;
+                //                 if (button && button->getPressClear ()) {
+                //                         state = RES_CLEAR_READY;
+                //                         resultsClearReady_entryAction ();
+                //                 }
+                //                 break;
 
-        case RES_CLEAR_READY:
-                if (button && button->getLongPressClear ()) {
-                        buzzer->beep (200, 0, 1);
-                        history->clearResults ();
-                }
+                //         case RES_CLEAR_READY:
+                //                 if (button && button->getLongPressClear ()) {
+                //                         buzzer->beep (200, 0, 1);
+                //                         history->clearResults ();
+                //                 }
 
-                if (button && button->getPressClear ()) {
-                        buzzer->beep (10, 10, 1);
-                        state = INIT;
-                }
-                break;
-#endif
+                //                 if (button && button->getPressClear ()) {
+                //                         buzzer->beep (10, 10, 1);
+                //                         state = INIT;
+                //                 }
+                //                 break;
+                // #endif
 
         default:
                 break;
@@ -257,9 +258,10 @@ void FastStateMachine::stop_entryAction (std::optional<uint32_t> time)
         startTimeout.start (BEAM_INTERRUPTION_EVENT);
         uint32_t result = (time) ? (*time) : (stopWatch->getTime ());
 
-        if (time) {
-                display->setTime (*time);
-        }
+        // if (time) {
+        //         display->setTime (*time);
+        // }
+        display->setTime (result);
 
         int dif = result - history->getHiScore ();
 

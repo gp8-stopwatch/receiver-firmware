@@ -12,11 +12,14 @@ The above goals are important to be able to show off the product. The simplest t
 ## Oscillator *Relative test, Absolute test*
 This problem is quite straightforward, use the most accurate and stable resonator / oscillator there is, while maintaining the cost on a viable level. I'm in the process of testing ~~2ppm~~ 0.5ppm TCXOs now.
 
-## Trigger
-### Trigger algorithm 
+# Program
+## Trigger algorithm 
 How the timers are configured and used (TIM14 for stopwatch and TIM1 for trigger) how interrupts are configured and serviced etc.
 
-### IR Receiver component
+Refresh rate of the screen started to have impact. Probably some bug in the code.
+
+## Trigger
+## IR Receiver component
 Receiver speed / time resolution - I'm referring to the IR receiver component. Most of the receivers are suited for receiving fast and short bursts of IR signals of the carrier wave frequency like 38kHz. This is because they are all designed for remote control applications like TVs. Sucha a receiver would not only include a band pass filter to allow only the carrier in, but also a signal conditioning circuit which would additionally filter out any spurious bursts (of incorrect length). In other words, bursts have to conform to specs. For example, the minimum length of a burst in case of Sharp GP1UX51QS receiver was 600µs, and the maximum 1200µs (this is for a high-level pulse, for low-level pulse figures are quite similar). That means, that shining a continuous carrier signal would not work (this is a scenario best suited for my need). And an excerpt from the datasheet of aforementioned component : *In case the signal format of total duty and/or ON/OFF signal time dosen`t meet the conditions noted above, there is a case that reception distance much reduces or output dose not appear.* (sic).
 
 If a continuous signal is bad, then (I assume) one should use the fastest 50% duty cycle signal possible. I went for 1kHz initially which translates to 500µs high, and 500µs low pulses, so this way we can have a 500µs error.

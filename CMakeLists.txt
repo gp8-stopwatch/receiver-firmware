@@ -31,7 +31,7 @@ ADD_EXECUTABLE(${CMAKE_PROJECT_NAME}.elf
     "src/Buzzer.cc"
     "src/FastStateMachine.cc"
     "src/History.cc"
-    "src/InfraRedBeam.cc"
+    "src/InfraRedBeamModulated.cc"
     "src/StopWatch.cc"
     "src/Led7SegmentDisplay.cc"
     "src/CanProtocol.cc"

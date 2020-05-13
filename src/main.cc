@@ -19,7 +19,7 @@
 #include "Gpio.h"
 #include "HardwareTimer.h"
 #include "History.h"
-#include "InfraRedBeam.h"
+#include "InfraRedBeamModulated.h"
 #include "Led7SegmentDisplay.h"
 #include "Rtc.h"
 #include "StopWatch.h"
@@ -167,29 +167,33 @@ int main ()
         FastStateMachine *fStateMachine = FastStateMachine::singleton ();
         fStateMachine->setStopWatch (stopWatch);
 
-        // TODO remove setOnUpdate
-        // stopWatch->setOnUpdate ([fStateMachine] { fStateMachine->run (Event::timePassed); });
+        /*--------------------------------------------------------------------------*/
 
-        HardwareTimer tim1 (TIM1, 48 - 1, 100 - 1);
-        Gpio encoderPins (GPIOA, GPIO_PIN_8, GPIO_MODE_AF_PP, GPIO_PULLDOWN, GPIO_SPEED_FREQ_HIGH, GPIO_AF2_TIM1);
-        InputCaptureChannel inputCapture0 (&tim1, 0, true);
-        HAL_NVIC_SetPriority (TIM1_BRK_UP_TRG_COM_IRQn, 1, 0);
-        HAL_NVIC_EnableIRQ (TIM1_BRK_UP_TRG_COM_IRQn);
+        // HardwareTimer tim1 (TIM1, 48 - 1, 100 - 1);
+        // Gpio encoderPins (GPIOA, GPIO_PIN_8, GPIO_MODE_AF_PP, GPIO_PULLDOWN, GPIO_SPEED_FREQ_HIGH, GPIO_AF2_TIM1);
+        // InputCaptureChannel inputCapture0 (&tim1, 0, true);
+        // HAL_NVIC_SetPriority (TIM1_BRK_UP_TRG_COM_IRQn, 1, 0);
+        // HAL_NVIC_EnableIRQ (TIM1_BRK_UP_TRG_COM_IRQn);
 
-        InfraRedBeam beam;
-        inputCapture0.setOnIrq ([&beam] { beam.on1kHz (); });
-        tim1.setOnUpdate ([&beam] { beam.on10kHz (); });
+        // InfraRedBeamModulated beam;
+        // inputCapture0.setOnIrq ([&beam] { beam.on1kHz (); });
+        // tim1.setOnUpdate ([&beam] { beam.on10kHz (); });
+
+        InfraRedBeamExti beam;
+        Gpio irTriggerPin (GPIOA, GPIO_PIN_8, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
+        irTriggerPin.setOnToggle ([&beam, &irTriggerPin] { beam.onExti (irTriggerPin.get ()); });
+        beam.onTrigger = [fStateMachine] { fStateMachine->run (Event::testTrigger); };
 
         /*--------------------------------------------------------------------------*/
 
         Gpio buttonPin (GPIOB, GPIO_PIN_15, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
-        HAL_NVIC_SetPriority (EXTI4_15_IRQn, 6, 0);
+        HAL_NVIC_SetPriority (EXTI4_15_IRQn, 1, 0);
         HAL_NVIC_EnableIRQ (EXTI4_15_IRQn);
         Button button (buttonPin);
 
         // Test trigger
         Gpio testTriggerPin (GPIOB, GPIO_PIN_3, GPIO_MODE_IT_RISING, GPIO_PULLDOWN);
-        HAL_NVIC_SetPriority (EXTI2_3_IRQn, 6, 0);
+        HAL_NVIC_SetPriority (EXTI2_3_IRQn, 1, 0);
         HAL_NVIC_EnableIRQ (EXTI2_3_IRQn);
         testTriggerPin.setOnToggle ([fStateMachine] { fStateMachine->run (Event::testTrigger); });
 
@@ -250,7 +254,7 @@ int main ()
         Timer usbTimer;
         // static constexpr std::array REFRESH_RATES{10, 1, 1};
         // int refreshRate = REFRESH_RATES.at (int (config.resolution));
-        int refreshRate = 9; // Something different than 10 so the screen is a little bit out of sync. This way the last digit changes.
+        int refreshRate = 100; // Something different than 10 so the screen is a little bit out of sync. This way the last digit changes.
 
         while (true) {
                 buzzer.run ();

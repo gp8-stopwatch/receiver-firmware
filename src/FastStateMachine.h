@@ -6,13 +6,11 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
-#ifndef FASTSTATEMACHINE_H
-#define FASTSTATEMACHINE_H
-
+#pragma once
 #include "Timer.h"
 #include <optional>
 
-class InfraRedBeam;
+class IInfraRedBeam;
 class StopWatch;
 struct IDisplay;
 class Buzzer;
@@ -59,7 +57,7 @@ public:
         void pause () { state = PAUSED; }
         void resume () { state = INIT; }
 
-        void setIr (InfraRedBeam *i) { this->ir = i; }
+        void setIr (IInfraRedBeam *i) { this->ir = i; }
         void setStopWatch (StopWatch *s) { this->stopWatch = s; }
         void setDisplay (IDisplay *d) { this->display = d; }
         void setBuzzer (Buzzer *b) { this->buzzer = b; }
@@ -77,7 +75,7 @@ private:
         /*--------------------------------------------------------------------------*/
 
         State state{INIT};
-        InfraRedBeam *ir{};
+        IInfraRedBeam *ir{};
         StopWatch *stopWatch{};
         Timer startTimeout;
         IDisplay *display{};
@@ -86,5 +84,3 @@ private:
         Button *button{};
         CanProtocol *protocol{};
 };
-
-#endif // FASTSTATEMACHINE_H

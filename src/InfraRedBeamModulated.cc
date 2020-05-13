@@ -6,13 +6,13 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
-#include "InfraRedBeam.h"
 #include "Debug.h"
 #include "ErrorHandler.h"
+#include "InfraRedBeamModulated.h"
 
 /*****************************************************************************/
 
-// void InfraRedBeam::init ()
+// void InfraRedBeamModulated::init ()
 //{
 
 //        /*+-------------------------------------------------------------------------+*/
@@ -69,13 +69,13 @@
 
 /*****************************************************************************/
 
-// extern "C" void TIM3_IRQHandler () { InfraRedBeam::singleton ()->onInterrupt (); }
-// extern "C" void TIM1_BRK_UP_TRG_COM_IRQHandler () { InfraRedBeam::singleton ()->onInterrupt (); }
+// extern "C" void TIM3_IRQHandler () { InfraRedBeamModulated::singleton ()->onInterrupt (); }
+// extern "C" void TIM1_BRK_UP_TRG_COM_IRQHandler () { InfraRedBeamModulated::singleton ()->onInterrupt (); }
 
 /*****************************************************************************/
 
 // #if 0
-// void InfraRedBeam::run ()
+// void InfraRedBeamModulated::run ()
 // {
 //         static uint32_t time = 0;
 //         static uint32_t timeOfLastRise = 0;
@@ -122,7 +122,7 @@
 // }
 // #endif
 
-void InfraRedBeam::on10kHz ()
+void InfraRedBeamModulated::on10kHz ()
 {
         if (!active) {
                 return;
@@ -145,7 +145,7 @@ void InfraRedBeam::on10kHz ()
 
 /*****************************************************************************/
 
-void InfraRedBeam::on1kHz ()
+void InfraRedBeamModulated::on1kHz ()
 {
         if (!active) {
                 return;
@@ -162,7 +162,7 @@ void InfraRedBeam::on1kHz ()
 
 /*****************************************************************************/
 
-void InfraRedBeam::setActive (bool b)
+void InfraRedBeamModulated::setActive (bool b)
 {
         active = b;
 
@@ -173,7 +173,7 @@ void InfraRedBeam::setActive (bool b)
 
 /*****************************************************************************/
 
-void InfraRedBeam::reset ()
+void InfraRedBeamModulated::reset ()
 {
         noOfUpdateEventsSinceLastRise = 0;
         noOfRises = 0;

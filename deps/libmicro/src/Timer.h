@@ -13,8 +13,7 @@
 
 class Timer {
 public:
-        Timer () = default;
-        Timer (uint32_t intervalMs) { start (intervalMs); }
+        Timer (uint32_t intervalMs = 0) { start (intervalMs); }
 
         /// Resets the timer (it starts from 0) and sets the interval. So isExpired will return true after whole interval has passed.
         void start (uint32_t intervalMs);
