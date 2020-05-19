@@ -96,7 +96,7 @@ public:
 
                 lastStateChange.start (0);
 
-                if (state == false) {
+                if (state == true) { // High means no IR.
                         onTrigger ();
                 }
 
@@ -121,7 +121,7 @@ public:
 
 private:
         Timer lastStateChange;
-        bool lastState{true}; // High means no IR.
+        bool lastState{false}; // High means no IR.
         bool active{true};
 };
 

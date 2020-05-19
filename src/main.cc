@@ -205,7 +205,7 @@ int main ()
         display.setResolution (config.resolution);
 
         /*+-------------------------------------------------------------------------+*/
-        /*| Battery, light sensor                                                   |*/
+        /*| Battery, light sensor, others                                            |*/
         /*+-------------------------------------------------------------------------+*/
 
         // Adc *adc = Adc::instance (2);
@@ -217,6 +217,9 @@ int main ()
         // AdcChannel batteryVoltMeter (GPIOB, GPIO_PIN_0, ADC_CHANNEL_8);
         // adc->addChannel (&batteryVoltMeter);
         // Timer batteryTimer;
+
+        Gpio chargeInProgress (GPIOB, GPIO_PIN_7, GPIO_MODE_INPUT, GPIO_PULLUP);
+        Gpio chargeComplete (GPIOB, GPIO_PIN_6, GPIO_MODE_INPUT, GPIO_PULLUP);
 
         /*+-------------------------------------------------------------------------+*/
         /*| USB                                                                     |*/
@@ -265,6 +268,10 @@ int main ()
                         // ::debug->print ("34");
                         rtc.getDate ();
 
+                        debug.print ("Charging : ");
+                        debug.print (chargeInProgress.get ());
+                        debug.print (", complete : ");
+                        debug.println (chargeComplete.get ());
                         usbTimer.start (1000);
                 }
 
@@ -341,32 +348,79 @@ int main ()
 
 /*****************************************************************************/
 
-void SystemClock_Config ()
+// void SystemClock_Config ()
+// {
+//         RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+//         RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+//         RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+
+//         /**Configure LSE Drive Capability
+//          */
+//         HAL_PWR_EnableBkUpAccess ();
+//         __HAL_RCC_LSEDRIVE_CONFIG (RCC_LSEDRIVE_HIGH);
+//         /**Initializes the CPU, AHB and APB busses clocks
+//          */
+//         RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI14 | RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE;
+//         RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+//         RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+//         RCC_OscInitStruct.HSI14State = RCC_HSI14_ON;
+//         RCC_OscInitStruct.HSI14CalibrationValue = 16;
+//         RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+//         RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+//         RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
+//         RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV1;
+
+//         if (HAL_RCC_OscConfig (&RCC_OscInitStruct) != HAL_OK) {
+//                 Error_Handler ();
+//         }
+//         /**Initializes the CPU, AHB and APB busses clocks
+//          */
+//         RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1;
+//         RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+//         RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+//         RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+
+//         if (HAL_RCC_ClockConfig (&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
+//                 Error_Handler ();
+//         }
+
+//         PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB | RCC_PERIPHCLK_USART1 | RCC_PERIPHCLK_RTC;
+//         PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
+//         PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+//         PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
+
+//         if (HAL_RCCEx_PeriphCLKConfig (&PeriphClkInit) != HAL_OK) {
+//                 Error_Handler ();
+//         }
+// }
+
+void SystemClock_Config (void)
 {
         RCC_OscInitTypeDef RCC_OscInitStruct = {0};
         RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
         RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-        /**Configure LSE Drive Capability
+        /** Configure LSE Drive Capability
          */
         HAL_PWR_EnableBkUpAccess ();
         __HAL_RCC_LSEDRIVE_CONFIG (RCC_LSEDRIVE_HIGH);
-        /**Initializes the CPU, AHB and APB busses clocks
+        /** Initializes the CPU, AHB and APB busses clocks
          */
+
         RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI14 | RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE;
-        RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+        RCC_OscInitStruct.HSEState = RCC_HSE_ON; // RCC_HSE_BYPASS;
         RCC_OscInitStruct.LSEState = RCC_LSE_ON;
         RCC_OscInitStruct.HSI14State = RCC_HSI14_ON;
         RCC_OscInitStruct.HSI14CalibrationValue = 16;
         RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
         RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-        RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
-        RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV1;
+        RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL5;
+        RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV2;
 
         if (HAL_RCC_OscConfig (&RCC_OscInitStruct) != HAL_OK) {
                 Error_Handler ();
         }
-        /**Initializes the CPU, AHB and APB busses clocks
+        /** Initializes the CPU, AHB and APB busses clocks
          */
         RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1;
         RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
@@ -377,8 +431,7 @@ void SystemClock_Config ()
                 Error_Handler ();
         }
 
-        PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB | RCC_PERIPHCLK_USART1 | RCC_PERIPHCLK_RTC;
-        PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
+        PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB | RCC_PERIPHCLK_RTC;
         PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
         PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
 

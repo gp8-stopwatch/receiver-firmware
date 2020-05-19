@@ -271,10 +271,38 @@ As the previous test, but now the external trigger is connected to the transmitt
 | 04:00:00 | 04:00:04 |
 | 04:00:06 | 04:00:09 |
 
+100µs resolution 4s (TSSP 4056, 20ppm crystal).
+| Timer 1  |       Timer2 |
+| -------- | -----------: |
+| 04:00:02 |     04:00:05 |
+| 04:00:02 | **04:00:06** |
+| 04:00:02 |     04:00:05 |
+| 04:00:02 |     04:00:05 |
+| 04:00:02 |     04:00:05 |
+| 04:00:02 |     04:00:05 |
+| 04:00:02 |     04:00:05 |
+| 04:00:02 |     04:00:05 |
+| 04:00:02 |     04:00:05 |
+| 04:00:02 |     04:00:05 |
+| 04:00:02 | **04:00:06** |
+| 04:00:02 |     04:00:05 |
+| 04:00:02 | **04:00:06** |
+| 04:00:02 |     04:00:05 |
+| 04:00:02 |     04:00:05 |
+| 04:00:02 |     04:00:05 |
+| 04:00:02 |     04:00:05 |
+
+100µs resolution 4s (TSSP 4056, 0.5ppm TCXO crystal).
+| Timer 1 |   Timer2 |
+| ------- | -------: |
+| 04:00:0 | 04:00:00 | (10 times) |
+
+
+
 Fastest Timer1 : 03:00:97s, slowest : 04:00:08s. Erorr x2 (start+stop) = 1.1ms, trigger error = +/- 0.55ms
 Fastest Timer2 : 04:00:00s, slowest : 04:00:11s. Erorr x2 (start+stop) = 1.1ms, trigger error = +/- 0.55ms
 
-100µs resolution, nominal 59s (TSOP 38338).
+100µs resolution, nominal 59s (TSOP 38338, 20ppm crystal).
 | Timer 1  |   Timer2 |
 | -------- | -------: |
 | 59:00:31 | 59:00:79 |
@@ -293,6 +321,41 @@ Fastest Timer2 : 04:00:00s, slowest : 04:00:11s. Erorr x2 (start+stop) = 1.1ms, 
 
 Fastest Timer1 : 59:00:30s, slowest : 59:00:38s. Erorr x2 (start+stop) = 0.8ms, trigger error = +/- 0.4ms
 Fastest Timer2 : 59:00:78s, slowest : 59:00:86s. Erorr x2 (start+stop) = 0.8ms, trigger error = +/- 0.4ms
+
+100µs resolution, nominal 59s (TSSP 4056, 20ppm crystal).
+| Timer 1  |       Timer2 |
+| -------- | -----------: |
+| 59:00:33 | **59:00:80** |
+| 59:00:33 |     59:00:81 |
+| 59:00:33 |     59:00:81 |
+| 59:00:33 |     59:00:81 |
+| 59:00:33 |     59:00:81 |
+| 59:00:33 |     59:00:81 |
+| 59:00:33 |     59:00:81 |
+| 59:00:33 |     59:00:81 |
+| 59:00:33 |     59:00:81 |
+
+100µs resolution 59s (TSSP 4056, 0.5ppm TCXO crystal).
+| Timer 1      |       Timer2 |
+| ------------ | -----------: |
+| **59:00:02** | **59:00:02** |
+| **59:00:02** |     59:00:03 |
+| 59:00:03     |     59:00:03 |
+| 59:00:03     |     59:00:03 |
+| 59:00:03     |     59:00:03 |
+| 59:00:03     |     59:00:03 |
+| 59:00:03     |     59:00:03 |
+| 59:00:03     |     59:00:03 |
+| 59:00:03     |     59:00:03 |
+
+100µs resolution 99:99:99 (TSSP 4056, 0.5ppm TCXO crystal).
+| Timer 1   |    Timer2 |
+| --------- | --------: |
+| 100:00:02 | 100:00:02 |
+| 100:00:02 | 100:00:02 |
+| 100:00:02 | 100:00:02 |
+
+
 
 ## Absolute test
 Testing against some stable source like (ntpd synchronized computer or some OCXO or even GPS disciplined OCXO like [this one](https://www.tindie.com/products/nsayer/gps-disciplined-ocxo/?pt=ac_prod_search). But they are relatively too expensive) over a course of, say, 5 minutes. External trigger GPIO.

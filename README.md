@@ -29,3 +29,5 @@ Maximum error between the devices should not exceed 2*20ppm (worst case).
 
 # Challenges
 * Accuracy
+
+Bob's take on moto-gymkhana stop watch : https://github.com/boons605/MotoGymkhanaRaceTiming

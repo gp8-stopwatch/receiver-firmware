@@ -64,7 +64,7 @@ extern "C" {
 /*#define HAL_LPTIM_MODULE_ENABLED   */
 /*#define HAL_RNG_MODULE_ENABLED   */
 #define HAL_RTC_MODULE_ENABLED
-#define HAL_SPI_MODULE_ENABLED
+// #define HAL_SPI_MODULE_ENABLED
 #define HAL_TIM_MODULE_ENABLED
 #define HAL_UART_MODULE_ENABLED
 #define HAL_USART_MODULE_ENABLED
@@ -89,16 +89,16 @@ extern "C" {
  *        (when HSE is used as system clock source, directly or through the PLL).
  */
 #if !defined(HSE_VALUE)
-#define HSE_VALUE ((uint32_t)8000000) /*!< Value of the External oscillator in Hz */
-#endif                                /* HSE_VALUE */
+#define HSE_VALUE ((uint32_t)19200000) /*!< Value of the External oscillator in Hz */
+#endif                                 /* HSE_VALUE */
 
 /**
  * @brief In the following line adjust the External High Speed oscillator (HSE) Startup
  *        Timeout value
  */
 #if !defined(HSE_STARTUP_TIMEOUT)
-#define HSE_STARTUP_TIMEOUT ((uint32_t)100) /*!< Time out for HSE start up, in ms */
-#endif                                      /* HSE_STARTUP_TIMEOUT */
+#define HSE_STARTUP_TIMEOUT ((uint32_t)1000) /*!< Time out for HSE start up, in ms */
+#endif                                       /* HSE_STARTUP_TIMEOUT */
 
 /**
  * @brief Internal High Speed oscillator (HSI) value.
