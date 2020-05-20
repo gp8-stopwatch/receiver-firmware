@@ -31,3 +31,12 @@ Maximum error between the devices should not exceed 2*20ppm (worst case).
 * Accuracy
 
 Bob's take on moto-gymkhana stop watch : https://github.com/boons605/MotoGymkhanaRaceTiming
+
+
+# Libraries, and 3rd party sources used:
+* https://github.com/majbthrd/stm32cdcuart
+* https://github.com/antirez/linenoise (?)
+* STM32F0 cube
+* etl
+* GSL
+  

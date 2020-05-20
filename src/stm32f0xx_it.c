@@ -35,7 +35,6 @@
 
 extern PCD_HandleTypeDef hpcd;
 // extern USBD_HandleTypeDef USBD_Device;
-void USB_IRQHandler (void) { HAL_PCD_IRQHandler (&hpcd); }
 
 /******************************************************************************/
 /*           Cortex-M0 Processor Interruption and Exception Handlers          */
@@ -107,14 +106,4 @@ void SysTick_Handler (void)
         /* USER CODE END SysTick_IRQn 1 */
 }
 
-/******************************************************************************/
-/* STM32F0xx Peripheral Interrupt Handlers                                    */
-/* Add here the Interrupt Handlers for the used peripherals.                  */
-/* For the available peripheral interrupt handler names,                      */
-/* please refer to the startup file (startup_stm32f0xx.s).                    */
-/******************************************************************************/
-
-/* USER CODE BEGIN 1 */
-
-/* USER CODE END 1 */
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+void USB_IRQHandler (void) { HAL_PCD_IRQHandler (&hpcd); }

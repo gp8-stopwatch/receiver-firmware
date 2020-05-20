@@ -26,8 +26,7 @@
 #include "Timer.h"
 #include "Usart.h"
 #include "usbd_cdc.h"
-#include "usbd_cdc_interface.h"
-#include "usbd_core.h"
+#include "usbd_composite.h"
 #include "usbd_desc.h"
 #include <cstdbool>
 #include <cstring>
@@ -36,7 +35,8 @@
 #include <storage/FlashEepromStorage.h>
 
 static void SystemClock_Config ();
-USBD_HandleTypeDef usbdDevice;
+// USBD_HandleTypeDef usbdDevice;
+USBD_HandleTypeDef USBD_Device;
 
 /*****************************************************************************/
 
@@ -227,17 +227,38 @@ int main ()
 
 #ifdef WITH_USB
 
-        /* Init Device Library */
-        USBD_Init (&usbdDevice, &VCP_Desc, 0);
+        // /* Init Device Library */
+        // USBD_Init (&usbdDevice, &VCP_Desc, 0);
 
-        /* Add Supported Class */
-        USBD_RegisterClass (&usbdDevice, USBD_CDC_CLASS);
+        // /* Add Supported Class */
+        // USBD_RegisterClass (&usbdDevice, USBD_CDC_CLASS);
 
-        /* Add CDC Interface Class */
-        USBD_CDC_RegisterInterface (&usbdDevice, &USBD_CDC_fops);
+        // /* Add CDC Interface Class */
+        // USBD_CDC_RegisterInterface (&usbdDevice, &USBD_CDC_fops);
+
+        // /* Start Device Process */
+        // USBD_Start (&usbdDevice);
+
+        __disable_irq ();
+
+        /* STM32F0xx HAL library initialization */
+        HAL_Init ();
+
+        /* configure the system clock to get correspondent USB clock source */
+        SystemClock_Config ();
+
+        /* Initialize Device Library */
+        USBD_Init (&USBD_Device, &USBD_Desc, 0);
+
+        /* to work within ST's drivers, I've written a special USBD_Composite class that then invokes several classes */
+        USBD_RegisterClass (&USBD_Device, &USBD_Composite);
 
         /* Start Device Process */
-        USBD_Start (&usbdDevice);
+        USBD_Start (&USBD_Device);
+
+        /* OK, only *now* it is OK for the USB interrupts to fire */
+        __enable_irq ();
+
 #endif
 
         /*+-------------------------------------------------------------------------+*/
@@ -264,7 +285,7 @@ int main ()
                 button.run ();
 
                 if (usbTimer.isExpired ()) {
-                        usbWrite ("12", 2);
+                        usbWrite ("Helo everyone\r\n");
                         // ::debug->print ("34");
                         rtc.getDate ();
 

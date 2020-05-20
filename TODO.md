@@ -98,3 +98,25 @@
 * [ ] Release FW as opensource.
 * [ ] Prepare a web page with documentation.
 
+# USB
+Works under windows 7 and an old Ubuntu. Does not work under Manjaro `Linux futureboy 5.4.39-1-MANJARO #1 SMP PREEMPT Wed May 6 10:36:44 UTC 2020 x86_64 GNU/Linux`
+
+Under Manjaro it behaves very unstable. Only 1 byte at a time san be sent to tyhe PC. if I try to sen 2B in a row, I get nothing on the serial console. If the device is connected through a USB hub, and I dosconnect it, I get the following dmesgs:
+
+
+```
+[ 4586.490066] xhci_hcd 0000:00:14.0: WARN Cannot submit Set TR Deq Ptr
+[ 4586.490068] xhci_hcd 0000:00:14.0: A Set TR Deq Ptr command is pending.
+[ 4586.492081] xhci_hcd 0000:00:14.0: WARN Cannot submit Set TR Deq Ptr
+[ 4586.492084] xhci_hcd 0000:00:14.0: A Set TR Deq Ptr command is pending.
+[ 4586.494061] xhci_hcd 0000:00:14.0: WARN Cannot submit Set TR Deq Ptr
+[ 4586.494064] xhci_hcd 0000:00:14.0: A Set TR Deq Ptr command is pending.
+[ 4586.496077] xhci_hcd 0000:00:14.0: WARN Cannot submit Set TR Deq Ptr
+[ 4586.496079] xhci_hcd 0000:00:14.0: A Set TR Deq Ptr command is pending.
+[ 4586.498067] xhci_hcd 0000:00:14.0: WARN Cannot submit Set TR Deq Ptr
+[ 4586.498070] xhci_hcd 0000:00:14.0: A Set TR Deq Ptr command is pending.
+[ 4586.498363] usb 2-4.2.2: USB disconnect, device number 12
+[ 4586.500122] cdc_acm 2-4.2.2:1.0: failed to set dtr/rts
+```
+
+Solved. The problem was due to lack of ...
