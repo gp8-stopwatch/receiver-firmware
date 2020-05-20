@@ -99,6 +99,11 @@
 * [ ] Prepare a web page with documentation.
 
 # USB
+* [x] Does not work under Manjaro.
+* [x] Gibberish at the beginning, just after styarting a serial terminal for the first time.
+  * [ ] I was able to sove this using this *ready* flag, but this is a hack. The bottom line is that there are problems when writing to the buffer while USB cable is disconnected. It should work, this is what the buffer is for. Fix this, and remove the *ready* flag.
+* [ ] Few letters missing from time to time (very rarely).
+
 Works under windows 7 and an old Ubuntu. Does not work under Manjaro `Linux futureboy 5.4.39-1-MANJARO #1 SMP PREEMPT Wed May 6 10:36:44 UTC 2020 x86_64 GNU/Linux`
 
 Under Manjaro it behaves very unstable. Only 1 byte at a time san be sent to tyhe PC. if I try to sen 2B in a row, I get nothing on the serial console. If the device is connected through a USB hub, and I dosconnect it, I get the following dmesgs:
@@ -119,4 +124,4 @@ Under Manjaro it behaves very unstable. Only 1 byte at a time san be sent to tyh
 [ 4586.500122] cdc_acm 2-4.2.2:1.0: failed to set dtr/rts
 ```
 
-Solved. The problem was due to lack of ...
+Solved. The problem was due to lack of USBD_CDC_ReceivePacket calls. So it seems that my prebious implementation was deaf do USB requests, and it broke all communications under Manjaro, whereas under Windows and Ubuntu it worked (the device was able to send, and the host received the data).

@@ -147,6 +147,10 @@ static uint8_t USBD_CDC_DeInit (USBD_HandleTypeDef *pdev, uint8_t cfgidx)
                 /* Close Command IN EP */
                 USBD_LL_CloseEP (pdev, parameters[index].command_ep);
 
+                // To się uruchamia kiedy rozłączę kabel a potem podłącza.
+                // A ja bym chciał, żeby łapać moment odłączenia kabla
+                // // hcdc->ready = 0;
+
                 /* DeInitialize the UART peripheral */
                 // if (hcdc->UartHandle.Instance)
                 //         if (HAL_UART_DeInit (&hcdc->UartHandle) != HAL_OK) {
@@ -238,6 +242,10 @@ void usbWrite (const char *str) { usbWriteData ((const uint8_t *)str, strlen (st
 
 void usbWriteData (const uint8_t *str, size_t size)
 {
+        if (!context->ready) {
+                return;
+        }
+
         __disable_irq ();
 
         if (context->end + size > INBOUND_BUFFER_SIZE) {
@@ -394,6 +402,7 @@ static int8_t CDC_Itf_Control (USBD_CDC_HandleTypeDef *hcdc, uint8_t cmd, uint8_
                 This message seems to be associated with such an event, so it is being (mis)used as if it were.
                 */
                 ComPort_Anneal (hcdc);
+                hcdc->ready = 1;
 
                 /* Add your code here */
                 break;

@@ -79,6 +79,7 @@ typedef struct {
 
         volatile uint32_t InboundTransferInProgress;
         volatile uint32_t OutboundTransferNeedsRenewal;
+        uint8_t ready;
         // UART_HandleTypeDef UartHandle;
         // USBD_CDC_LineCodingTypeDef LineCoding;
         // DMA_HandleTypeDef hdma_tx;

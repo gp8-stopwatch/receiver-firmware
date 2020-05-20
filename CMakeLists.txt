@@ -13,7 +13,7 @@ INCLUDE_DIRECTORIES("deps/STM32F0xx_HAL_Driver/Inc/")
 INCLUDE_DIRECTORIES("deps/CMSIS/Device/ST/STM32F0xx/Include/")
 INCLUDE_DIRECTORIES("deps/CMSIS/Device/ST/STM32F0xx/Include/Legacy")
 INCLUDE_DIRECTORIES("deps/CMSIS/Include/")
-INCLUDE_DIRECTORIES("deps/STM32_USB_Device_Library/Core/Inc")
+# INCLUDE_DIRECTORIES("deps/STM32_USB_Device_Library/Core/Inc")
 # INCLUDE_DIRECTORIES("deps/STM32_USB_Device_Library/Class/CDC/Inc")
 
 SET (LIB_MICRO_ROOT "deps/libmicro")

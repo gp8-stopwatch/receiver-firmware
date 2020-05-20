@@ -226,19 +226,6 @@ int main ()
         /*+-------------------------------------------------------------------------+*/
 
 #ifdef WITH_USB
-
-        // /* Init Device Library */
-        // USBD_Init (&usbdDevice, &VCP_Desc, 0);
-
-        // /* Add Supported Class */
-        // USBD_RegisterClass (&usbdDevice, USBD_CDC_CLASS);
-
-        // /* Add CDC Interface Class */
-        // USBD_CDC_RegisterInterface (&usbdDevice, &USBD_CDC_fops);
-
-        // /* Start Device Process */
-        // USBD_Start (&usbdDevice);
-
         __disable_irq ();
 
         /* STM32F0xx HAL library initialization */
@@ -258,7 +245,6 @@ int main ()
 
         /* OK, only *now* it is OK for the USB interrupts to fire */
         __enable_irq ();
-
 #endif
 
         /*+-------------------------------------------------------------------------+*/
@@ -285,15 +271,15 @@ int main ()
                 button.run ();
 
                 if (usbTimer.isExpired ()) {
-                        usbWrite ("Helo everyone\r\n");
-                        // ::debug->print ("34");
-                        rtc.getDate ();
+                        usbWrite ("Ala ma kota, a kot ma ale\r\n"); // 27
+                        // // ::debug->print ("34");
+                        // rtc.getDate ();
 
-                        debug.print ("Charging : ");
-                        debug.print (chargeInProgress.get ());
-                        debug.print (", complete : ");
-                        debug.println (chargeComplete.get ());
-                        usbTimer.start (1000);
+                        // debug.print ("Charging : ");
+                        // debug.print (chargeInProgress.get ());
+                        // debug.print (", complete : ");
+                        // debug.println (chargeComplete.get ());
+                        usbTimer.start (100);
                 }
 
                 if (displayTimer.isExpired ()) {
