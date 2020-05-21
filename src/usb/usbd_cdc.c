@@ -149,7 +149,7 @@ static uint8_t USBD_CDC_DeInit (USBD_HandleTypeDef *pdev, uint8_t cfgidx)
 
                 // To się uruchamia kiedy rozłączę kabel a potem podłącza.
                 // A ja bym chciał, żeby łapać moment odłączenia kabla
-                // // hcdc->ready = 0;
+                hcdc->ready = 0;
 
                 /* DeInitialize the UART peripheral */
                 // if (hcdc->UartHandle.Instance)
@@ -247,10 +247,6 @@ void usbWriteData (const uint8_t *str, size_t size)
         context->begin = 0;
         context->end = size;
 #else
-        // if (!context->ready) {
-        //         return;
-        // }
-
         __disable_irq ();
 
         int begin = context->begin;

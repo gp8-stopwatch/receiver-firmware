@@ -100,8 +100,10 @@
 
 # USB
 * [x] Does not work under Manjaro.
-* [x] Gibberish at the beginning, just after styarting a serial terminal for the first time.
-  * [ ] I was able to sove this using this *ready* flag, but this is a hack. The bottom line is that there are problems when writing to the buffer while USB cable is disconnected. It should work, this is what the buffer is for. Fix this, and remove the *ready* flag.
+* [?] Gibberish at the beginning, just after styarting a serial terminal for the first time.
+  * [x] I was able to sove this using this *ready* flag, but this is a hack. The bottom line is that there are problems when writing to the buffer while USB cable is disconnected. It should work, this is what the buffer is for. Fix this, and remove the *ready* flag.
+* [?] Gibberish everytime the cable gets unplugged and then plugged again by the user.
+* [ ] Communication go crazy after some time (floods the console).
 * [ ] Few letters missing from time to time (very rarely):
 
 ```

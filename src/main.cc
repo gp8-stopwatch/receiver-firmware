@@ -36,7 +36,7 @@
 
 static void SystemClock_Config ();
 // USBD_HandleTypeDef usbdDevice;
-USBD_HandleTypeDef USBD_Device;
+USBD_HandleTypeDef USBD_Device{};
 
 /*****************************************************************************/
 
@@ -227,12 +227,6 @@ int main ()
 
 #ifdef WITH_USB
         __disable_irq ();
-
-        /* STM32F0xx HAL library initialization */
-        HAL_Init ();
-
-        /* configure the system clock to get correspondent USB clock source */
-        SystemClock_Config ();
 
         /* Initialize Device Library */
         USBD_Init (&USBD_Device, &USBD_Desc, 0);
