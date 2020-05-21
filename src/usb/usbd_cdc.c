@@ -242,6 +242,11 @@ void usbWrite (const char *str) { usbWriteData ((const uint8_t *)str, strlen (st
 
 void usbWriteData (const uint8_t *str, size_t size)
 {
+#if 0
+        memcpy (((uint8_t *)context[0].InboundBuffer), str, size);
+        context->begin = 0;
+        context->end = size;
+#else
         // if (!context->ready) {
         //         return;
         // }
@@ -282,12 +287,17 @@ void usbWriteData (const uint8_t *str, size_t size)
         }
 
         __enable_irq ();
+#endif
 }
 
 static uint8_t USBD_CDC_SOF (struct _USBD_HandleTypeDef *pdev)
 {
         uint32_t buffsize = 0;
         USBD_CDC_HandleTypeDef *hcdc = context;
+
+        if (!context->ready) {
+                return USBD_OK;
+        }
 
         if (hcdc->begin != hcdc->end) {
 

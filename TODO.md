@@ -103,6 +103,7 @@
 * [x] Gibberish at the beginning, just after styarting a serial terminal for the first time.
   * [ ] I was able to sove this using this *ready* flag, but this is a hack. The bottom line is that there are problems when writing to the buffer while USB cable is disconnected. It should work, this is what the buffer is for. Fix this, and remove the *ready* flag.
 * [ ] Few letters missing from time to time (very rarely):
+
 ```
 Ala ma kota, a kot ma ale
 a ma kota, a kot ma ale
