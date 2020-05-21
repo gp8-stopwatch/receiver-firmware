@@ -242,23 +242,43 @@ void usbWrite (const char *str) { usbWriteData ((const uint8_t *)str, strlen (st
 
 void usbWriteData (const uint8_t *str, size_t size)
 {
-        if (!context->ready) {
-                return;
-        }
+        // if (!context->ready) {
+        //         return;
+        // }
 
         __disable_irq ();
 
-        if (context->end + size > INBOUND_BUFFER_SIZE) {
-                int tail = INBOUND_BUFFER_SIZE - context->end;
-                memcpy (((uint8_t *)context[0].InboundBuffer) + context[0].end, str, tail);
+        int begin = context->begin;
+        int end = context->end;
+        int actualSize = 0;
+
+        if (begin == end) {
+                actualSize = 0;
+        }
+        else if (end > begin) {
+                actualSize = end - begin;
+        }
+        else {
+                actualSize = INBOUND_BUFFER_SIZE - begin + end - 1;
+        }
+
+        // We cant let the begin and end to be equal when filing the buffer, because this means the buffer is empty
+        if (actualSize + size >= INBOUND_BUFFER_SIZE) {
+                __enable_irq ();
+                return; // flase
+        }
+
+        if (end + size > INBOUND_BUFFER_SIZE) {
+                int tail = INBOUND_BUFFER_SIZE - end;
+                memcpy (((uint8_t *)context[0].InboundBuffer) + end, str, tail);
 
                 int head = size - tail;
                 memcpy (((uint8_t *)context[0].InboundBuffer), str + tail, head);
-                context[0].end = head;
+                context->end = head;
         }
         else {
-                memcpy (((uint8_t *)context[0].InboundBuffer) + context[0].end, str, size);
-                context[0].end += size;
+                memcpy (((uint8_t *)context[0].InboundBuffer) + end, str, size);
+                context->end += size;
         }
 
         __enable_irq ();

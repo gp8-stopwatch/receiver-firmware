@@ -102,7 +102,12 @@
 * [x] Does not work under Manjaro.
 * [x] Gibberish at the beginning, just after styarting a serial terminal for the first time.
   * [ ] I was able to sove this using this *ready* flag, but this is a hack. The bottom line is that there are problems when writing to the buffer while USB cable is disconnected. It should work, this is what the buffer is for. Fix this, and remove the *ready* flag.
-* [ ] Few letters missing from time to time (very rarely).
+* [ ] Few letters missing from time to time (very rarely):
+```
+Ala ma kota, a kot ma ale
+a ma kota, a kot ma ale
+Ala ma kota, a kot ma ale
+```
 
 Works under windows 7 and an old Ubuntu. Does not work under Manjaro `Linux futureboy 5.4.39-1-MANJARO #1 SMP PREEMPT Wed May 6 10:36:44 UTC 2020 x86_64 GNU/Linux`
 
