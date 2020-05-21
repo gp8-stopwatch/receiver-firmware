@@ -96,6 +96,10 @@ uint8_t USBD_CDC_SOF ()
                         if (hcdc->begin >= INBOUND_BUFFER_SIZE) {
                                 hcdc->begin = 0;
                         }
+
+                        if (hcdc->end >= INBOUND_BUFFER_SIZE) {
+                                hcdc->end = 0;
+                        }
                 }
         }
 
@@ -226,4 +230,28 @@ TEST_CASE ("CornerCase", "[usb]")
 
         REQUIRE (context->begin == 1022);
         REQUIRE (context->end == 1022);
+}
+
+TEST_CASE ("CornerCase2", "[usb]")
+{
+        context->begin = 0;
+        context->end = 0;
+        memset (context->InboundBuffer, 0, INBOUND_BUFFER_SIZE);
+
+        for (int i = 0; i < 1000; ++i) {
+                usbWrite ("a");
+        }
+        USBD_CDC_SOF ();
+
+        REQUIRE (context->begin == 1000);
+        REQUIRE (context->end == 1000);
+
+        usbWrite ("123456789012345678901234");
+        REQUIRE (context->begin == 1000);
+        REQUIRE (context->end == 1024);
+
+        USBD_CDC_SOF ();
+
+        REQUIRE (context->begin == 0);
+        REQUIRE (context->end == 0);
 }

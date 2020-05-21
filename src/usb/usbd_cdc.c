@@ -313,6 +313,10 @@ static uint8_t USBD_CDC_SOF (struct _USBD_HandleTypeDef *pdev)
                         if (hcdc->begin >= INBOUND_BUFFER_SIZE) {
                                 hcdc->begin = 0;
                         }
+
+                        if (hcdc->end >= INBOUND_BUFFER_SIZE) {
+                                hcdc->end = 0;
+                        }
                 }
         }
 
