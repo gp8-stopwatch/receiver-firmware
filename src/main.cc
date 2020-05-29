@@ -194,7 +194,16 @@ int main ()
         Gpio testTriggerPin (GPIOB, GPIO_PIN_3, GPIO_MODE_IT_RISING, GPIO_PULLDOWN);
         HAL_NVIC_SetPriority (EXTI2_3_IRQn, 1, 0);
         HAL_NVIC_EnableIRQ (EXTI2_3_IRQn);
-        testTriggerPin.setOnToggle ([fStateMachine] { fStateMachine->run (Event::testTrigger); });
+        testTriggerPin.setOnToggle ([fStateMachine] {
+#ifdef TEST_TRIGGER_MOD_2
+                static int i{};
+                if (++i % 2 == 0) {
+                        fStateMachine->run (Event::testTrigger);
+                }
+#else
+                fStateMachine->run (Event::testTrigger);
+#endif
+        });
 
         fStateMachine->setIr (&beam);
         fStateMachine->setDisplay (&display);
@@ -253,6 +262,11 @@ int main ()
 
         Rtc rtc;
 
+        /*
+
+
+        */
+
         Timer displayTimer;
         Timer usbTimer;
         // static constexpr std::array REFRESH_RATES{10, 1, 1};
@@ -273,7 +287,7 @@ int main ()
                         // debug.print (chargeInProgress.get ());
                         // debug.print (", complete : ");
                         // debug.println (chargeComplete.get ());
-                        usbTimer.start (100);
+                        usbTimer.start (1000);
                 }
 
                 if (displayTimer.isExpired ()) {

@@ -102,6 +102,8 @@ Links:
   * Sunlight i ntensity (direct sun vs night)
   
 # CAN connection
+Methodology : 
+
 
 # Possible tests
 ~~All tests presented here are not "unit-tests" i.e. they measure the whole system at once. This is done for simplicity sake~~

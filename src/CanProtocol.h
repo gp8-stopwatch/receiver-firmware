@@ -37,14 +37,15 @@ public:
 
         std::pair<bool, uint32_t> isRemoteStopAndClear () const
         {
-
+#ifdef ACCEPT_CAN_BUS_STOP
                 if (remoteStop) {
-                        std::pair<bool, uint32_t> p{ true, remoteStopTime };
+                        std::pair<bool, uint32_t> p{true, remoteStopTime};
                         remoteStop = false;
                         return p;
                 }
+#endif
 
-                return { false, 0 };
+                return {false, 0};
         }
 
         enum class Messages : uint8_t { START, STOP };

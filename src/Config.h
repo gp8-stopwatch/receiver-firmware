@@ -9,6 +9,8 @@
 #pragma once
 #include <exception>
 
+static const char *VERSION = "1.0";
+
 enum class OperationMode {
         NORMAL, // First break in IR barrier turns the stopwatch ON, second OFF and so on
         LOOP    // First interruption of IR starts the timer, and every consecutive one resets it, but does not stop it.

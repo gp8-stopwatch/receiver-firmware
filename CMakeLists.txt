@@ -13,13 +13,17 @@ INCLUDE_DIRECTORIES("deps/STM32F0xx_HAL_Driver/Inc/")
 INCLUDE_DIRECTORIES("deps/CMSIS/Device/ST/STM32F0xx/Include/")
 INCLUDE_DIRECTORIES("deps/CMSIS/Device/ST/STM32F0xx/Include/Legacy")
 INCLUDE_DIRECTORIES("deps/CMSIS/Include/")
+INCLUDE_DIRECTORIES("deps/linenoise/")
 
 SET (LIB_MICRO_ROOT "deps/libmicro")
 INCLUDE_DIRECTORIES ("${LIB_MICRO_ROOT}/src")
 
 # ADD_DEFINITIONS (-DWITH_SOUND=1)
-# ADD_DEFINITIONS (-DWITH_DISPLAY=1)
+ADD_DEFINITIONS (-DWITH_DISPLAY=1)
 ADD_DEFINITIONS (-DWITH_USB=1)
+ADD_DEFINITIONS (-DTEST_TRIGGER_MOD_2=1)
+# ADD_DEFINITIONS (-DACCEPT_CAN_BUS_STOP=1)
+
 
 # DEVICE is defined in the toolchain file, so if it's present, we assume that the firmware is beeing built.
 IF (DEFINED DEVICE)
@@ -38,6 +42,7 @@ IF (DEFINED DEVICE)
         "src/DisplayMenu.cc"
         "src/Rtc.cc"
 
+        # "deps/linenoise/linenoise.c"
 
         "src/usb/usbd_cdc.c"
         "src/usb/usbd_composite.c"
@@ -61,8 +66,7 @@ IF (DEFINED DEVICE)
         "${STARTUP_CODE}"
         "src/stm32f0xx_it.c"
         "src/system_stm32f0xx.c"
-
-
+      
         "deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc.c"
         "deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc_ex.c"
         "deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.c"

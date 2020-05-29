@@ -3,12 +3,12 @@
 * [ ] Put on sale
 
 # Possible features
-* [ ] µC in the transmitter
-  * [ ] Battery sensing in the transmitter
-* [ ] Hardware battery protection in both devices
-* [ ] Test trigger in the transmitter (same as receiver) - a test point(s)
+* [x] µC in the transmitter
+  * [x] Battery sensing in the transmitter
+* [ ] ~~Hardware battery protection in both devices~~ I went with software one.
+* [x] Test trigger in the transmitter (same as receiver) - a test point(s)
 * [ ] Speed trap. Receivers connected together would measure the speed.
-* [ ] Acurracy setting (100µs)
+* [ ] Result resolution setting (100µs)
 
 # Accuracy
 * [ ] Make sure fw is compiled with -O3 (trigger algorithm)
@@ -39,9 +39,9 @@
   * [ ] Measure what all elements except the µC and LEDs are drawing, and whether we should optimize this, or leave alone.
   * [ ] When powered on, simply go to sleep, calculate current, maybe modify HW so it draws less quiescent current.
   * [ ] Same for the transmitter
-* [ ] If the transmitter had an uc, we could use the charging led to indicate that it is running, and there would be no changes to the casing necessary.
+* [x] If the transmitter had an uc, we could use the charging led to indicate that it is running, and there would be no changes to the casing necessary.
 * [x] ~~Charging led to uc,~~ charger outputs as well. This way we could sense when charger plugged in.
-* [ ] Check common anode configuration
+* [x] Check common cathode configuration
 * [x] Check µC - charger connection.
 * [ ] Field tests of the trigger 
   * [x] Rough range tests shows that there's no noticeable change.
@@ -51,14 +51,15 @@
 * [x] Route the receiver PCB
 * [ ] Poprawić działanie we wnętrzach (incadescent lights & cameras) ????
 * [ ] Jeszcze osłabić sygnał IR.
+* [x] USB 2.0 port can source only 500mA while, I am charging at 660mA. Maybe I should lower the consumption?
+* [x] Route the transmitter (mcu branch)
 
 # Case
-* [ ] Make sure the holder is well supported by case's back wall. It has to be fixed in place. This way we can ignore the screws that would normally fix the holder to tyhe PCB.
+* [ ] Make sure the battery holder is well supported by case's back wall. It has to be fixed in place. This way we can ignore the screws that would normally fix the holder to the PCB.
 * [ ] Pod grilem musi być wytłoczenie, bo głośniczek jest za wysoki.
 * [ ] Fotorezystor musi mieć lepszy dostęp do światła.
-* [ ] 
 
-# GUI 
+# UI 
 * [ ] On screen menu
   * [ ] Brightness (1/2/3/auto). Auto as default.
   * [ ] 1 or 2 participants
@@ -95,7 +96,7 @@
   * [x] Code should be self-contained. Everything needed for building should be included.
 * [x] Remove this "big" display project for now.
 * [x] Prepare and commit other projects
-* [ ] Release FW as opensource.
+* [x] Release FW as opensource.
 * [ ] Prepare a web page with documentation.
 
 # USB
@@ -103,7 +104,7 @@
 * [?] Gibberish at the beginning, just after styarting a serial terminal for the first time.
   * [x] I was able to sove this using this *ready* flag, but this is a hack. The bottom line is that there are problems when writing to the buffer while USB cable is disconnected. It should work, this is what the buffer is for. Fix this, and remove the *ready* flag.
 * [?] Gibberish everytime the cable gets unplugged and then plugged again by the user.
-* [ ] Communication go crazy after some time (floods the console).
+* [x] Communication go crazy after some time (floods the console).
 * [ ] Few letters missing from time to time (very rarely):
 
 ```
