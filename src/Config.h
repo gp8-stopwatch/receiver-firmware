@@ -30,7 +30,7 @@ enum class OperationMode {
 
 enum class ContestantsNumber { ONE = 1, TWO };
 
-enum class Resolution { ms_10, ms_1, ms_01 };
+enum class Resolution { ms_10, ms_1, us_100, us_10 };
 
 /**
  * System wide configuration. Available to the user and stored in the flash.
@@ -39,7 +39,7 @@ struct Config {
 
         OperationMode mode = OperationMode::NORMAL;
         ContestantsNumber contestantsNum = ContestantsNumber::ONE;
-        Resolution resolution{Resolution::ms_01};
+        Resolution resolution{Resolution::us_10};
 
         bool orientationFlip = false;
         bool irSensorOn = true;

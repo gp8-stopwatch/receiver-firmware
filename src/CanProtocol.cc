@@ -50,22 +50,3 @@ void CanProtocol::sendStop (uint32_t time)
         uint8_t *p = reinterpret_cast<uint8_t *> (&time);
         can.send (CanFrame{uid, true, 5, uint8_t (Messages::STOP), *p, *(p + 1), *(p + 2), *(p + 3)}, 0);
 }
-
-/*****************************************************************************/
-
-// void CanProtocol::run ()
-// {
-//         // if (sendStopRq) {
-//         //         uint8_t *p = reinterpret_cast<uint8_t *> (&sendStopTimeRq);
-//         //         // debug->println ("C");
-//         //         can.send (CanFrame{uid, true, 5, uint8_t (Messages::STOP), *p, *(p + 1), *(p + 2), *(p + 3)}, 0);
-//         //         // debug->println (".");
-//         //         sendStopRq = false;
-//         // }
-//         // if (sendStartRq) {
-//         //         // debug->println ("D");
-
-//         //         // debug->println (".");
-//         //         sendStartRq = false;
-//         // }
-// }

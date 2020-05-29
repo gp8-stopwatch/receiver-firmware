@@ -118,6 +118,6 @@ private:
 
         bool flip = false;
         Resolution resolution{};
-        static constexpr std::array<int8_t, 8> FACTORS{10, 10, 10, 10, 10, 6, 10, 1};
+        static constexpr std::array<int8_t, 9> FACTORS{10, 10, 10, 10, 10, 10, 6, 10, 1};
         int factorIndex{};
 };

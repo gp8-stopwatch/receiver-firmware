@@ -23,6 +23,9 @@ struct IDisplay;
  */
 class StopWatch {
 public:
+        static constexpr std::array PRESCALERS{10000, 100000, 1000000, 1000000};
+        static constexpr std::array PERIODS{100, 100, 100, 10};
+
         static StopWatch *singleton ()
         {
                 static StopWatch st;
@@ -46,7 +49,7 @@ public:
                 running = false;
 
                 // It has value [0, 99]
-                if (TIM14->CNT > 49) {
+                if (TIM14->CNT > (PERIODS.at (int (resolution)) / 2) - 1) {
                         // Rounding
                         ++time;
                 }
@@ -59,7 +62,7 @@ public:
         // template <typename Fun> void setOnUpdate (Fun &&fun) { onUpdate = std::forward<Fun> (fun); }
 
         // 100 minutes
-        static constexpr unsigned int MAX_TIME = 100U * 60U * 100U;
+        static constexpr unsigned int MAX_TIME = 100U * 60U * 100U - 1U;
 
 private:
         friend void TIM14_IRQHandler ();
@@ -70,8 +73,7 @@ private:
         TIM_HandleTypeDef stopWatchTimHandle{};
         bool running{};
         unsigned int time{};
-        // FastStateMachine *stateMachine{};
-        // std::function<void ()> onUpdate;
+        Resolution resolution;
 };
 
 #endif // STOPWATCH_H

@@ -28,31 +28,6 @@ public:
         void onCanNewFrame (CanFrame const &frame) override;
         void onCanError (uint32_t e) override;
 
-        //         bool isRemoteStartAndClear () const
-        //         {
-        //                 if (remoteStart) {
-        //                         remoteStart = false;
-        //                         return true;
-        //                 }
-
-        //                 return false;
-        //         }
-
-        //         std::pair<bool, uint32_t> isRemoteStopAndClear () const
-        //         {
-        // #ifdef ACCEPT_CAN_BUS_STOP
-        //                 if (remoteStop) {
-        //                         std::pair<bool, uint32_t> p{true, remoteStopTime};
-        //                         remoteStop = false;
-        //                         return p;
-        //                 }
-        // #endif
-
-        //                 return {false, 0};
-        //         }
-
-        // void run ();
-
         void setOnStart (Callback const &callback) { onStart = callback; }
         void setOnStop (Callback const &callback) { onStop = callback; }
 
@@ -66,10 +41,5 @@ private:
         Callback onStart;
         Callback onStop;
 
-        mutable bool remoteStart = false;
-        mutable bool remoteStop = false;
-        bool sendStartRq = false;
-        bool sendStopRq = false;
         mutable uint32_t remoteStopTime = 0;
-        uint32_t sendStopTimeRq = 0;
 };

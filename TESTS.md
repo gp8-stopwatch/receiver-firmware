@@ -412,7 +412,23 @@ Cable length 0.8m (no difference whatsoever)
 | ----------- | -----------: |
 | 04:00:00    |     03:99:94 |
 
-So from now there's
+Again the same test as above, but tthis time with 10µs resolution.
+
+| Start timer | Finish timer |
+| ----------- | -----------: |
+| 04:00:00    |     03:99937 |
+| 04:00:00    |     03:99937 |
+| 04:00:00    |     03:99936 |
+| 04:00:00    |     03:99937 |
+| 04:00:00    |     03:99937 |
+| 04:00:00    |     03:99936 |
+| 04:00:00    |     03:99937 |
+| 04:00:00    |     03:99937 |
+| 04:00:00    |     03:99937 |
+| 04:00:00    |     03:99936 |
+| 04:00:00    |     03:99937 |
+
+So measured latency is constant and equals about 630µs (probably a few microseconds more). The firmware takes it into account and corrects the result.
 
 # Possible IR trigger tests
 ## Field test with slow-mo camera 

@@ -20,16 +20,16 @@ void StopWatch::setResolution (Resolution res)
                 std::terminate ();
         }
 
+        resolution = res;
+
         /*+-------------------------------------------------------------------------+*/
-        /*| Stopwatch timer 100Hz                                                   |*/
+        /*| Stopwatch timer                                                         |*/
         /*+-------------------------------------------------------------------------+*/
 
-        static constexpr std::array PRESCALERS{10000, 100000, 1000000};
         int div = PRESCALERS.at (int (res));
-
         stopWatchTimHandle.Instance = TIM14;
         stopWatchTimHandle.Init.Prescaler = (uint32_t) (HAL_RCC_GetHCLKFreq () / div) - 1;
-        stopWatchTimHandle.Init.Period = 100 - 1;
+        stopWatchTimHandle.Init.Period = PERIODS.at (int (res)) - 1;
         stopWatchTimHandle.Init.ClockDivision = 0;
         stopWatchTimHandle.Init.CounterMode = TIM_COUNTERMODE_UP;
         stopWatchTimHandle.Init.RepetitionCounter = 0;
@@ -51,7 +51,7 @@ void StopWatch::setResolution (Resolution res)
 
 /**
  * Stop-watch ISR.
- * Here the value displayed is updated. 100Hz / 1kHz / 10kHz.
+ * Here the value displayed is updated. 100Hz / 1kHz / 10kHz / 100kHz.
  */
 extern "C" void TIM14_IRQHandler ()
 {
@@ -63,10 +63,6 @@ extern "C" void TIM14_IRQHandler ()
 
 void StopWatch::onInterrupt ()
 {
-        // if (onUpdate) {
-        //         onUpdate ();
-        // }
-
         if (!running) {
                 return;
         }
