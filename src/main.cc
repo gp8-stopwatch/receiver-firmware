@@ -90,7 +90,7 @@ int main ()
 #endif
 
         HardwareTimer tim15 (TIM15, 48 - 1, 200 - 1); // Update 5kHz
-        HAL_NVIC_SetPriority (TIM15_IRQn, 1, 0);
+        HAL_NVIC_SetPriority (TIM15_IRQn, DISPLAY_TIMER_PRIORITY, 0);
         HAL_NVIC_EnableIRQ (TIM15_IRQn);
 
 #ifdef WITH_DISPLAY
@@ -136,7 +136,7 @@ int main ()
         // 24 - 125kbps
         Can can (nullptr, 24, CAN_SJW_3TQ, CAN_BS1_12TQ, CAN_BS2_3TQ);
         can.setAutomaticRetransmission (false);
-        HAL_NVIC_SetPriority (CEC_CAN_IRQn, 2, 0);
+        HAL_NVIC_SetPriority (CEC_CAN_IRQn, CAN_BUS_PRIORITY, 0);
         HAL_NVIC_EnableIRQ (CEC_CAN_IRQn);
 
         CanProtocol protocol (can, *MICRO_CONTROLLER_UID);
@@ -181,18 +181,18 @@ int main ()
         InfraRedBeamExti beam;
         Gpio irTriggerPin (GPIOA, GPIO_PIN_8, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
         irTriggerPin.setOnToggle ([&beam, &irTriggerPin] { beam.onExti (irTriggerPin.get ()); });
-        beam.onTrigger = [fStateMachine] { fStateMachine->run (Event::testTrigger); };
+        beam.onTrigger = [fStateMachine] { fStateMachine->run (Event::irTrigger); };
 
         /*--------------------------------------------------------------------------*/
 
         Gpio buttonPin (GPIOB, GPIO_PIN_15, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
-        HAL_NVIC_SetPriority (EXTI4_15_IRQn, 1, 0);
+        HAL_NVIC_SetPriority (EXTI4_15_IRQn, BUTTON_AND_IR_EXTI_PRIORITY, 0);
         HAL_NVIC_EnableIRQ (EXTI4_15_IRQn);
         Button button (buttonPin);
 
         // Test trigger
         Gpio testTriggerPin (GPIOB, GPIO_PIN_3, GPIO_MODE_IT_RISING, GPIO_PULLDOWN);
-        HAL_NVIC_SetPriority (EXTI2_3_IRQn, 1, 0);
+        HAL_NVIC_SetPriority (EXTI2_3_IRQn, TEST_TRIGGER_EXTI_PRIORITY, 0);
         HAL_NVIC_EnableIRQ (EXTI2_3_IRQn);
         testTriggerPin.setOnToggle ([fStateMachine] {
 #ifdef TEST_TRIGGER_MOD_2
@@ -205,6 +205,8 @@ int main ()
 #endif
         });
 
+        protocol.setOnStart ([fStateMachine] { fStateMachine->run (Event::canBusStart); });
+        protocol.setOnStop ([fStateMachine] { fStateMachine->run (Event::canBusStop); });
         fStateMachine->setIr (&beam);
         fStateMachine->setDisplay (&display);
         fStateMachine->setBuzzer (&buzzer);
@@ -275,7 +277,6 @@ int main ()
 
         while (true) {
                 buzzer.run ();
-                protocol.run ();
                 button.run ();
 
                 if (usbTimer.isExpired ()) {

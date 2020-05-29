@@ -7,7 +7,19 @@
  ****************************************************************************/
 
 #pragma once
+#ifdef __cplusplus
 #include <exception>
+#endif
+
+// This gets included in a C file, so ifdefs.
+#define USB_PRIORITY 3
+
+#ifdef __cplusplus
+constexpr size_t DISPLAY_TIMER_PRIORITY = 2;
+constexpr size_t CAN_BUS_PRIORITY = 1;
+constexpr size_t BUTTON_AND_IR_EXTI_PRIORITY = 1;
+constexpr size_t TEST_TRIGGER_EXTI_PRIORITY = 1;
+constexpr size_t STOPWATCH_PRIORITY = 0;
 
 static const char *VERSION = "1.0";
 
@@ -34,3 +46,5 @@ struct Config {
         bool buzzerOn = true;
         bool hasChanged = false; /// Says if the system should pay attention for settings that has been changed. Not a setting.
 };
+
+#endif

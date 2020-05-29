@@ -26,6 +26,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
+#include "Config.h"
 #include "stm32f0xx_hal.h"
 #include "usbd_composite.h"
 #include "usbd_core.h"
@@ -68,7 +69,7 @@ void HAL_PCD_MspInit (PCD_HandleTypeDef *hpcd)
         __HAL_RCC_USB_CLK_ENABLE ();
 
         /* Set USB FS Interrupt priority */
-        HAL_NVIC_SetPriority (USB_IRQn, 3, 0);
+        HAL_NVIC_SetPriority (USB_IRQn, USB_PRIORITY, 0);
 
         /* Enable USB FS Interrupt */
         HAL_NVIC_EnableIRQ (USB_IRQn);

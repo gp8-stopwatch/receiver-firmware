@@ -24,9 +24,11 @@ class CanProtocol;
  * Events for the state machine
  */
 enum class Event {
-        timePassed, /// Every 10ms / 1ms / 100µs
-        irTrigger,  /// IR beam interrupted
-        testTrigger /// Test GPIO state changed
+        timePassed,  /// Every 10ms / 1ms / 100µs
+        irTrigger,   /// IR beam interrupted
+        testTrigger, /// Test GPIO state changed
+        canBusStart,
+        canBusStop
 };
 
 class FastStateMachine {

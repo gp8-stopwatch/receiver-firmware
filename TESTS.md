@@ -1,5 +1,5 @@
 # The goal
-It is very easy to demand too much from yourself... Especially when one dove into the rabbit hole, and dug into the topic for a long time striving for better and better results. So I have to establish a clear boundary and to know when to stop. 
+My goals :
 
 * [ ] Superb : sub 1ppm - no error between 2 stop-watches running for 99 minutes, 99 seconds and 99 100th of a second (tested against a reference source as well).
 * [ ] Satisfactory : 2ppm ?
@@ -7,8 +7,11 @@ It is very easy to demand too much from yourself... Especially when one dove int
 
 The above goals are important to be able to show off the product. The simplest test is to test them against each other.
 
-# Factors affecting accuracy of measured time in GP8 stopwatch.
+# Definitions
+* Receiver test trigger : a physical test point on the receiver PCB that you can connect to and start/stop the timer without any transmitter.
+* Transmitter test trigger : a physical test point on the transmitter PCB which lets one to simulate an object passing by through the IR beam. It has the same purpose as the receiver test trigger, but this time we take the IR part into account.
 
+# Factors affecting accuracy of measured time in GP8 stopwatch.
 ## Oscillator *Relative test, Absolute test*
 This problem is quite straightforward, use the most accurate and stable resonator / oscillator there is, while maintaining the cost on a viable level. I'm in the process of testing ~~2ppm~~ 0.5ppm TCXOs now.
 
@@ -102,7 +105,6 @@ Links:
   * Sunlight i ntensity (direct sun vs night)
   
 # CAN connection
-Methodology : 
 
 
 # Possible tests
@@ -369,7 +371,7 @@ Absolute test in 0°C as well as in 50°C. Using the IR.
 There is a configuration possible where two receivers are connected together using CAN bus. Such a system works like that : 
 1. A contestant starts crossing the first gate (ie. transmitter + receiver pair),
 2. The first receiver immediately sends a signal to the second receiver and starts counting, updating its screen as the time passes.
-3. The second receiver triggered by the signal received from the first receiver also starts counting (with display).
+3. The second receiver triggered by the signal received from the first receiver also starts counting (with display on).
 4. A contestant finishes his/her course riding through the second gate, immediately triggering the second receiver off.
 5. The second receiver sends the final result to the first receiver which stops its counter, discards its result, and displays the result of the second receiver.
 
@@ -379,6 +381,38 @@ Possible test :
 3. stop both at the same time using the external GPIO trigger,
 4. observe the difference.
 
+Initial results (100µs resolution). No code optimisations :
+
+| Start timer | Finish timer |
+| ----------- | -----------: |
+| 04:00:00    |     03:99:81 |
+| 04:00:00    |     03:99:08 |
+| 04:00:00    |     03:99:88 |
+| 04:00:00    |     03:99:78 |
+| 04:00:00    |     03:99:69 |
+| 04:00:00    |     03:99:59 |
+| 04:00:00    |     03:99:49 |
+| 04:00:00    |     03:99:39 |
+| 04:00:00    |     03:99:30 |
+| 04:00:00    |     03:99:20 |
+
+Improvements that I've done.
+1. Changed the trigger sensing from (initial and crude) polling/request buffering implementation to direct interrupts.
+2. Changed the sending implementation from this request-for-send to direct function call.
+
+Results after improvements show, that this was my lousy programming that caused the inacurracies. Cable length : 5m
+
+| Start timer | Finish timer |
+| ----------- | -----------: |
+| 04:00:00    |     03:99:94 |
+
+Cable length 0.8m (no difference whatsoever)
+
+| Start timer | Finish timer |
+| ----------- | -----------: |
+| 04:00:00    |     03:99:94 |
+
+So from now there's
 
 # Possible IR trigger tests
 ## Field test with slow-mo camera 

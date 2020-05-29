@@ -37,7 +37,7 @@ void StopWatch::setResolution (Resolution res)
         __HAL_RCC_TIM14_CLK_ENABLE ();
 
         // Highest priority.
-        HAL_NVIC_SetPriority (TIM14_IRQn, 0, 0);
+        HAL_NVIC_SetPriority (TIM14_IRQn, STOPWATCH_PRIORITY, 0);
         HAL_NVIC_EnableIRQ (TIM14_IRQn);
 
         if (HAL_TIM_Base_Init (&stopWatchTimHandle) != HAL_OK) {
