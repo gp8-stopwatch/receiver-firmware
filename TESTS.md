@@ -428,7 +428,7 @@ Again the same test as above, but tthis time with 10µs resolution.
 | 04:00:00    |     03:99936 |
 | 04:00:00    |     03:99937 |
 
-So measured latency is constant and equals about 630µs (probably a few microseconds more). The firmware takes it into account and corrects the result.
+So measured latency is constant and equals about 630µs (probably a few microseconds more). The firmware takes it into account and corrects the result. Can bus latency has about 10µs accuracy (variation).
 
 # Possible IR trigger tests
 ## Field test with slow-mo camera 

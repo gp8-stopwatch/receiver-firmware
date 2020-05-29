@@ -25,6 +25,7 @@ class StopWatch {
 public:
         static constexpr std::array PRESCALERS{10000, 100000, 1000000, 1000000};
         static constexpr std::array PERIODS{100, 100, 100, 10};
+        static constexpr std::array CAN_LATENCY_CORRECTION{0, 0, 6, 63};
 
         static StopWatch *singleton ()
         {
@@ -55,13 +56,9 @@ public:
                 }
         }
 
-        unsigned int getTime () const { return time; }
-        // void setStateMachine (FastStateMachine *s) { this->stateMachine = s; }
+        unsigned int getTime () const { return time + CAN_LATENCY_CORRECTION.at (int (resolution)); }
 
-        /// Callback gets fired each an every time the time is increased by 1
-        // template <typename Fun> void setOnUpdate (Fun &&fun) { onUpdate = std::forward<Fun> (fun); }
-
-        // 100 minutes
+        // 100 minutes. TODO make support for resolutions other than 10ms
         static constexpr unsigned int MAX_TIME = 100U * 60U * 100U - 1U;
 
 private:
