@@ -21,6 +21,7 @@ void StopWatch::setResolution (Resolution res)
         }
 
         resolution = res;
+        increment = INCREMENTS.at (int (resolution));
 
         /*+-------------------------------------------------------------------------+*/
         /*| Stopwatch timer                                                         |*/
@@ -61,13 +62,15 @@ extern "C" void TIM14_IRQHandler ()
 
 /*****************************************************************************/
 
-void StopWatch::onInterrupt ()
+inline void StopWatch::onInterrupt ()
 {
         if (!running) {
                 return;
         }
 
-        if (++time >= MAX_TIME) {
+        time += increment;
+
+        if (time >= MAX_TIME) {
                 time = 0;
         }
 }

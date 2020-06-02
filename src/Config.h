@@ -44,7 +44,7 @@ struct Config {
         bool orientationFlip = false;
         bool irSensorOn = true;
         bool buzzerOn = true;
-        bool hasChanged = false; /// Says if the system should pay attention for settings that has been changed. Not a setting.
+        bool hasChanged = false; /// Says if the system should pay attention for settings that has been changed. Not user-settable.
 };
 
 #endif

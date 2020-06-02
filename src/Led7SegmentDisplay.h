@@ -30,7 +30,7 @@ public:
 
         uint8_t getDots () const override { return dots; }
         void setDots (uint8_t bitmask) override { dots = bitmask; }
-        void setDot (uint8_t number, bool on);
+        void setDot (uint8_t number, bool on) override;
 
         uint8_t getIcons () const override { return 0; }
         void setIcons (uint8_t /*bitmask*/) override {}
@@ -118,6 +118,6 @@ private:
 
         bool flip = false;
         Resolution resolution{};
-        static constexpr std::array<int8_t, 9> FACTORS{10, 10, 10, 10, 10, 10, 6, 10, 1};
         int factorIndex{};
+        uint32_t prescaler = 1;
 };

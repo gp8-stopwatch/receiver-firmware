@@ -69,7 +69,7 @@ public:
 
 private:
         void ready_entryAction (bool loop = false);
-        void running_entryAction ();
+        void running_entryAction (bool canStart);
         void stop_entryAction (std::optional<uint32_t> time);
         void hiClearReady_entryAction ();
         void resultsClearReady_entryAction ();

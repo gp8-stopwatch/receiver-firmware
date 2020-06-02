@@ -7,6 +7,7 @@
  ****************************************************************************/
 
 #include "Led7SegmentDisplay.h"
+#include "StopWatch.h"
 #include <array>
 
 /*****************************************************************************/
@@ -83,7 +84,14 @@ void Led7SegmentDisplay::outputDigit (uint8_t position)
 
 void Led7SegmentDisplay::setTime (uint32_t time)
 {
-        unsigned int cntTmp = time;
+        constexpr std::array<int8_t, 9> FACTORS{10, 10, 10, 10, 10, 10, 6, 10, 1};
+
+        unsigned int cntTmp = time / prescaler;
+
+        if ((prescaler > 1) && time % prescaler >= prescaler / 2) {
+                ++cntTmp;
+        }
+
         auto factorIndexCopy = factorIndex;
 
         for (int i = 5; i >= 0; --i, ++factorIndexCopy) {
@@ -162,4 +170,5 @@ void Led7SegmentDisplay::setResolution (Resolution res)
 {
         static constexpr std::array<uint8_t, 4> FACTOR_INDEX_INITIAL_VALUE{3, 2, 1, 0};
         factorIndex = FACTOR_INDEX_INITIAL_VALUE.at (int (res));
+        prescaler = StopWatch::INCREMENTS.at (int (res));
 }

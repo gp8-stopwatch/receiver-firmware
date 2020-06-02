@@ -45,7 +45,7 @@ void FastStateMachine::run (Event event)
 
                 if (event == Event::canBusStart) {
                         state = GP8_RUNNING;
-                        running_entryAction ();
+                        running_entryAction (true);
                 }
 
                 if (event == Event::canBusStop) {
@@ -71,7 +71,7 @@ void FastStateMachine::run (Event event)
 
                 if (event == Event::canBusStart) {
                         state = GP8_RUNNING;
-                        running_entryAction ();
+                        running_entryAction (true);
                 }
 
                 if (event == Event::canBusStop) {
@@ -87,7 +87,7 @@ void FastStateMachine::run (Event event)
 #endif
                 if (ir->isBeamInterrupted () || event == Event::testTrigger || event == Event::irTrigger) {
                         state = GP8_RUNNING;
-                        running_entryAction ();
+                        running_entryAction (false);
                         protocol->sendStart ();
                 }
 
@@ -98,7 +98,7 @@ void FastStateMachine::run (Event event)
 
                 if (event == Event::canBusStart) {
                         state = GP8_RUNNING;
-                        running_entryAction ();
+                        running_entryAction (true);
                 }
 
                 if (event == Event::canBusStop) {
@@ -121,7 +121,7 @@ void FastStateMachine::run (Event event)
 
                 if (event == Event::canBusStart) {
                         state = GP8_RUNNING;
-                        running_entryAction ();
+                        running_entryAction (true);
                 }
 
                 if (event == Event::canBusStop) {
@@ -140,7 +140,7 @@ void FastStateMachine::run (Event event)
                 if (((ir->isBeamPresent () && ir->isBeamInterrupted ()) || event == Event::testTrigger || event == Event::irTrigger)
                     && startTimeout.isExpired ()) {
                         state = GP8_RUNNING;
-                        running_entryAction ();
+                        running_entryAction (false);
                         protocol->sendStart ();
                 }
 
@@ -151,7 +151,7 @@ void FastStateMachine::run (Event event)
 
                 if (event == Event::canBusStart) {
                         state = GP8_RUNNING;
-                        running_entryAction ();
+                        running_entryAction (true);
                 }
 
                 if (event == Event::canBusStop) {
@@ -244,9 +244,9 @@ void FastStateMachine::ready_entryAction (bool loop)
 
 /*****************************************************************************/
 
-void FastStateMachine::running_entryAction ()
+void FastStateMachine::running_entryAction (bool canStart)
 {
-        stopWatch->reset ();
+        stopWatch->reset (canStart);
         stopWatch->start ();
         buzzer->beep (100, 0, 1);
         startTimeout.start (BEAM_INTERRUPTION_EVENT);
@@ -259,10 +259,6 @@ void FastStateMachine::stop_entryAction (std::optional<uint32_t> time)
         stopWatch->stop ();
         startTimeout.start (BEAM_INTERRUPTION_EVENT);
         uint32_t result = (time) ? (*time) : (stopWatch->getTime ());
-
-        // if (time) {
-        //         display->setTime (*time);
-        // }
         display->setTime (result);
 
         int dif = result - history->getHiScore ();

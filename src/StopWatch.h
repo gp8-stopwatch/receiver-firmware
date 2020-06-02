@@ -6,9 +6,7 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
-#ifndef STOPWATCH_H
-#define STOPWATCH_H
-
+#pragma once
 #include "Config.h"
 #include <cstdint>
 #include <functional>
@@ -24,8 +22,11 @@ struct IDisplay;
 class StopWatch {
 public:
         static constexpr std::array PRESCALERS{10000, 100000, 1000000, 1000000};
-        static constexpr std::array PERIODS{100, 100, 100, 10};
-        static constexpr std::array CAN_LATENCY_CORRECTION{0, 0, 6, 63};
+        static constexpr std::array<uint32_t, 4> PERIODS{100, 100, 100, 10};
+        static constexpr uint32_t CAN_LATENCY_CORRECTION = 63; // Warning! Correct only with -O3
+        // 100 minutes in 10µs units.
+        static constexpr unsigned int MAX_TIME = 100U * 60U * 100000U - 1U;
+        static constexpr std::array INCREMENTS{1000, 100, 10, 1};
 
         static StopWatch *singleton ()
         {
@@ -34,7 +35,7 @@ public:
         }
 
         void setResolution (Resolution res);
-        void reset () { time = 0; }
+        void reset (bool canStart) { time = (canStart) ? CAN_LATENCY_CORRECTION : 0; }
 
         /**
          * Starts the timer immediatelly.
@@ -49,28 +50,23 @@ public:
         {
                 running = false;
 
-                // It has value [0, 99]
-                if (TIM14->CNT > (PERIODS.at (int (resolution)) / 2) - 1) {
+                // It has value [0, 99] or [0, 9] in case of 10µs resolution
+                if (TIM14->CNT >= (PERIODS.at (int (resolution)) / 2)) {
                         // Rounding
-                        ++time;
+                        time += increment;
                 }
         }
 
-        unsigned int getTime () const { return time + CAN_LATENCY_CORRECTION.at (int (resolution)); }
-
-        // 100 minutes. TODO make support for resolutions other than 10ms
-        static constexpr unsigned int MAX_TIME = 100U * 60U * 100U - 1U;
+        unsigned int getTime () const { return time; }
 
 private:
         friend void TIM14_IRQHandler ();
         void onInterrupt ();
 
 private:
-        // IDisplay *display{};
         TIM_HandleTypeDef stopWatchTimHandle{};
         bool running{};
-        unsigned int time{};
+        uint32_t time{}; // 10µs incremenets.
+        uint32_t increment{};
         Resolution resolution;
 };
-
-#endif // STOPWATCH_H
