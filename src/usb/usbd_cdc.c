@@ -102,6 +102,14 @@ static const struct {
 /* context for each and every UART managed by this CDC implementation */
 static USBD_CDC_HandleTypeDef context[NUM_OF_CDC_UARTS];
 
+static UsbOnData onData;
+static UsbOnConnected onConnected;
+static UsbOnDisconnected onDisconnected;
+
+void usbOnData (UsbOnData callback) { onData = callback; }
+void usbOnConnected (UsbOnConnected callback) { onConnected = callback; }
+void usbOnDisconnected (UsbOnConnected callback) { onDisconnected = callback; }
+
 static uint8_t USBD_CDC_Init (USBD_HandleTypeDef *pdev, uint8_t cfgidx)
 {
         USBD_CDC_HandleTypeDef *hcdc = context;
@@ -151,12 +159,9 @@ static uint8_t USBD_CDC_DeInit (USBD_HandleTypeDef *pdev, uint8_t cfgidx)
                 // A ja bym chciał, żeby łapać moment odłączenia kabla
                 hcdc->ready = 0;
 
-                /* DeInitialize the UART peripheral */
-                // if (hcdc->UartHandle.Instance)
-                //         if (HAL_UART_DeInit (&hcdc->UartHandle) != HAL_OK) {
-                //                 /* Initialization Error */
-                //                 Error_Handler ();
-                //         }
+                if (onDisconnected) {
+                        (*onDisconnected) ();
+                }
         }
 
         return USBD_OK;
@@ -225,11 +230,12 @@ static uint8_t USBD_CDC_DataOut (USBD_HandleTypeDef *pdev, uint8_t epnum)
                         /* Get the received data length */
                         RxLength = USBD_LL_GetRxDataSize (pdev, epnum);
 
-                        /* hand the data to the HAL */
-                        // HAL_UART_Transmit_DMA (&hcdc->UartHandle, (uint8_t *)hcdc->OutboundBuffer, RxLength);
-                        // TODO RxCallback
+                        // usbWriteData ((uint8_t *)hcdc->OutboundBuffer, RxLength);
 
-                        usbWriteData ((uint8_t *)hcdc->OutboundBuffer, RxLength);
+                        if (onData) {
+                                (*onData) ((uint8_t *)hcdc->OutboundBuffer, RxLength);
+                        }
+
                         break;
                 }
         }
@@ -433,6 +439,10 @@ static int8_t CDC_Itf_Control (USBD_CDC_HandleTypeDef *hcdc, uint8_t cmd, uint8_
                 */
                 ComPort_Anneal (hcdc);
                 hcdc->ready = 1;
+
+                if (onConnected) {
+                        (*onConnected) ();
+                }
 
                 /* Add your code here */
                 break;

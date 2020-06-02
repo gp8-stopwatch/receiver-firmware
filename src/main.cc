@@ -168,16 +168,6 @@ int main ()
 
         /*--------------------------------------------------------------------------*/
 
-        // HardwareTimer tim1 (TIM1, 48 - 1, 100 - 1);
-        // Gpio encoderPins (GPIOA, GPIO_PIN_8, GPIO_MODE_AF_PP, GPIO_PULLDOWN, GPIO_SPEED_FREQ_HIGH, GPIO_AF2_TIM1);
-        // InputCaptureChannel inputCapture0 (&tim1, 0, true);
-        // HAL_NVIC_SetPriority (TIM1_BRK_UP_TRG_COM_IRQn, 1, 0);
-        // HAL_NVIC_EnableIRQ (TIM1_BRK_UP_TRG_COM_IRQn);
-
-        // InfraRedBeamModulated beam;
-        // inputCapture0.setOnIrq ([&beam] { beam.on1kHz (); });
-        // tim1.setOnUpdate ([&beam] { beam.on10kHz (); });
-
         InfraRedBeamExti beam;
         Gpio irTriggerPin (GPIOA, GPIO_PIN_8, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
         irTriggerPin.setOnToggle ([&beam, &irTriggerPin] { beam.onExti (irTriggerPin.get ()); });
@@ -248,6 +238,14 @@ int main ()
         /* Start Device Process */
         USBD_Start (&USBD_Device);
 
+        usbOnConnected ([] {
+                usbWrite ("GP8 stopwatch version: ");
+                usbWrite (VERSION);
+                usbWrite ("\r\n");
+        });
+
+        usbOnData ([] (const uint8_t *data, size_t len) { usbWriteData (data, len); });
+
         /* OK, only *now* it is OK for the USB interrupts to fire */
         __enable_irq ();
 #endif
@@ -263,16 +261,8 @@ int main ()
         /*+-------------------------------------------------------------------------+*/
 
         Rtc rtc;
-
-        /*
-
-
-        */
-
         Timer displayTimer;
         Timer usbTimer;
-        // static constexpr std::array REFRESH_RATES{10, 1, 1};
-        // int refreshRate = REFRESH_RATES.at (int (config.resolution));
         int refreshRate = 9; // Something different than 10 so the screen is a little bit out of sync. This way the last digit changes.
 
         while (true) {
@@ -280,7 +270,7 @@ int main ()
                 button.run ();
 
                 if (usbTimer.isExpired ()) {
-                        usbWrite ("Ala ma kota, a kot ma ale\r\n"); // 27
+                        // usbWrite ("Ala ma kota, a kot ma ale\r\n"); // 27
                         // // ::debug->print ("34");
                         // rtc.getDate ();
 
@@ -288,7 +278,7 @@ int main ()
                         // debug.print (chargeInProgress.get ());
                         // debug.print (", complete : ");
                         // debug.println (chargeComplete.get ());
-                        usbTimer.start (1000);
+                        // usbTimer.start (1000);
                 }
 
                 if (displayTimer.isExpired ()) {

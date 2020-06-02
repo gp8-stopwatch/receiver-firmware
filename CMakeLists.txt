@@ -22,7 +22,7 @@ INCLUDE_DIRECTORIES ("${LIB_MICRO_ROOT}/src")
 ADD_DEFINITIONS (-DWITH_DISPLAY=1)
 ADD_DEFINITIONS (-DWITH_USB=1)
 ADD_DEFINITIONS (-DTEST_TRIGGER_MOD_2=1)
-# ADD_DEFINITIONS (-DACCEPT_CAN_BUS_STOP=1)
+ADD_DEFINITIONS (-DACCEPT_CAN_BUS_STOP=1)
 
 
 # DEVICE is defined in the toolchain file, so if it's present, we assume that the firmware is beeing built.
@@ -42,7 +42,6 @@ IF (DEFINED DEVICE)
         "src/DisplayMenu.cc"
         "src/Rtc.cc"
 
-        # "deps/linenoise/linenoise.c"
 
         "src/usb/usbd_cdc.c"
         "src/usb/usbd_composite.c"

@@ -13,7 +13,7 @@
 # Accuracy
 * [ ] Make sure fw is compiled with -O3 (trigger algorithm)
 * [x] Make unit-tests possible. GPIO external trigger.
-  * [ ] Make USB output with 1m resolution - for trigger testing.
+  * [x] Make USB output with 1ms resolution - for trigger testing.
 * [x] Use TXCO obviously. Pick one and change the footprint.
   * [x] Choose one
   * [x] Test it somehow (it's tiny, and I don't have a footprint on PCB)
@@ -25,7 +25,7 @@
 * [x] Trigger tests
 * [x] Improve IR trigger
   * [x] Test new receivers (for IR curtains, barriers)
-* [ ] CAN latency tests.
+* [x] CAN latency tests.
 * [ ] GPSDO tests
 
 # Hardware
@@ -68,7 +68,7 @@
 * [ ] USB menu should include all what on-display provides plus:
   * Results
 
-# Other
+# Firmware
 * [ ] Settings memory (screen flip & sound on/off should be persisted)
 * [x] USB firmware upgrade
   * [x] Test

@@ -87,8 +87,16 @@ typedef struct {
 } USBD_CDC_HandleTypeDef;
 
 extern const USBD_CompClassTypeDef USBD_CDC;
+
+typedef void (*UsbOnData) (const uint8_t *, size_t);
+typedef void (*UsbOnConnected) ();
+typedef void (*UsbOnDisconnected) ();
+
 extern void usbWrite (const char *str);
 extern void usbWriteData (const uint8_t *str, size_t size);
+extern void usbOnData (UsbOnData callback);
+extern void usbOnConnected (UsbOnConnected callback);
+extern void usbOnDisconnected (UsbOnConnected callback);
 
 #ifdef __cplusplus
 }
