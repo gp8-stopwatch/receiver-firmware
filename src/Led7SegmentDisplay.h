@@ -11,6 +11,17 @@
 #include "IDisplay.h"
 #include <cstdint>
 
+#if defined(COMMON_ANODE) && defined(COMMON_CATHODE)
+#error "Both COMMON_ANODE and COMMON_CATHODE macros cannot be defined at the same time"
+#endif
+
+#if !defined(COMMON_ANODE) && !defined(COMMON_CATHODE)
+#error "Define either COMMON_ANODE or COMMON_CATHODE macro"
+#endif
+
+/**
+ *
+ */
 class Led7SegmentDisplay : public IDisplay {
 public:
         template <typename... G>
@@ -18,11 +29,11 @@ public:
             : segment{&a, &b, &c, &d, &e, &f, &g, &dp}, common{&dd...}
         {
                 for (Gpio *g : common) {
-                        *g = true;
+                        *g = CA;
                 }
 
                 for (Gpio *g : segment) {
-                        *g = false;
+                        *g = !CA;
                 }
         }
 
@@ -100,11 +111,17 @@ public:
 
 private:
         /// Turns a single display on or fof
-        void turnDisplay (uint8_t d, bool b) { *common.at (d) = !b; }
+        void turnDisplay (uint8_t d, bool b) { *common.at (d) = !CA ^ !b; }
         void outputDigit (uint8_t position);
         uint8_t flipFont (uint8_t font) { return (font & 0xc0) | (font & 0x07) << 3 | (font & 0x38) >> 3; }
 
 private:
+#ifdef COMMON_ANODE
+        static constexpr bool CA = true;
+#else
+        static constexpr bool CA = false;
+#endif
+
         static constexpr size_t DISPLAY_NUM = 6;
         std::array<Gpio *, 8> segment;
         std::array<Gpio *, DISPLAY_NUM> common;

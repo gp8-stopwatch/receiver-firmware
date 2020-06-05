@@ -14,7 +14,7 @@
 
 void Led7SegmentDisplay::refresh ()
 {
-        if (!brightness) {
+        if (brightness == 0) {
                 return;
         }
 
@@ -74,10 +74,10 @@ void Led7SegmentDisplay::outputDigit (uint8_t position)
         }
 
         for (uint8_t seg = 0; seg < 7; ++seg) {
-                *segment.at (seg) = bool (font & (1 << seg));
+                *segment.at (seg) = !CA ^ bool (font & (1 << seg));
         }
 
-        *segment.at (7) = dots & (1 << position);
+        *segment.at (7) = !CA ^ bool (dots & (1 << position));
 }
 
 /*****************************************************************************/

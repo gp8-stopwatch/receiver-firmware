@@ -4,3 +4,6 @@
 [submodule "deps/GSL"]
 	path = deps/GSL
 	url = git@github.com:microsoft/GSL.git
+[submodule "deps/simple-cli"]
+	path = deps/simple-cli
+	url = git@github.com:iwasz/simple-cli.git

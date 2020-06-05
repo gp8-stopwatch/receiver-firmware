@@ -2,14 +2,6 @@
 * [ ] Make 10
 * [ ] Put on sale
 
-# Possible features
-* [x] µC in the transmitter
-  * [x] Battery sensing in the transmitter
-* [ ] ~~Hardware battery protection in both devices~~ I went with software one.
-* [x] Test trigger in the transmitter (same as receiver) - a test point(s)
-* [ ] Speed trap. Receivers connected together would measure the speed.
-* [ ] Result resolution setting (100µs)
-
 # Accuracy
 * [ ] Make sure fw is compiled with -O3 (trigger algorithm)
 * [x] Make unit-tests possible. GPIO external trigger.
@@ -53,6 +45,9 @@
 * [ ] Jeszcze osłabić sygnał IR.
 * [x] USB 2.0 port can source only 500mA while, I am charging at 660mA. Maybe I should lower the consumption?
 * [x] Route the transmitter (mcu branch)
+* [ ] Identify what causes spurious trigger release when power line noise is present. Is it the test trogger, or the IR trigger. Observe what happens using oscilloscope. Turning a solder iron or hotair on/off causes this to happen.
+  * [ ] Fix. 
+  * [ ] Consider disabling the test trigger in production IF this is caused by it.
 
 # Case
 * [ ] Make sure the battery holder is well supported by case's back wall. It has to be fixed in place. This way we can ignore the screws that would normally fix the holder to the PCB.
@@ -65,15 +60,24 @@
   * [ ] 1 or 2 participants
   * [ ] Loop mode / normal
   * [ ] Date / time setting
+  * [ ] Time display
 * [ ] USB menu should include all what on-display provides plus:
   * Results
+
+# Possible features
+* [x] µC in the transmitter
+  * [x] Battery sensing in the transmitter
+* [ ] ~~Hardware battery protection in both devices~~ I went with software one.
+* [x] Test trigger in the transmitter (same as receiver) - a test point(s)
+* [ ] Speed trap. Receivers connected together would measure the speed.
+* [ ] Result resolution setting (100µs)
 
 # Firmware
 * [ ] Settings memory (screen flip & sound on/off should be persisted)
 * [x] USB firmware upgrade
   * [x] Test
   * [ ] Document
-* [ ] USB CDC. There are huge problems.
+* [x] USB CDC. There are huge problems.
 * [ ] RTC
   * [x] Write time and date to the output
   * [x] Rtc date and time is persisted when power is turned off
@@ -81,9 +85,7 @@
  * [ ] battery level sensing.
  * [ ] loop measurements 
  * [ ] input in console
- * [ ] 2 or 3? contestants
  * [ ] Time bigger than 16b in history and everywhere else.
- * [ ] Wyświetlanie zegara.
  * [ ] Kiedy nie ma IR, to wyświetlać same kreski, albo -no ir-
  * [ ] Optimize spaghetti code in the FastState machine
  * [x] LED multiplexing driven by hardware timer to prevent frying it in case of program hang.

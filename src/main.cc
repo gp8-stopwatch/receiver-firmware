@@ -12,6 +12,7 @@
 #include "Buzzer.h"
 #include "Can.h"
 #include "CanProtocol.h"
+#include "Cli.h"
 #include "Config.h"
 #include "Debug.h"
 #include "DisplayMenu.h"
@@ -30,13 +31,34 @@
 #include "usbd_desc.h"
 #include <cstdbool>
 #include <cstring>
+#include <etl/cstring.h>
 #include <new>
 #include <stm32f0xx_hal.h>
 #include <storage/FlashEepromStorage.h>
 
 static void SystemClock_Config ();
-// USBD_HandleTypeDef usbdDevice;
 USBD_HandleTypeDef USBD_Device{};
+
+/*****************************************************************************/
+
+using Token = etl::string<16>;
+
+namespace cl {
+
+template <> struct Traits<Token> {
+        static constexpr LineEnd outputLineEnd{LineEnd::crlf};
+        static constexpr size_t maxTokenSize = 16;
+        static constexpr bool echo = true;
+};
+
+template <> void output<Token> (Token const &tok) { usbWrite (tok.c_str ()); }
+template <> void output<char> (char const &tok) { usbWriteData (reinterpret_cast<uint8_t const *> (&tok), 1); }
+template <> void output<const char *> (const char *const &tok) { usbWrite (tok); }
+
+} // namespace cl
+
+auto c = cl::cli<Token> (cl::cmd (Token ("test"), [] { usbWrite ("This is a test\r\n"); }),
+                         cl::cmd (Token ("help"), [] { usbWrite ("This is the HELP\r\n"); }));
 
 /*****************************************************************************/
 
@@ -244,7 +266,13 @@ int main ()
                 usbWrite ("\r\n");
         });
 
-        usbOnData ([] (const uint8_t *data, size_t len) { usbWriteData (data, len); });
+        usbOnData ([] (const uint8_t *data, size_t len) {
+                // usbWriteData (data, len);
+
+                for (size_t i = 0; i < len; ++i) {
+                        c.run (char (*(data + i)));
+                }
+        });
 
         /* OK, only *now* it is OK for the USB interrupts to fire */
         __enable_irq ();
@@ -353,52 +381,6 @@ int main ()
 }
 
 /*****************************************************************************/
-
-// void SystemClock_Config ()
-// {
-//         RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-//         RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-//         RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
-
-//         /**Configure LSE Drive Capability
-//          */
-//         HAL_PWR_EnableBkUpAccess ();
-//         __HAL_RCC_LSEDRIVE_CONFIG (RCC_LSEDRIVE_HIGH);
-//         /**Initializes the CPU, AHB and APB busses clocks
-//          */
-//         RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI14 | RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE;
-//         RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-//         RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-//         RCC_OscInitStruct.HSI14State = RCC_HSI14_ON;
-//         RCC_OscInitStruct.HSI14CalibrationValue = 16;
-//         RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-//         RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-//         RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
-//         RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV1;
-
-//         if (HAL_RCC_OscConfig (&RCC_OscInitStruct) != HAL_OK) {
-//                 Error_Handler ();
-//         }
-//         /**Initializes the CPU, AHB and APB busses clocks
-//          */
-//         RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1;
-//         RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-//         RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-//         RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-
-//         if (HAL_RCC_ClockConfig (&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
-//                 Error_Handler ();
-//         }
-
-//         PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB | RCC_PERIPHCLK_USART1 | RCC_PERIPHCLK_RTC;
-//         PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
-//         PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
-//         PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
-
-//         if (HAL_RCCEx_PeriphCLKConfig (&PeriphClkInit) != HAL_OK) {
-//                 Error_Handler ();
-//         }
-// }
 
 void SystemClock_Config (void)
 {

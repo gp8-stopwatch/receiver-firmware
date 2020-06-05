@@ -29,8 +29,10 @@ enum class OperationMode {
 };
 
 enum class ContestantsNumber { ONE = 1, TWO };
-
 enum class Resolution { ms_10, ms_1, us_100, us_10 };
+enum class Brightness { levelAuto, level1, level2, level3, level4, level5 };
+enum class ParticipantsNumber { participants1, participants2 };
+enum class StopMode { stop, restart }; // Loop
 
 /**
  * System wide configuration. Available to the user and stored in the flash.
@@ -40,6 +42,9 @@ struct Config {
         OperationMode mode = OperationMode::NORMAL;
         ContestantsNumber contestantsNum = ContestantsNumber::ONE;
         Resolution resolution{Resolution::us_100};
+        Brightness brightness{Brightness::levelAuto};
+        ParticipantsNumber participantsNumber;
+        StopMode stopMode;
 
         bool orientationFlip = false;
         bool irSensorOn = true;
