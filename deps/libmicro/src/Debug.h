@@ -14,6 +14,8 @@
 #include <cstdlib>
 
 class Usart;
+extern void itoa (unsigned int n, char s[], int zeroPad = 0);
+extern void itoa (int n, char s[], int zeroPad = 0);
 
 class Debug {
 public:

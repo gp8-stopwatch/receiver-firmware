@@ -59,7 +59,7 @@ public:
         void setBacklight (bool /*b*/) override {}
         bool getBacklight () const override { return true; }
 
-        void setBrightness (uint8_t b) override { brightness = b % (MAX_BRIGHTNESS + 1); }
+        void setBrightness (uint8_t b) override { brightness = std::min<uint8_t> (MAX_BRIGHTNESS, b); }
         uint8_t getBrightness () const override { return brightness; }
 
         void refresh () override;

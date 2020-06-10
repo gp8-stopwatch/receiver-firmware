@@ -19,10 +19,8 @@ class AdcChannel;
  */
 class Adc {
 public:
+        Adc (int maxChannelsNo = 1);
         ~Adc () { delete[] channels; }
-
-        static Adc *instance (int maxChannelsNo = 1) { return new Adc (maxChannelsNo); }
-        void init ();
 
         /**
          * CAUTION channels must be added in order i.e. first goes the channel with the
@@ -32,7 +30,6 @@ public:
         void run ();
 
 private:
-        Adc (int maxChannelsNo = 1) : channelsNum (0), maxChannelsNo (maxChannelsNo) { channels = new AdcChannel *[maxChannelsNo]; }
         friend class AdcChannel;
         ADC_HandleTypeDef hadc;
         AdcChannel **channels;

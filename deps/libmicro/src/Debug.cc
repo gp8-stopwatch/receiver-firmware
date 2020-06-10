@@ -101,7 +101,7 @@ static void reverse (char s[])
 }
 
 /* itoa:  convert n to characters in s */
-void itoa (int n, char s[], int zeroPad = 0)
+void itoa (int n, char s[], int zeroPad)
 {
         int i, sign;
 
@@ -128,7 +128,7 @@ void itoa (int n, char s[], int zeroPad = 0)
         reverse (s);
 }
 
-void itoa (unsigned int n, char s[], int zeroPad = 0)
+void itoa (unsigned int n, char s[], int zeroPad)
 {
         int i;
 

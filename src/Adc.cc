@@ -13,8 +13,10 @@
 
 /*****************************************************************************/
 
-void Adc::init ()
+Adc::Adc (int maxChannelsNo) : channelsNum (0), maxChannelsNo (maxChannelsNo)
 {
+        channels = new AdcChannel *[maxChannelsNo];
+
         __HAL_RCC_ADC1_CLK_ENABLE ();
 
         hadc.Instance = ADC1;

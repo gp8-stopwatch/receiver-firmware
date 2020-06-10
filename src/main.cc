@@ -6,8 +6,6 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
-#include "Adc.h"
-#include "AdcChannel.h"
 #include "Button.h"
 #include "Buzzer.h"
 #include "Can.h"
@@ -22,6 +20,7 @@
 #include "History.h"
 #include "InfraRedBeamModulated.h"
 #include "Led7SegmentDisplay.h"
+#include "PowerManagement.h"
 #include "Rtc.h"
 #include "StopWatch.h"
 #include "Timer.h"
@@ -57,8 +56,8 @@ template <> void output<const char *> (const char *const &tok) { usbWrite (tok);
 
 } // namespace cl
 
-auto c = cl::cli<Token> (cl::cmd (Token ("test"), [] { usbWrite ("This is a test\r\n"); }),
-                         cl::cmd (Token ("help"), [] { usbWrite ("This is the HELP\r\n"); }));
+// Hack to be able to pass the cli object pointer to the C-like function.
+static void *cliPointer{};
 
 /*****************************************************************************/
 
@@ -231,18 +230,7 @@ int main ()
         /*| Battery, light sensor, others                                            |*/
         /*+-------------------------------------------------------------------------+*/
 
-        // Adc *adc = Adc::instance (2);
-        // adc->init ();
-
-        // AdcChannel ambientLightVoltMeter (GPIOA, GPIO_PIN_4, ADC_CHANNEL_4);
-        // adc->addChannel (&ambientLightVoltMeter);
-
-        // AdcChannel batteryVoltMeter (GPIOB, GPIO_PIN_0, ADC_CHANNEL_8);
-        // adc->addChannel (&batteryVoltMeter);
-        // Timer batteryTimer;
-
-        Gpio chargeInProgress (GPIOB, GPIO_PIN_7, GPIO_MODE_INPUT, GPIO_PULLUP);
-        Gpio chargeComplete (GPIOB, GPIO_PIN_6, GPIO_MODE_INPUT, GPIO_PULLUP);
+        PowerManagement power;
 
         /*+-------------------------------------------------------------------------+*/
         /*| USB                                                                     |*/
@@ -266,11 +254,28 @@ int main ()
                 usbWrite ("\r\n");
         });
 
+        auto c = cl::cli<Token> (cl::cmd (Token ("test"), [] { usbWrite ("This is a test\r\n"); }),
+                                 cl::cmd (Token ("help"), [] { usbWrite ("This is the aaHELP\r\n"); }),
+
+                                 cl::cmd (Token ("battery"),
+                                          [&power] {
+                                                  std::array<char, 11> buf{};
+                                                  itoa ((unsigned int)(power.getBatteryVoltage ()), buf.data ());
+                                                  usbWrite (buf.cbegin ());
+                                                  usbWrite ("\r\n");
+                                          })
+
+        );
+
+        using CliType = decltype (c);
+        cliPointer = &c;
+
         usbOnData ([] (const uint8_t *data, size_t len) {
-                // usbWriteData (data, len);
+                auto *c = reinterpret_cast<CliType *> (cliPointer);
 
                 for (size_t i = 0; i < len; ++i) {
-                        c.run (char (*(data + i)));
+                        auto dt = gsl::span{data, len};
+                        c->run (char (dt[i]));
                 }
         });
 
@@ -291,6 +296,7 @@ int main ()
         Rtc rtc;
         Timer displayTimer;
         Timer usbTimer;
+        Timer batteryTimer;
         int refreshRate = 9; // Something different than 10 so the screen is a little bit out of sync. This way the last digit changes.
 
         while (true) {
@@ -333,50 +339,32 @@ int main ()
                         buzzer.setActive (config.buzzerOn);
                 }
 
-                //                 if (batteryTimer.isExpired ()) {
-                //                         adc->run ();
-                //                         batteryTimer.start (1000);
-                //                         uint32_t batteryVoltage = batteryVoltMeter.getValue ();
-                // #if 0
-                //                         debug.print ("Battery voltage : ");
-                //                         debug.println (batteryVoltage);
-                // #endif
-                //                         //                        if (batteryVoltage <= 125) {
-                //                         //                                screen->setBatteryLevel (1);
-                //                         //                        }
-                //                         //                        else if (batteryVoltage <= 130) {
-                //                         //                                screen->setBatteryLevel (2);
-                //                         //                        }
-                //                         //                        else if (batteryVoltage <= 140) {
-                //                         //                                screen->setBatteryLevel (3);
-                //                         //                        }
-                //                         //                        else if (batteryVoltage <= 148) {
-                //                         //                                screen->setBatteryLevel (4);
-                //                         //                        }
-                //                         //                        else {
-                //                         //                                screen->setBatteryLevel (5);
-                //                         //                        }
+                if (batteryTimer.isExpired ()) {
+                        power.run ();
+                        batteryTimer.start (1000);
 
-                //                         uint32_t ambientLightVoltage = ambientLightVoltMeter.getValue ();
+                        debug.println (power.getBatteryVoltage ());
 
-                //                         /*
-                //                          * 50- : 1
-                //                          * 50-100 : 2
-                //                          * 100-150 : 3
-                //                          * 150-200 : 4
-                //                          * 200+ : 5
-                //                          */
+                        uint32_t ambientLightVoltage = power.getAmbientLight ();
 
-                //                         uint8_t newBrightness = (std::max<int> ((int (ambientLightVoltage) - 1), 0) / 50) + 1;
+                        /*
+                         * 50- : 1
+                         * 50-100 : 2
+                         * 100-150 : 3
+                         * 150-200 : 4
+                         * 200+ : 5
+                         */
 
-                // #if 0
-                //                         debug.print ("Ambient : ");
-                //                         debug.print (ambientLightVoltage);
-                //                         debug.print (", brightness : ");
-                //                         debug.println (newBrightness);
-                // #endif
-                //                         display.setBrightness (newBrightness);
-                //                 }
+                        uint8_t newBrightness = (std::max<int> ((int (ambientLightVoltage) - 1), 0) / 50) + 1;
+
+#if 0
+                                        debug.print ("Ambient : ");
+                                        debug.print (ambientLightVoltage);
+                                        debug.print (", brightness : ");
+                                        debug.println (newBrightness);
+#endif
+                        display.setBrightness (newBrightness);
+                }
         }
 }
 

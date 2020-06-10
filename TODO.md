@@ -45,7 +45,7 @@
 * [ ] Jeszcze osłabić sygnał IR.
 * [x] USB 2.0 port can source only 500mA while, I am charging at 660mA. Maybe I should lower the consumption?
 * [x] Route the transmitter (mcu branch)
-* [ ] Identify what causes spurious trigger release when power line noise is present. Is it the test trogger, or the IR trigger. Observe what happens using oscilloscope. Turning a solder iron or hotair on/off causes this to happen.
+* [ ] Identify what causes spurious trigger release when power line noise is present. Is it the test trigger, or the IR trigger. Observe what happens using an oscilloscope. Turning a solder iron or hotair on/off causes this to happen.
   * [ ] Fix. 
   * [ ] Consider disabling the test trigger in production IF this is caused by it.
 
