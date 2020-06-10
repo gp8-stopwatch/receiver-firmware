@@ -12,6 +12,7 @@
 
 PowerManagement::PowerManagement ()
 {
+
         adc.addChannel (&ambientLightVoltMeter);
         adc.addChannel (&batteryVoltMeter);
         senseOn = false;

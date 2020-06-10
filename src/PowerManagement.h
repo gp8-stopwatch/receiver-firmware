@@ -22,7 +22,7 @@ public:
         unsigned int getAmbientLight () const { return lastAmbientLight; }
 
 private:
-        Adc adc{2};
+        Adc adc;
         AdcChannel ambientLightVoltMeter{GPIOA, GPIO_PIN_4, ADC_CHANNEL_4};
         AdcChannel batteryVoltMeter{GPIOB, GPIO_PIN_0, ADC_CHANNEL_8};
         Gpio chargeInProgress{GPIOB, GPIO_PIN_7, GPIO_MODE_INPUT, GPIO_PULLUP};

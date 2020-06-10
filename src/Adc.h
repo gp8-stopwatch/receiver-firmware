@@ -9,6 +9,7 @@
 #ifndef GP8_STOP_WATCH_ADC_H
 #define GP8_STOP_WATCH_ADC_H
 
+#include <array>
 #include <stm32f0xx_hal.h>
 
 class AdcChannel;
@@ -19,8 +20,7 @@ class AdcChannel;
  */
 class Adc {
 public:
-        Adc (int maxChannelsNo = 1);
-        ~Adc () { delete[] channels; }
+        Adc ();
 
         /**
          * CAUTION channels must be added in order i.e. first goes the channel with the
@@ -32,9 +32,12 @@ public:
 private:
         friend class AdcChannel;
         ADC_HandleTypeDef hadc;
-        AdcChannel **channels;
+        std::array<AdcChannel *, 2> channels;
         int channelsNum;
         int maxChannelsNo;
+        uint32_t VREFINT_CAL;
+        int32_t temperature{};
+        uint32_t VREFINT_DATA{};
 };
 
 #endif // ADC_H
