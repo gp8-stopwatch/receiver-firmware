@@ -343,7 +343,7 @@ int main ()
                         power.run ();
                         batteryTimer.start (1000);
 
-                        debug.println (power.getBatteryVoltage ());
+                        // debug.println (power.getBatteryVoltage ());
 
                         uint32_t ambientLightVoltage = power.getAmbientLight ();
 
@@ -355,13 +355,13 @@ int main ()
                          * 200+ : 5
                          */
 
-                        uint8_t newBrightness = (std::max<int> ((int (ambientLightVoltage) - 1), 0) / 50) + 1;
+                        uint8_t newBrightness = (std::max<int> ((int (ambientLightVoltage) - 1), 0) / 819) + 1;
 
 #if 0
-                                        debug.print ("Ambient : ");
-                                        debug.print (ambientLightVoltage);
-                                        debug.print (", brightness : ");
-                                        debug.println (newBrightness);
+                        debug.print ("Ambient : ");
+                        debug.print (ambientLightVoltage);
+                        debug.print (", brightness : ");
+                        debug.println (newBrightness);
 #endif
                         display.setBrightness (newBrightness);
                 }

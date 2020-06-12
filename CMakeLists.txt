@@ -19,7 +19,7 @@ SET (LIB_MICRO_ROOT "deps/libmicro")
 INCLUDE_DIRECTORIES ("${LIB_MICRO_ROOT}/src")
 
 # ADD_DEFINITIONS (-DWITH_SOUND=1)
-# ADD_DEFINITIONS (-DWITH_DISPLAY=1)
+ADD_DEFINITIONS (-DWITH_DISPLAY=1)
 # ADD_DEFINITIONS (-DCOMMON_ANODE=1)
 ADD_DEFINITIONS (-DCOMMON_CATHODE=1)
 ADD_DEFINITIONS (-DWITH_USB=1)
@@ -31,8 +31,6 @@ ADD_DEFINITIONS (-DACCEPT_CAN_BUS_STOP=1)
 IF (DEFINED DEVICE)
     ADD_EXECUTABLE(${CMAKE_PROJECT_NAME}.elf
         "src/main.cc"
-        "src/Adc.cc"
-        "src/AdcChannel.cc"
         "src/Button.cc"
         "src/Buzzer.cc"
         "src/FastStateMachine.cc"

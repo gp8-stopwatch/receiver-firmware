@@ -7,27 +7,31 @@
  ****************************************************************************/
 
 #pragma once
-#include "Adc.h"
-#include "AdcChannel.h"
+
 #include "Gpio.h"
 #include "Hal.h"
+#include <cstdint>
 
 class PowerManagement {
 public:
+        enum class Channels { ambient, battery, /* temperature, */ vref };
+        static constexpr uint32_t RANGE_12BITS = 4095;
+
         PowerManagement ();
 
         void run ();
+        void sleep ();
 
         unsigned int getBatteryVoltage () const { return lastBatteryVoltage; }
         unsigned int getAmbientLight () const { return lastAmbientLight; }
 
 private:
-        Adc adc;
-        AdcChannel ambientLightVoltMeter{GPIOA, GPIO_PIN_4, ADC_CHANNEL_4};
-        AdcChannel batteryVoltMeter{GPIOB, GPIO_PIN_0, ADC_CHANNEL_8};
+        ADC_HandleTypeDef hadc{};
         Gpio chargeInProgress{GPIOB, GPIO_PIN_7, GPIO_MODE_INPUT, GPIO_PULLUP};
         Gpio chargeComplete{GPIOB, GPIO_PIN_6, GPIO_MODE_INPUT, GPIO_PULLUP};
         Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
-        unsigned int lastBatteryVoltage{};
-        unsigned int lastAmbientLight{};
+        uint32_t lastBatteryVoltage{};
+        uint32_t lastAmbientLight{};
+        uint32_t lastTemperature{};
+        uint32_t VREFINT_DATA{};
 };
