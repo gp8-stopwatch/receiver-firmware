@@ -8,6 +8,7 @@
 
 #pragma once
 #ifdef __cplusplus
+#include <etl/cstring.h>
 #include <exception>
 #endif
 
@@ -22,6 +23,8 @@ constexpr size_t TEST_TRIGGER_EXTI_PRIORITY = 1;
 constexpr size_t STOPWATCH_PRIORITY = 0;
 
 static const char *VERSION = "1.0";
+
+using String = etl::string<16>;
 
 enum class OperationMode {
         NORMAL, // First break in IR barrier turns the stopwatch ON, second OFF and so on

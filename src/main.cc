@@ -40,17 +40,15 @@ USBD_HandleTypeDef USBD_Device{};
 
 /*****************************************************************************/
 
-using Token = etl::string<16>;
-
 namespace cl {
 
-template <> struct Traits<Token> {
+template <> struct Traits<String> {
         static constexpr LineEnd outputLineEnd{LineEnd::crlf};
         static constexpr size_t maxTokenSize = 16;
         static constexpr bool echo = true;
 };
 
-template <> void output<Token> (Token const &tok) { usbWrite (tok.c_str ()); }
+template <> void output<String> (String const &tok) { usbWrite (tok.c_str ()); }
 template <> void output<char> (char const &tok) { usbWriteData (reinterpret_cast<uint8_t const *> (&tok), 1); }
 template <> void output<const char *> (const char *const &tok) { usbWrite (tok); }
 
@@ -145,8 +143,8 @@ int main ()
         Debug debug (&debugUart);
         Debug::singleton () = &debug;
         ::debug = Debug::singleton ();
-        ::debug->print ("gp8 stopwatch ready. UID : ");
-        ::debug->println (*MICRO_CONTROLLER_UID);
+        // ::debug->print ("gp8 stopwatch ready. UID : ");
+        // ::debug->println (*MICRO_CONTROLLER_UID);
 
         /*+-------------------------------------------------------------------------+*/
         /*| CAN                                                                     |*/
@@ -177,7 +175,6 @@ int main ()
         historyStorage.init ();
         history->setHistoryStorage (&historyStorage);
         history->init ();
-        history->printHistory ();
 
         /*+-------------------------------------------------------------------------+*/
         /*| StopWatch, machine and IR                                               |*/
@@ -254,16 +251,20 @@ int main ()
                 usbWrite ("\r\n");
         });
 
-        auto c = cl::cli<Token> (cl::cmd (Token ("test"), [] { usbWrite ("This is a test\r\n"); }),
-                                 cl::cmd (Token ("help"), [] { usbWrite ("This is the aaHELP\r\n"); }),
+        auto c = cl::cli<String> (cl::cmd (String ("result"), [&history] { history->printHistory (); }),
+                                  cl::cmd (String ("help"), [] { usbWrite ("battery, result\r\n"); }),
 
-                                 cl::cmd (Token ("battery"),
-                                          [&power] {
-                                                  std::array<char, 11> buf{};
-                                                  itoa ((unsigned int)(power.getBatteryVoltage ()), buf.data ());
-                                                  usbWrite (buf.cbegin ());
-                                                  usbWrite ("\r\n");
-                                          })
+                                  cl::cmd (String ("battery"),
+                                           [&power] {
+                                                   std::array<char, 11> buf{};
+                                                   itoa ((unsigned int)(power.getBatteryVoltage ()), buf.data ());
+                                                   usbWrite (buf.cbegin ());
+                                                   usbWrite ("mV, ");
+
+                                                   itoa ((unsigned int)(power.getBatteryPercent ()), buf.data ());
+                                                   usbWrite (buf.cbegin ());
+                                                   usbWrite ("%\r\n");
+                                           })
 
         );
 
@@ -342,9 +343,6 @@ int main ()
                 if (batteryTimer.isExpired ()) {
                         power.run ();
                         batteryTimer.start (1000);
-
-                        // debug.println (power.getBatteryVoltage ());
-
                         uint32_t ambientLightVoltage = power.getAmbientLight ();
 
                         /*

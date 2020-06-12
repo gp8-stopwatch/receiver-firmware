@@ -179,31 +179,4 @@ void Debug::println (int i)
 
 /*****************************************************************************/
 
-void Debug::printTime (uint16_t time)
-{
-#ifdef GLOBAL_DEBUG
-        char buf[6];
-        uint16_t sec100 = time % 100;
-
-        time /= 100;
-        uint16_t sec = time % 60;
-
-        time /= 60;
-        uint16_t min = time % 60;
-
-        itoa (min, buf);
-        print (buf);
-        print (":");
-
-        itoa (sec, buf, 2);
-        print (buf);
-        print (",");
-
-        itoa (sec100, buf, 2);
-        print (buf);
-#endif
-}
-
-/*****************************************************************************/
-
 extern "C" void debugPrint (uint8_t *data, size_t len) { Debug::singleton ()->print (data, len); }

@@ -23,6 +23,7 @@ public:
         void sleep ();
 
         unsigned int getBatteryVoltage () const { return lastBatteryVoltage; }
+        unsigned int getBatteryPercent () const { return std::min<unsigned int> ((lastBatteryVoltage - 2900) / 12, 100); }
         unsigned int getAmbientLight () const { return lastAmbientLight; }
 
 private:
