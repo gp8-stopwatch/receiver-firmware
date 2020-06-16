@@ -16,10 +16,10 @@
 
 void printTime (uint32_t time)
 {
-        char buf[6];
-        uint32_t sec100 = time % 100;
+        char buf[11];
+        uint32_t sec100 = time % 100000;
 
-        time /= 100;
+        time /= 100000;
         uint32_t sec = time % 60;
 
         time /= 60;

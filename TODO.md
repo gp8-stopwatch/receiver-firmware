@@ -88,8 +88,8 @@
  * [ ] loop measurements 
  * [x] input in console
  * [ ] Time bigger than 16b in history and everywhere else.
-   * [ ] Measuring.
-   * [ ] Saving to flash.
+   * [x] Measuring.
+   * [x] Saving to flash.
    * [ ] Sending through CAN bus.
    * [ ] USB output.
  * [ ] Kiedy nie ma IR, to wyświetlać same kreski, albo -no ir-
@@ -110,9 +110,9 @@
 
 # USB
 * [x] Does not work under Manjaro.
-* [?] Gibberish at the beginning, just after styarting a serial terminal for the first time.
+* [x] Gibberish at the beginning, just after styarting a serial terminal for the first time.
   * [x] I was able to sove this using this *ready* flag, but this is a hack. The bottom line is that there are problems when writing to the buffer while USB cable is disconnected. It should work, this is what the buffer is for. Fix this, and remove the *ready* flag.
-* [?] Gibberish everytime the cable gets unplugged and then plugged again by the user.
+* [x] Gibberish everytime the cable gets unplugged and then plugged again by the user.
 * [x] Communication go crazy after some time (floods the console).
 * [ ] Few letters missing from time to time (very rarely):
 

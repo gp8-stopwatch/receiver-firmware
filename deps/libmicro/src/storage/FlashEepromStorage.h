@@ -6,9 +6,7 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
-#ifndef FLASH_EEPROM_STORAGE_H
-#define FLASH_EEPROM_STORAGE_H
-
+#pragma once
 #include "ErrorHandler.h"
 #include "Hal.h"
 #include "ICircullarQueueStorage.h"
@@ -79,7 +77,7 @@ protected:
         /// Clear one page.
         virtual void clearPage (size_t address);
         /// Store 1 word (WRITE_SIZE bytes long).
-        virtual void storeWordImpl (uint8_t const *word, size_t address);
+        virtual void storeWriteSizeImpl (uint8_t const *word, size_t address);
 
         void initOffsets ();
 
@@ -93,7 +91,7 @@ private:
          * If page boundary is exceeded, new page will be used, and if last page is full, first page will be
          * cleared and used and so on.
          */
-        void storeWord (uint8_t const *word);
+        void storeWriteSize (uint8_t const *word);
 
 protected:
         size_t capacity;
@@ -212,29 +210,25 @@ void FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::storeImpl (uint8_t *d, size_t le
 
         // Store capacity bytes of data alngside with end-marker.
         for (size_t i = 0; i < capacity / WRITE_SIZE; ++i) {
-                storeWord (d + i * WRITE_SIZE);
+                storeWriteSize (d + i * WRITE_SIZE);
         }
 
-        // If write size is bigger that 2 bytes.
-        // for (size_t i = 0; i < WRITE_SIZE / 2; ++i) {
-        // Store 2 bytes
-        storeWord (END_MARKER.data ());
-        // }
+        storeWriteSize (END_MARKER.data ());
 }
 
 /*****************************************************************************/
 
-template <size_t PAGE_SIZE, size_t WRITE_SIZE> void FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::storeWord (uint8_t const *word)
+template <size_t PAGE_SIZE, size_t WRITE_SIZE> void FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::storeWriteSize (uint8_t const *word)
 {
         size_t address = this->address + currentPage * PAGE_SIZE + currentOffset;
-        storeWordImpl (word, address);
+        storeWriteSizeImpl (word, address);
         increaseAndClear ();
 }
 
 /*****************************************************************************/
 
 template <size_t PAGE_SIZE, size_t WRITE_SIZE>
-void FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::storeWordImpl (uint8_t const *word, size_t address)
+void FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::storeWriteSizeImpl (uint8_t const *word, size_t address)
 {
 #ifndef UNIT_TEST
         HAL_FLASH_Unlock ();
@@ -351,5 +345,3 @@ template <size_t PAGE_SIZE, size_t WRITE_SIZE> void FlashEepromStorage<PAGE_SIZE
         HAL_FLASH_Lock ();
 #endif
 }
-
-#endif // FILERANDOMACCESSSTORAGE_H

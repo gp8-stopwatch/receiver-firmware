@@ -16,7 +16,6 @@
 
 class History {
 public:
-        History () {}
         void store (uint32_t t);
 
         uint32_t getHiScore () const { return hiScore; }
