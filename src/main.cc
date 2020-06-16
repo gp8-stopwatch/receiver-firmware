@@ -150,6 +150,7 @@ int main ()
         /*| CAN                                                                     |*/
         /*+-------------------------------------------------------------------------+*/
 
+#ifdef WITH_CAN
         Gpio canGpios (GPIOB, GPIO_PIN_8 | GPIO_PIN_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH, GPIO_AF4_CAN);
 
         // 24 - 125kbps
@@ -162,11 +163,13 @@ int main ()
         can.setCanCallback (&protocol);
         can.setFilterAndMask (0x00000000, 0x00000000, true);
         can.interrupts (true, false);
+#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| History saved in the flash                                              |*/
         /*+-------------------------------------------------------------------------+*/
 
+#ifdef WITH_FLASH
         History history{};
         FlashEepromStorage<2048, 4> hiScoreStorage (4, 1, 0x801E800 /*0x08020000 - 3 * 2048*/);
         hiScoreStorage.init ();
@@ -174,6 +177,7 @@ int main ()
         FlashEepromStorage<2048, 4> historyStorage (4, 2, 0x801F000 /*0x08020000 - 2 * 2048*/);
         historyStorage.init ();
         history.setHistoryStorage (&historyStorage);
+#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| StopWatch, machine and IR                                               |*/
@@ -212,13 +216,19 @@ int main ()
 #endif
         });
 
+#ifdef WITH_CAN
         protocol.setOnStart ([fStateMachine] { fStateMachine->run (Event::canBusStart); });
         protocol.setOnStop ([fStateMachine] { fStateMachine->run (Event::canBusStop); });
+#endif
         fStateMachine->setIr (&beam);
         fStateMachine->setDisplay (&display);
         fStateMachine->setBuzzer (&buzzer);
+#ifdef WITH_FLASH
         fStateMachine->setHistory (&history);
+#endif
+#ifdef WITH_CAN
         fStateMachine->setCanProtocol (&protocol);
+#endif
         stopWatch->setResolution (config.resolution);
         display.setResolution (config.resolution);
 

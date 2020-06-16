@@ -261,26 +261,23 @@ void FastStateMachine::stop_entryAction (std::optional<uint32_t> time)
         uint32_t result = (time) ? (*time) : (stopWatch->getTime ());
         display->setTime (result);
 
-        int dif = result - history->getHiScore ();
+        if (history != nullptr) {
+                int dif = result - history->getHiScore ();
 
-        if (dif < 0) {
-                buzzer->beep (1000, 0, 1);
-        }
-        else {
-                int slots = (dif / 50) + 1;
+                if (dif < 0) {
+                        buzzer->beep (1000, 0, 1);
+                }
+                else {
+                        int slots = (dif / 50) + 1;
 
-                if (slots > 5) {
-                        slots = 5;
+                        if (slots > 5) {
+                                slots = 5;
+                        }
+
+                        buzzer->beep (70, 50, slots);
                 }
 
-                buzzer->beep (70, 50, slots);
+                // TODO same here - storing into flash can be too slow to be used in an IRQ
+                history->store (result);
         }
-
-        // TODO same here - storing into flash can be too slow to be used in an IRQ
-        history->store (result);
-
-        // TODO we are in an IRQ here! Can't do such slow things as printfs.
-        // Debug *d = Debug::singleton ();
-        // d->printTime (result);
-        // d->print ("\n");
 }
