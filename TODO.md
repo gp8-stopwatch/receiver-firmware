@@ -91,7 +91,7 @@
    * [x] Measuring.
    * [x] Saving to flash.
    * [ ] Sending through CAN bus.
-   * [ ] USB output.
+   * [x] USB output.
  * [ ] Kiedy nie ma IR, to wyświetlać same kreski, albo -no ir-
  * [ ] Optimize spaghetti code in the FastState machine
  * [x] LED multiplexing driven by hardware timer to prevent frying it in case of program hang.

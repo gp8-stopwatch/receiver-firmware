@@ -44,7 +44,7 @@ struct Config {
 
         OperationMode mode = OperationMode::NORMAL;
         ContestantsNumber contestantsNum = ContestantsNumber::ONE;
-        Resolution resolution{Resolution::us_100};
+        Resolution resolution{Resolution::us_10};
         Brightness brightness{Brightness::levelAuto};
         ParticipantsNumber participantsNumber;
         StopMode stopMode;
