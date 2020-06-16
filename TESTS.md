@@ -301,8 +301,6 @@ As the previous test, but now the external trigger is connected to the transmitt
 | ------- | -------: |
 | 04:00:0 | 04:00:00 | (10 times) |
 
-
-
 Fastest Timer1 : 03:00:97s, slowest : 04:00:08s. Erorr x2 (start+stop) = 1.1ms, trigger error = +/- 0.55ms
 Fastest Timer2 : 04:00:00s, slowest : 04:00:11s. Erorr x2 (start+stop) = 1.1ms, trigger error = +/- 0.55ms
 
@@ -359,6 +357,24 @@ Fastest Timer2 : 59:00:78s, slowest : 59:00:86s. Erorr x2 (start+stop) = 0.8ms, 
 | 100:00:02 | 100:00:02 |
 | 100:00:02 | 100:00:02 |
 
+
+Afetr some time (and changes in the source code) I've performed another test only to find out, that there is again somehing wrong:
+10µs resolution 4s (TSSP 4056, 0.5ppm TCXO crystal). After implementing USB and fixing flash storage. 30cm apart.
+| Timer 1 |
+| ------- |
+| 4,00096 |
+| 4,00001 |
+| 4,00001 |
+| 4,00002 |
+| 4,00002 |
+| 4,00096 |
+| 4,00003 |
+| 4,00003 |
+| 4,00004 |
+| 4,00000 |
+| 4,00001 |
+| 4,00093 |
+| 4,00002 |
 
 
 ## Absolute test
