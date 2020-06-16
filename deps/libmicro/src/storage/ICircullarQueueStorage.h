@@ -16,7 +16,7 @@
  * @brief Binary dat storage with circullar API. It is meant to be implemented in FLASH mostly.
  */
 struct ICircullarQueueStorage {
-        virtual ~ICircullarQueueStorage () {}
+        virtual ~ICircullarQueueStorage () = default;
         virtual size_t getCapacity () const = 0;
 
         /**

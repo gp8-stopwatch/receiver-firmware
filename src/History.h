@@ -16,29 +16,27 @@
 
 class History {
 public:
-        static History *singleton ()
-        {
-                static History h;
-                return &h;
-        }
+        History () {}
+        void store (uint32_t t);
 
-        void init ();
-        void store (uint16_t t);
-
-        uint16_t getHiScore () const { return hiScore; }
+        uint32_t getHiScore () const { return hiScore; }
         void printHistory ();
 
         void setHistoryStorage (ICircullarQueueStorage *value) { historyStorage = value; }
-        void setHiScoreStorage (IRandomAccessStorage *value) { hiScoreStorage = value; }
+        void setHiScoreStorage (IRandomAccessStorage *value)
+        {
+                hiScoreStorage = value;
+                hiScore = *reinterpret_cast<uint32_t const *> (hiScoreStorage->read (nullptr, sizeof (uint32_t), 0));
+        }
 
         void clearHiScore ();
         void clearResults ();
 
 private:
-        void storeHiScoreIf (uint16_t t);
+        void storeHiScoreIf (uint32_t t);
 
 private:
-        uint16_t hiScore = std::numeric_limits<uint16_t>::max ();
+        uint32_t hiScore = std::numeric_limits<uint32_t>::max ();
         IRandomAccessStorage *hiScoreStorage = nullptr;
         ICircullarQueueStorage *historyStorage = nullptr;
 };

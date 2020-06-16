@@ -48,6 +48,7 @@
 * [ ] Identify what causes spurious trigger release when power line noise is present. Is it the test trigger, or the IR trigger. Observe what happens using an oscilloscope. Turning a solder iron or hotair on/off causes this to happen.
   * [ ] Fix. 
   * [ ] Consider disabling the test trigger in production IF this is caused by it.
+* [ ] Schotky diode from +BATT to one of the 6P6C socket pins. This would be for powering some smaller peripherals. Why haven't I thought about this earlier!
 
 # Case
 * [ ] Make sure the battery holder is well supported by case's back wall. It has to be fixed in place. This way we can ignore the screws that would normally fix the holder to the PCB.
@@ -62,7 +63,8 @@
   * [ ] Date / time setting
   * [ ] Time display
 * [ ] USB menu should include all what on-display provides plus:
-  * Results
+  * [ ] Results (via command)
+  * [ ] Results as they go.
 
 # Possible features
 * [x] µC in the transmitter
@@ -82,16 +84,21 @@
   * [x] Write time and date to the output
   * [x] Rtc date and time is persisted when power is turned off
   * [ ] test with low quiescent LDO.
- * [ ] battery level sensing.
+ * [x] battery level sensing.
  * [ ] loop measurements 
- * [ ] input in console
+ * [x] input in console
  * [ ] Time bigger than 16b in history and everywhere else.
+   * [ ] Measuring.
+   * [ ] Saving to flash.
+   * [ ] Sending through CAN bus.
+   * [ ] USB output.
  * [ ] Kiedy nie ma IR, to wyświetlać same kreski, albo -no ir-
  * [ ] Optimize spaghetti code in the FastState machine
  * [x] LED multiplexing driven by hardware timer to prevent frying it in case of program hang.
  * [x] When other CAN devices are absent, we should deal with it gracefully. Now I throw hundreds of error messages driving system useless.
  * [x] buzzer volume or if buzzer at all.
  * [x] Screen dims itself to 0 sometimes.
+ * [ ] Dots indicating the resolution of the time display.
   
 # Infrastructure
 * [x] Clean the code (prepare for new repo that is)

@@ -13,11 +13,18 @@
 #include "Hal.h"
 #include "ICircullarQueueStorage.h"
 #include "IRandomAccessStorage.h"
+#include <array>
 #include <cstring>
 
 /**
- * @brief Example implenentation of IStorege interface using files, but emulating
- * flash which emulates eeprom :D Remarks : although this class has EEPROM like interface
+ * TODO There are a lot of possible improvements here.
+ * - Test with various WRITE_SIZE-ss and capacity-s
+ * - Get rid of magic constants. There are plenty of /2, *2, /4, *4 etc.
+ * - Implementing two different interfaces at once makes this class hard to understand. Improove documentation maybe?
+     The conceptual problem here is that this class implements an EPROM emulation done in flash which (as a side effect)
+     has an option for viewing historical data (i.e. what was stored previously - kind of versioning). And this side
+     effect is uded to implement stopwatch results history.
+ * @brief Remarks : although this class has EEPROM like interface
  * (it was meant to implement eeprom emulated in flash) it is most efficient (and thus
  * recommended) to cache your record (of size 'capacity') in RAM, and store it as a whole
  * using store (data, "capacity_bytes", 0). Remember, that every time you invoke store (even
@@ -28,6 +35,8 @@
  */
 template <size_t PAGE_SIZE, size_t WRITE_SIZE = 2> class FlashEepromStorage : public IRandomAccessStorage, public ICircullarQueueStorage {
 public:
+        static_assert (WRITE_SIZE == 2 || WRITE_SIZE == 4 || WRITE_SIZE == 8);
+
         /**
          * @brief Constructor
          * @param capacity Size of a logical record which will be stored. For EEPROM memories it would be
@@ -38,12 +47,11 @@ public:
          * @param address
          */
         FlashEepromStorage (size_t capacity, size_t numOfPages, size_t address);
-        virtual ~FlashEepromStorage ();
 
         virtual void init ();
 
         /// See constructor for exmplanation.
-        virtual size_t getCapacity () const { return capacity; }
+        size_t getCapacity () const override { return capacity; }
 
         /**
          * Remarks : for flash, the most efficient scenario is when length == capacity. If length <
@@ -55,10 +63,10 @@ public:
          * @param offset Where to save the data (in bytes counted from the start of the record). Remember that the record
          * has a length of 'capacity' bytes. Do not confuse offset with flash memory address. It is less than that.
          */
-        virtual void store (uint8_t *data, size_t length, size_t offset);
-        virtual uint8_t const *read (uint8_t *out, size_t length, size_t offset, size_t history);
-        virtual uint8_t const *read (uint8_t *out, size_t length, size_t offset) { return read (out, length, offset, 0); }
-        virtual void clear ();
+        void store (uint8_t *data, size_t length, size_t offset) override;
+        uint8_t const *read (uint8_t *out, size_t length, size_t offset, size_t history) override;
+        uint8_t const *read (uint8_t *out, size_t length, size_t offset) override { return read (out, length, offset, 0); }
+        void clear () override;
 
         // For debugging purposes. Not an API.
         uint8_t *_getContents () { return contents; }
@@ -97,15 +105,8 @@ protected:
         /// Offset ion current page which will receive data upon next write.
         size_t currentOffset;
 
-        static uint8_t END_MARKER[WRITE_SIZE];
+        static constexpr std::array<uint8_t, WRITE_SIZE> END_MARKER{};
         uint8_t *contents;
-};
-
-/*****************************************************************************/
-
-template <size_t PAGE_SIZE, size_t WRITE_SIZE>
-uint8_t FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::END_MARKER[WRITE_SIZE] = {
-        0,
 };
 
 /*****************************************************************************/
@@ -122,11 +123,6 @@ FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::FlashEepromStorage (size_t capacity, 
         if (capacity + WRITE_SIZE >= PAGE_SIZE / 2) {
                 Error_Handler ();
         }
-
-        //        // Init END_MARKER
-        //        for (size_t i = 0; i < WRITE_SIZE; ++i) {
-        //                END_MARKER[i] = 0xff;
-        //        }
 }
 
 /*****************************************************************************/
@@ -156,7 +152,7 @@ template <size_t PAGE_SIZE, size_t WRITE_SIZE> void FlashEepromStorage<PAGE_SIZE
         currentPage = 0;
 
         for (size_t i = capacity; i < PAGE_SIZE * numOfPages; i += capacity + WRITE_SIZE) {
-                if (memcmp (END_MARKER, contents + i, WRITE_SIZE) != 0) {
+                if (memcmp (END_MARKER.data (), contents + i, WRITE_SIZE) != 0) {
                         break;
                 }
 
@@ -177,11 +173,8 @@ template <size_t PAGE_SIZE, size_t WRITE_SIZE> void FlashEepromStorage<PAGE_SIZE
 
 /*****************************************************************************/
 
-template <size_t PAGE_SIZE, size_t WRITE_SIZE> FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::~FlashEepromStorage () {}
-
-/*****************************************************************************/
-
-template <size_t PAGE_SIZE, size_t WRITE_SIZE> void FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::store (uint8_t *data, size_t length, size_t offset)
+template <size_t PAGE_SIZE, size_t WRITE_SIZE>
+void FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::store (uint8_t *data, size_t length, size_t offset)
 {
         if (offset % WRITE_SIZE != 0 || length % WRITE_SIZE != 0) {
                 Error_Handler ();
@@ -207,7 +200,8 @@ template <size_t PAGE_SIZE, size_t WRITE_SIZE> void FlashEepromStorage<PAGE_SIZE
 
 /*****************************************************************************/
 
-template <size_t PAGE_SIZE, size_t WRITE_SIZE> void FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::storeImpl (uint8_t *d, size_t length, size_t offset)
+template <size_t PAGE_SIZE, size_t WRITE_SIZE>
+void FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::storeImpl (uint8_t *d, size_t length, size_t offset)
 {
         // We are on the last page, and this write will exceed it
         if (currentPage == numOfPages - 1 && currentOffset + capacity + WRITE_SIZE > PAGE_SIZE) {
@@ -221,7 +215,11 @@ template <size_t PAGE_SIZE, size_t WRITE_SIZE> void FlashEepromStorage<PAGE_SIZE
                 storeWord (d + i * WRITE_SIZE);
         }
 
-        storeWord (END_MARKER);
+        // If write size is bigger that 2 bytes.
+        // for (size_t i = 0; i < WRITE_SIZE / 2; ++i) {
+        // Store 2 bytes
+        storeWord (END_MARKER.data ());
+        // }
 }
 
 /*****************************************************************************/
@@ -235,12 +233,24 @@ template <size_t PAGE_SIZE, size_t WRITE_SIZE> void FlashEepromStorage<PAGE_SIZE
 
 /*****************************************************************************/
 
-template <size_t PAGE_SIZE, size_t WRITE_SIZE> void FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::storeWordImpl (uint8_t const *word, size_t address)
+template <size_t PAGE_SIZE, size_t WRITE_SIZE>
+void FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::storeWordImpl (uint8_t const *word, size_t address)
 {
 #ifndef UNIT_TEST
         HAL_FLASH_Unlock ();
+        HAL_StatusTypeDef status{};
 
-        if (HAL_FLASH_Program (FLASH_TYPEPROGRAM_HALFWORD, address, *reinterpret_cast<uint16_t const *> (word)) != HAL_OK) {
+        if constexpr (WRITE_SIZE == 2) {
+                status = HAL_FLASH_Program (FLASH_TYPEPROGRAM_HALFWORD, address, *reinterpret_cast<uint16_t const *> (word));
+        }
+        if constexpr (WRITE_SIZE == 4) {
+                status = HAL_FLASH_Program (FLASH_TYPEPROGRAM_WORD, address, *reinterpret_cast<uint32_t const *> (word));
+        }
+        if constexpr (WRITE_SIZE == 8) {
+                status = HAL_FLASH_Program (FLASH_TYPEPROGRAM_DOUBLEWORD, address, *reinterpret_cast<uint64_t const *> (word));
+        }
+
+        if (status != HAL_OK) {
                 Error_Handler ();
         }
 
@@ -282,7 +292,7 @@ uint8_t const *FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::read (uint8_t *out, si
 
         int prevOffset = currentOffset;
         int prevPage = currentPage;
-        int start = int((capacity + WRITE_SIZE) * (history + 1) - offset);
+        int start = int ((capacity + WRITE_SIZE) * (history + 1) - offset);
 
         if (prevOffset - start >= 0) {
                 prevOffset -= start;
@@ -301,7 +311,7 @@ uint8_t const *FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::read (uint8_t *out, si
         }
 
         uint8_t *ret = contents + prevPage * PAGE_SIZE + prevOffset + offset;
-        if (out) {
+        if (out != nullptr) {
                 memcpy (out, ret, length);
         }
 

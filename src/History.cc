@@ -14,44 +14,44 @@
 
 /*****************************************************************************/
 
-void printTime (uint16_t time)
+void printTime (uint32_t time)
 {
         char buf[6];
-        uint16_t sec100 = time % 100;
+        uint32_t sec100 = time % 100;
 
         time /= 100;
-        uint16_t sec = time % 60;
+        uint32_t sec = time % 60;
 
         time /= 60;
-        uint16_t min = time % 60;
+        uint32_t min = time % 60;
 
-        itoa (min, buf);
+        itoa ((unsigned int)(min), buf);
         usbWrite (buf);
         usbWrite (":");
 
-        itoa (sec, buf, 2);
+        itoa ((unsigned int)(sec), buf, 2);
         usbWrite (buf);
         usbWrite (",");
 
-        itoa (sec100, buf, 2);
+        itoa ((unsigned int)(sec100), buf, 2);
         usbWrite (buf);
 }
 
 /*****************************************************************************/
 
-void History::store (uint16_t t)
+void History::store (uint32_t t)
 {
-        historyStorage->store (reinterpret_cast<uint8_t *> (&t), 2, 0);
+        historyStorage->store (reinterpret_cast<uint8_t *> (&t), sizeof (t), 0);
         storeHiScoreIf (t);
 }
 
 /*****************************************************************************/
 
-void History::storeHiScoreIf (uint16_t t)
+void History::storeHiScoreIf (uint32_t t)
 {
         if (t < hiScore) {
                 hiScore = t;
-                hiScoreStorage->store (reinterpret_cast<uint8_t *> (&t), 2, 0);
+                hiScoreStorage->store (reinterpret_cast<uint8_t *> (&t), sizeof (t), 0);
         }
 }
 
@@ -65,7 +65,7 @@ void History::printHistory ()
         usbWrite ("\r\n");
 
         for (int i = 63; i >= 0; --i) {
-                uint16_t tim = *reinterpret_cast<uint16_t const *> (historyStorage->read (nullptr, sizeof (uint16_t), 0, i));
+                uint32_t tim = *reinterpret_cast<uint32_t const *> (historyStorage->read (nullptr, sizeof (uint32_t), 0, i));
                 printTime (tim);
                 usbWrite ("\r\n");
         }
@@ -75,14 +75,10 @@ void History::printHistory ()
 
 /*****************************************************************************/
 
-void History::init () { hiScore = *reinterpret_cast<uint16_t const *> (hiScoreStorage->read (nullptr, sizeof (uint16_t), 0)); }
-
-/*****************************************************************************/
-
 void History::clearHiScore ()
 {
         hiScoreStorage->clear ();
-        hiScore = std::numeric_limits<uint16_t>::max ();
+        hiScore = std::numeric_limits<uint32_t>::max ();
 }
 
 /*****************************************************************************/

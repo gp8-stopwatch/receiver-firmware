@@ -276,7 +276,7 @@ void FastStateMachine::stop_entryAction (std::optional<uint32_t> time)
                 buzzer->beep (70, 50, slots);
         }
 
-        // TODO same here - storing into flash can be to slow to be used in an IRQ
+        // TODO same here - storing into flash can be too slow to be used in an IRQ
         history->store (result);
 
         // TODO we are in an IRQ here! Can't do such slow things as printfs.

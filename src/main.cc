@@ -167,14 +167,13 @@ int main ()
         /*| History saved in the flash                                              |*/
         /*+-------------------------------------------------------------------------+*/
 
-        History *history = History::singleton (/*3*/);
-        FlashEepromStorage<2048> hiScoreStorage (2, 1, 0x801E800 /*0x08020000 - 3 * 2048*/);
+        History history{};
+        FlashEepromStorage<2048, 4> hiScoreStorage (4, 1, 0x801E800 /*0x08020000 - 3 * 2048*/);
         hiScoreStorage.init ();
-        history->setHiScoreStorage (&hiScoreStorage);
-        FlashEepromStorage<2048> historyStorage (2, 2, 0x801F000 /*0x08020000 - 2 * 2048*/);
+        history.setHiScoreStorage (&hiScoreStorage);
+        FlashEepromStorage<2048, 4> historyStorage (4, 2, 0x801F000 /*0x08020000 - 2 * 2048*/);
         historyStorage.init ();
-        history->setHistoryStorage (&historyStorage);
-        history->init ();
+        history.setHistoryStorage (&historyStorage);
 
         /*+-------------------------------------------------------------------------+*/
         /*| StopWatch, machine and IR                                               |*/
@@ -218,7 +217,7 @@ int main ()
         fStateMachine->setIr (&beam);
         fStateMachine->setDisplay (&display);
         fStateMachine->setBuzzer (&buzzer);
-        fStateMachine->setHistory (history);
+        fStateMachine->setHistory (&history);
         fStateMachine->setCanProtocol (&protocol);
         stopWatch->setResolution (config.resolution);
         display.setResolution (config.resolution);
@@ -251,9 +250,14 @@ int main ()
                 usbWrite ("\r\n");
         });
 
-        auto c = cl::cli<String> (cl::cmd (String ("result"), [&history] { history->printHistory (); }),
-                                  cl::cmd (String ("help"), [] { usbWrite ("battery, result\r\n"); }),
+        auto c = cl::cli<String> (cl::cmd (String ("result"), [&history] { history.printHistory (); }),
 
+                                  cl::cmd (String ("clear"),
+                                           [&history] {
+                                                   history.clearHiScore ();
+                                                   history.clearResults ();
+                                           }),
+                                  cl::cmd (String ("help"), [] { usbWrite ("battery, result\r\n"); }),
                                   cl::cmd (String ("battery"),
                                            [&power] {
                                                    std::array<char, 11> buf{};
@@ -296,7 +300,7 @@ int main ()
 
         Rtc rtc;
         Timer displayTimer;
-        Timer usbTimer;
+        // Timer usbTimer;
         Timer batteryTimer;
         int refreshRate = 9; // Something different than 10 so the screen is a little bit out of sync. This way the last digit changes.
 
@@ -304,20 +308,19 @@ int main ()
                 buzzer.run ();
                 button.run ();
 
-                if (usbTimer.isExpired ()) {
-                        // usbWrite ("Ala ma kota, a kot ma ale\r\n"); // 27
-                        // // ::debug->print ("34");
-                        // rtc.getDate ();
+                // if (usbTimer.isExpired ()) {
+                //         // usbWrite ("Ala ma kota, a kot ma ale\r\n"); // 27
+                //         // // ::debug->print ("34");
+                //         // rtc.getDate ();
 
-                        // debug.print ("Charging : ");
-                        // debug.print (chargeInProgress.get ());
-                        // debug.print (", complete : ");
-                        // debug.println (chargeComplete.get ());
-                        // usbTimer.start (1000);
-                }
+                //         // debug.print ("Charging : ");
+                //         // debug.print (chargeInProgress.get ());
+                //         // debug.print (", complete : ");
+                //         // debug.println (chargeComplete.get ());
+                //         // usbTimer.start (1000);
+                // }
 
                 if (displayTimer.isExpired ()) {
-                        // display.setTime (stopWatch->getTime ());
                         fStateMachine->run (Event::timePassed);
                         displayTimer.start (refreshRate);
                 }
