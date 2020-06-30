@@ -3,19 +3,41 @@ Buy [on Tinidie](http://) TODO.
 
 # Firmware upgrade
 ## Linux
-Manjaro : install dfu-util
+Manjaro : install dfu-util and run it as so:
+
+```sh
+dfu-util -D receiver.dfu -a0
+```
+
+Notes to myself (irrelevant to the end-user):
 
 ```
 dfu-util -D receiver.bin -d 0483:df11 -a0 --dfuse-address 0x08000000
-```
-
 git clone git@github.com:majbthrd/elf2dfuse.git
 elf2dfuse receiver.elf receiver.dfu
-
-dfu-util -D receiver.dfu -a0
+```
 
 ## Windows
-pass
+Install [ST's DFU program](https://www.st.com/en/development-tools/stsw-stm32080.html) (login required). Run the program. A window will pop up:
+
+![Main DFU window](doc/01.png)
+
+Connect the stopwatch, and the turn it on **holding the button pressed on**. The stopwatch should then be recognized and it shoud show up in the combo box as depicted below:
+
+![Stopwatch attached](doc/02.png)
+
+Pick a firmware file you want to use. The newest firmware can be always [found here TODO!]().
+
+![Main DFU window](doc/03.png)
+
+Simply click the "Upgrade" button:
+
+![Main DFU window](doc/04.png)
+
+Click "Yes" if the popup like shown below shows up:
+
+![Main DFU window](doc/05.png)
+
 
 # Key elements
 ```StopWatch``` class implements the time measurement. It uses TIM14 which runs at 100Hz, 1kHz or 10kHz depending on ```Config.resolution```. Its ```start``` method clears the ```TIM14->CNT``` (timer runs all the time), and sets a variable so that we know that tiome measurement is taking place. Upon ```stop``` call remaining value from ```TIM14->CNT``` is rounded and basing on this 1 is added to the ```time``` field.
@@ -53,7 +75,7 @@ dterm /dev/ttyACM0 115200
 ```
 
 ## Windows
-Windows versions prior to Windows 10 require a driver to be installed. You can find it in [this link](https://www.st.com/en/development-tools/stsw-stm32102.html). 
+Windows versions prior to Windows 10 require a driver to be installed. You can find it in [this link](https://www.st.com/en/development-tools/stsw-stm32102.html). Unfortunately an email address is required in the process.
 
 ![Download the driver](doc/01-con-driver-web.png)
 
