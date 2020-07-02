@@ -26,7 +26,7 @@ Connect the stopwatch, and the turn it on **holding the button pressed on**. The
 
 ![Stopwatch attached](doc/02.png)
 
-Pick a firmware file you want to use. The newest firmware can be always [found here TODO!]().
+Pick a firmware file you want to use. The newest firmware can be always [found here](https://github.com/gp8-stopwatch/receiver-firmware/releases).
 
 ![Main DFU window](doc/03.png)
 
