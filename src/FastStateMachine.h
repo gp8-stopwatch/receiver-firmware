@@ -33,8 +33,7 @@ enum class Event {
 
 class FastStateMachine {
 public:
-        static constexpr int BEAM_INTERRUPTION_EVENT = 3000;
-
+        static constexpr int BEAM_INTERRUPTION_EVENT = 5000;
         enum State {
                 INIT,
                 WAIT_FOR_BEAM,

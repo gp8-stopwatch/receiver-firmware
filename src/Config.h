@@ -46,13 +46,14 @@ struct Config {
         ContestantsNumber contestantsNum = ContestantsNumber::ONE;
         Resolution resolution{Resolution::ms_10};
         Brightness brightness{Brightness::levelAuto};
-        ParticipantsNumber participantsNumber;
-        StopMode stopMode;
+        ParticipantsNumber participantsNumber{ParticipantsNumber::participants1};
+        StopMode stopMode{StopMode::stop};
+        // size_t beamInterruptionEventMs{5000}; // Blind period after IR trigger
 
-        bool orientationFlip = false;
+        bool orientationFlip = true;
         bool irSensorOn = true;
         bool buzzerOn = true;
-        bool hasChanged = false; /// Says if the system should pay attention for settings that has been changed. Not user-settable.
+        bool hasChanged = true; /// Says if the system should pay attention for settings that has been changed. Not user-settable.
 };
 
 #endif
