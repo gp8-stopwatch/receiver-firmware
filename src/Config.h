@@ -22,7 +22,7 @@ constexpr size_t BUTTON_AND_IR_EXTI_PRIORITY = 1;
 constexpr size_t TEST_TRIGGER_EXTI_PRIORITY = 1;
 constexpr size_t STOPWATCH_PRIORITY = 0;
 
-static const char *VERSION = "1.0";
+static const char *VERSION = "1.0.1";
 
 using String = etl::string<16>;
 

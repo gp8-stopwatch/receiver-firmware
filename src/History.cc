@@ -25,7 +25,7 @@ void printTime (uint32_t time)
         time /= 60;
         uint32_t min = time % 60;
 
-        itoa ((unsigned int)(min), buf);
+        itoa ((unsigned int)(min), buf, 2);
         usbWrite (buf);
         usbWrite (":");
 
@@ -33,7 +33,7 @@ void printTime (uint32_t time)
         usbWrite (buf);
         usbWrite (",");
 
-        itoa ((unsigned int)(sec100), buf, 2);
+        itoa ((unsigned int)(sec100), buf, 5);
         usbWrite (buf);
 }
 
@@ -60,17 +60,49 @@ void History::storeHiScoreIf (uint32_t t)
 void History::printHistory ()
 {
         usbWrite ("Hi ");
-        printTime (hiScore);
-        usbWrite ("\r\n");
-        usbWrite ("\r\n");
 
-        for (int i = 63; i >= 0; --i) {
-                uint32_t tim = *reinterpret_cast<uint32_t const *> (historyStorage->read (nullptr, sizeof (uint32_t), 0, i));
-                printTime (tim);
-                usbWrite ("\r\n");
+        if (hiScore != std::numeric_limits<uint32_t>::max ()) {
+                printTime (hiScore);
+        }
+        else {
+                printTime (0);
         }
 
         usbWrite ("\r\n");
+        usbWrite ("\r\n");
+
+        bool newLine{};
+        for (int i = MAX_RESULTS_NUM - 1; i >= 0; --i) {
+                uint32_t tim = *reinterpret_cast<uint32_t const *> (historyStorage->read (nullptr, sizeof (uint32_t), 0, i));
+
+                if (tim != std::numeric_limits<uint32_t>::max ()) {
+                        printTime (tim);
+                        usbWrite ("\r\n");
+                        newLine = true;
+                }
+        }
+
+        if (newLine) {
+                usbWrite ("\r\n"); // Only if results were there
+        }
+}
+
+/*****************************************************************************/
+
+void History::printLast ()
+{
+        uint32_t last{};
+
+        for (int i = MAX_RESULTS_NUM - 1; i >= 0; --i) {
+                uint32_t tim = *reinterpret_cast<uint32_t const *> (historyStorage->read (nullptr, sizeof (uint32_t), 0, i));
+
+                if (tim != std::numeric_limits<uint32_t>::max ()) {
+                        last = tim;
+                }
+        }
+
+        printTime (last);
+        usbWrite ("\r\n\r\n");
 }
 
 /*****************************************************************************/

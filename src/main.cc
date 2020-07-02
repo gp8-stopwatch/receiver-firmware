@@ -258,13 +258,14 @@ int main ()
         });
 
         auto c = cl::cli<String> (cl::cmd (String ("result"), [&history] { history.printHistory (); }),
+                                  cl::cmd (String ("last"), [&history] { history.printLast (); }),
 
                                   cl::cmd (String ("clear"),
                                            [&history] {
                                                    history.clearHiScore ();
                                                    history.clearResults ();
                                            }),
-                                  cl::cmd (String ("help"), [] { usbWrite ("battery, result\r\n"); }),
+                                  cl::cmd (String ("help"), [] { usbWrite ("battery, clear, last, result\r\n\r\n"); }),
                                   cl::cmd (String ("battery"),
                                            [&power] {
                                                    std::array<char, 11> buf{};
@@ -274,7 +275,7 @@ int main ()
 
                                                    itoa ((unsigned int)(power.getBatteryPercent ()), buf.data ());
                                                    usbWrite (buf.cbegin ());
-                                                   usbWrite ("%\r\n");
+                                                   usbWrite ("%\r\n\r\n");
                                            })
 
         );

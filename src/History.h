@@ -16,10 +16,13 @@
 
 class History {
 public:
+        static constexpr size_t MAX_RESULTS_NUM = 64;
+
         void store (uint32_t t);
 
         uint32_t getHiScore () const { return hiScore; }
         void printHistory ();
+        void printLast ();
 
         void setHistoryStorage (ICircullarQueueStorage *value) { historyStorage = value; }
         void setHiScoreStorage (IRandomAccessStorage *value)
