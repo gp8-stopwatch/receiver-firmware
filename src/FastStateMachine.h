@@ -66,6 +66,8 @@ public:
         void setButton (Button *b) { this->button = b; }
         void setCanProtocol (CanProtocol *cp) { protocol = cp; }
 
+        bool isCounting () const { return state == State::GP8_RUNNING; }
+
 private:
         void ready_entryAction (bool loop = false);
         void running_entryAction (bool canStart);

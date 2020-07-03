@@ -91,6 +91,8 @@ PowerManagement::PowerManagement ()
         }
 
         senseOn = false;
+        chargeInProgress = false;
+        chargeInProgress = false;
 }
 
 /****************************************************************************/

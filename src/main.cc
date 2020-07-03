@@ -236,6 +236,12 @@ int main ()
         PowerManagement power;
 
         /*+-------------------------------------------------------------------------+*/
+        /*| RTC                                                                     |*/
+        /*+-------------------------------------------------------------------------+*/
+
+        Rtc rtc;
+
+        /*+-------------------------------------------------------------------------+*/
         /*| USB                                                                     |*/
         /*+-------------------------------------------------------------------------+*/
 
@@ -259,6 +265,16 @@ int main ()
 
         auto c = cl::cli<String> (cl::cmd (String ("result"), [&history] { history.printHistory (); }),
                                   cl::cmd (String ("last"), [&history] { history.printLast (); }),
+                                  cl::cmd (String ("date"), [&rtc] { rtc.getDate (); }),
+                                  cl::cmd (String ("iscounting"),
+                                           [&fStateMachine] {
+                                                   if (fStateMachine->isCounting ()) {
+                                                           usbWrite ("1\r\n\r\n");
+                                                   }
+                                                   else {
+                                                           usbWrite ("0\r\n\r\n");
+                                                   }
+                                           }),
 
                                   cl::cmd (String ("clear"),
                                            [&history] {
@@ -302,11 +318,6 @@ int main ()
 
         DisplayMenu menu (config, display, *fStateMachine);
 
-        /*+-------------------------------------------------------------------------+*/
-        /*| RTC                                                                     |*/
-        /*+-------------------------------------------------------------------------+*/
-
-        Rtc rtc;
         Timer displayTimer;
         // Timer usbTimer;
         Timer batteryTimer;

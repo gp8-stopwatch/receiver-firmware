@@ -28,8 +28,8 @@ public:
 
 private:
         ADC_HandleTypeDef hadc{};
-        Gpio chargeInProgress{GPIOB, GPIO_PIN_7, GPIO_MODE_INPUT, GPIO_PULLUP};
-        Gpio chargeComplete{GPIOB, GPIO_PIN_6, GPIO_MODE_INPUT, GPIO_PULLUP};
+        Gpio chargeInProgress{GPIOB, GPIO_PIN_7, GPIO_MODE_INPUT, GPIO_NOPULL};
+        Gpio chargeComplete{GPIOB, GPIO_PIN_6, GPIO_MODE_INPUT, GPIO_NOPULL};
         Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
         uint32_t lastBatteryVoltage{};
         uint32_t lastAmbientLight{};

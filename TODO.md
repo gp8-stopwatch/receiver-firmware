@@ -85,6 +85,7 @@
   * [x] Rtc date and time is persisted when power is turned off
   * [ ] test with low quiescent LDO.
  * [x] battery level sensing.
+   * [ ] There's something wrong with the LEDs
  * [ ] loop measurements 
  * [x] input in console
  * [ ] Time bigger than 16b in history and everywhere else.
@@ -99,6 +100,12 @@
  * [x] buzzer volume or if buzzer at all.
  * [x] Screen dims itself to 0 sometimes.
  * [ ] Dots indicating the resolution of the time display.
+
+# Piotr
+* [ ] Zapis ustawień
+* [ ] Czas ślepnięcia jako ustawienie
+* [ ] iscounting
+* [ ] current (aktualny wynik - to samo co last, więc może last)
   
 # Infrastructure
 * [x] Clean the code (prepare for new repo that is)
