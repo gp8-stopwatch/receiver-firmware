@@ -104,8 +104,13 @@
 # Piotr
 * [ ] Zapis ustawień
 * [ ] Czas ślepnięcia jako ustawienie
-* [ ] iscounting
+* [x] iscounting
 * [ ] current (aktualny wynik - to samo co last, więc może last)
+* [ ] Osłonka przeciwsłoneczna
+* [ ] Zewnętrzny czujnik
+* [ ] Opcja tyrybu /zawody/trening. Opcje zawody to takie dzialanie jak jest teraz. Trening : Liczy, wyswietla czas przez 10s, w miedzyczasie liczy "drugie okrazenie, i znowu po przecieciu wiazki pokazuje czas przez 10s i jednoczesnie liczy czas do nastepnego.
+* [ ] Opcja /restart : Wyslanie tej komendy powoduje zatrzymanie liczenia czasu jesli bylo wlaczone, ustawia wyswietlacz na 0:00 i czeka na przeciecie wiazki i pomiar
+* [ ] Pipczenie - jesli mozesz zobic na start 1 pip a na pomiar w trybie zawodow 3xpip. Pomiar w tyrybie /trening 2x pip
   
 # Infrastructure
 * [x] Clean the code (prepare for new repo that is)

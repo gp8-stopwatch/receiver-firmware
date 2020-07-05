@@ -9,14 +9,10 @@
 #include "Rtc.h"
 #include "Debug.h"
 #include "ErrorHandler.h"
-#include <stm32f0xx_hal.h>
-// #include <stm32f4xx_hal_rtc_ex.h>
-
-RTC_HandleTypeDef rtcHandle;
 
 /*****************************************************************************/
 
-void RTC_CalendarConfig ()
+void Rtc::RTC_CalendarConfig ()
 {
         RTC_DateTypeDef sdatestructure;
         RTC_TimeTypeDef stimestructure;
@@ -98,7 +94,9 @@ Rtc::Rtc ()
                 Error_Handler ();
         }
 
-        if (HAL_RTCEx_BKUPRead (&rtcHandle, RTC_BKP_DR1) != 0x32F2) {
+        auto bkpReg = HAL_RTCEx_BKUPRead (&rtcHandle, RTC_BKP_DR1);
+
+        if (bkpReg != 0x32F2) {
                 /* Configure RTC Calendar */
                 RTC_CalendarConfig ();
         }
@@ -142,21 +140,21 @@ void Rtc::deactivateWakeup ()
 
 /*****************************************************************************/
 
-void rtcTimeShow ()
-{
-        RTC_DateTypeDef sdatestructureget;
-        RTC_TimeTypeDef stimestructureget;
+// void rtcTimeShow ()
+// {
+//         RTC_DateTypeDef sdatestructureget;
+//         RTC_TimeTypeDef stimestructureget;
 
-        /* Get the RTC current Time */
-        HAL_RTC_GetTime (&rtcHandle, &stimestructureget, RTC_FORMAT_BIN);
-        /* Get the RTC current Date */
-        HAL_RTC_GetDate (&rtcHandle, &sdatestructureget, RTC_FORMAT_BIN);
-        /* Display time Format : hh:mm:ss */
-        //        printf ("%d:%d:%d\n", stimestructureget.Hours, stimestructureget.Minutes, stimestructureget.Seconds);
-        //        usb.log (SATELITES_NUMBER, SATELITES_NUMBER_T, &stimestructureget.Hours);
-        //        usb.log (SATELITES_NUMBER, SATELITES_NUMBER_T, &stimestructureget.Minutes);
-        //        usb.log (SATELITES_NUMBER, SATELITES_NUMBER_T, &stimestructureget.Seconds);
-}
+//         /* Get the RTC current Time */
+//         HAL_RTC_GetTime (&rtcHandle, &stimestructureget, RTC_FORMAT_BIN);
+//         /* Get the RTC current Date */
+//         HAL_RTC_GetDate (&rtcHandle, &sdatestructureget, RTC_FORMAT_BIN);
+//         /* Display time Format : hh:mm:ss */
+//         //        printf ("%d:%d:%d\n", stimestructureget.Hours, stimestructureget.Minutes, stimestructureget.Seconds);
+//         //        usb.log (SATELITES_NUMBER, SATELITES_NUMBER_T, &stimestructureget.Hours);
+//         //        usb.log (SATELITES_NUMBER, SATELITES_NUMBER_T, &stimestructureget.Minutes);
+//         //        usb.log (SATELITES_NUMBER, SATELITES_NUMBER_T, &stimestructureget.Seconds);
+// }
 
 // void Rtc::setDate (MicroDate d)
 // {
@@ -175,7 +173,7 @@ void rtcTimeShow ()
 
 /*****************************************************************************/
 
-void Rtc::getDate () const
+std::pair<RTC_DateTypeDef, Time> Rtc::getDate () const
 {
         RTC_DateTypeDef sDate;
         RTC_TimeTypeDef sTime;
@@ -183,20 +181,8 @@ void Rtc::getDate () const
         HAL_RTC_GetTime (&rtcHandle, &sTime, RTC_FORMAT_BIN);
         HAL_RTC_GetDate (&rtcHandle, &sDate, RTC_FORMAT_BIN);
 
-        debug->print (sDate.Year);
-        debug->print ("-");
-        debug->print (sDate.Month);
-        debug->print ("-");
-        debug->print (sDate.Date);
-        debug->print (", ");
-
-        debug->print (sTime.Hours);
-        debug->print (":");
-        debug->print (sTime.Minutes);
-        debug->print (":");
-        debug->println (sTime.Seconds);
-
-        // return d;
+        Time t{sTime.Hours, sTime.Minutes, sTime.Seconds, sTime.TimeFormat};
+        return {sDate, t};
 }
 
 /*****************************************************************************/
@@ -206,22 +192,3 @@ void Rtc::backupRegisterWrite (uint32_t backupRegister, uint32_t data) { HAL_RTC
 /*---------------------------------------------------------------------------*/
 
 uint32_t Rtc::backupRegisterRead (uint32_t backupRegister) const { return HAL_RTCEx_BKUPRead (&rtcHandle, backupRegister); }
-
-/*****************************************************************************/
-
-// extern "C" void RTC_WKUP_IRQHandler (void)
-// {
-
-//         if (__HAL_RTC_WAKEUPTIMER_GET_IT (&rtcHandle, RTC_IT_WUT)) {
-//                 /* Get the status of the Interrupt */
-//                 if ((uint32_t) (rtcHandle.Instance->CR & RTC_IT_WUT) != (uint32_t)RESET) {
-//                         // debugLog (INFO_C, INFO_C_T, "Wakeup", 0);
-
-//                         /* Clear the WAKEUPTIMER interrupt pending bit */
-//                         __HAL_RTC_WAKEUPTIMER_CLEAR_FLAG (&rtcHandle, RTC_FLAG_WUTF);
-//                 }
-//         }
-
-//         /* Clear the EXTI's line Flag for RTC WakeUpTimer */
-//         __HAL_RTC_WAKEUPTIMER_EXTI_CLEAR_FLAG ();
-// }

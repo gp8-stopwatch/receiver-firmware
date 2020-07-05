@@ -6,9 +6,8 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
-#ifndef GP8_HISTORY_H
-#define GP8_HISTORY_H
-
+#pragma once
+#include "Rtc.h"
 #include <cstdint>
 #include <limits>
 #include <storage/ICircullarQueueStorage.h>
@@ -17,6 +16,14 @@
 class History {
 public:
         static constexpr size_t MAX_RESULTS_NUM = 64;
+
+        struct Entry {
+                RTC_DateTypeDef date;
+                Time time;
+                uint32_t result;
+        };
+
+        explicit History (Rtc &r) : rtc{r} {}
 
         void store (uint32_t t);
 
@@ -41,6 +48,5 @@ private:
         uint32_t hiScore = std::numeric_limits<uint32_t>::max ();
         IRandomAccessStorage *hiScoreStorage = nullptr;
         ICircullarQueueStorage *historyStorage = nullptr;
+        Rtc &rtc;
 };
-
-#endif // HISTORY_H

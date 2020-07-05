@@ -163,15 +163,21 @@ int main ()
 #endif
 
         /*+-------------------------------------------------------------------------+*/
+        /*| RTC                                                                     |*/
+        /*+-------------------------------------------------------------------------+*/
+
+        Rtc rtc;
+
+        /*+-------------------------------------------------------------------------+*/
         /*| History saved in the flash                                              |*/
         /*+-------------------------------------------------------------------------+*/
 
 #ifdef WITH_FLASH
-        History history{};
-        FlashEepromStorage<2048, 4> hiScoreStorage (4, 1, 0x801E800 /*0x08020000 - 3 * 2048*/);
+        History history{rtc};
+        FlashEepromStorage<2048, 4> hiScoreStorage (12, 1, 0x801E800 /*0x08020000 - 3 * 2048*/);
         hiScoreStorage.init ();
         history.setHiScoreStorage (&hiScoreStorage);
-        FlashEepromStorage<2048, 4> historyStorage (4, 2, 0x801F000 /*0x08020000 - 2 * 2048*/);
+        FlashEepromStorage<2048, 4> historyStorage (12, 2, 0x801F000 /*0x08020000 - 2 * 2048*/);
         historyStorage.init ();
         history.setHistoryStorage (&historyStorage);
 #endif
@@ -236,12 +242,6 @@ int main ()
         PowerManagement power;
 
         /*+-------------------------------------------------------------------------+*/
-        /*| RTC                                                                     |*/
-        /*+-------------------------------------------------------------------------+*/
-
-        Rtc rtc;
-
-        /*+-------------------------------------------------------------------------+*/
         /*| USB                                                                     |*/
         /*+-------------------------------------------------------------------------+*/
 
@@ -265,6 +265,19 @@ int main ()
 
         auto c = cl::cli<String> (cl::cmd (String ("result"), [&history] { history.printHistory (); }),
                                   cl::cmd (String ("last"), [&history] { history.printLast (); }),
+                                  cl::cmd (String ("1"), [&history] { history.store (1); }),
+                                  cl::cmd (String ("10"),
+                                           [&history] {
+                                                   for (int i = 0; i < 10; ++i) {
+                                                           history.store (2);
+                                                   }
+                                           }),
+                                  cl::cmd (String ("28"),
+                                           [&history] {
+                                                   for (int i = 0; i < 28; ++i) {
+                                                           history.store (28);
+                                                   }
+                                           }),
                                   cl::cmd (String ("date"), [&rtc] { rtc.getDate (); }),
                                   cl::cmd (String ("iscounting"),
                                            [&fStateMachine] {
