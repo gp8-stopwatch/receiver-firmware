@@ -18,7 +18,8 @@ INCLUDE_DIRECTORIES("deps/simple-cli/src")
 SET (LIB_MICRO_ROOT "deps/libmicro")
 INCLUDE_DIRECTORIES ("${LIB_MICRO_ROOT}/src")
 
-# ADD_DEFINITIONS (-DWITH_DISPLAY=1)
+ADD_DEFINITIONS (-DWITH_SOUND=1)
+ADD_DEFINITIONS (-DWITH_DISPLAY=1)
 # ADD_DEFINITIONS (-DCOMMON_ANODE=1)
 ADD_DEFINITIONS (-DCOMMON_CATHODE=1)
 ADD_DEFINITIONS (-DWITH_USB=1)
@@ -43,6 +44,7 @@ IF (DEFINED DEVICE)
         "src/DisplayMenu.cc"
         "src/Rtc.cc"
         "src/PowerManagement.cc"
+        "src/Config.cc"
 
 
         "src/usb/usbd_cdc.c"

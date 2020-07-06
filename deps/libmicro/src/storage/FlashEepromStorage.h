@@ -138,7 +138,7 @@ template <size_t PAGE_SIZE, size_t WRITE_SIZE> void FlashEepromStorage<PAGE_SIZE
 
 template <size_t PAGE_SIZE, size_t WRITE_SIZE> void FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::initOffsets ()
 {
-        if (!contents) {
+        if (contents == nullptr) {
                 Error_Handler ();
         }
 

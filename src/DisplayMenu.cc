@@ -13,7 +13,7 @@
 void DisplayMenu::onShortPress ()
 {
         // Cycle the menu.
-        option = Option ((int(option) + 1) % int(Option::LAST_OPTION));
+        option = Option ((int (option) + 1) % int (Option::LAST_OPTION));
         prepareMenuForOption (option);
 }
 
@@ -42,7 +42,7 @@ void DisplayMenu::onLongPress ()
         }
 
         prepareMenuForOption (option);
-        config.hasChanged = true;
+        cfg::changed () = true;
 }
 
 /*****************************************************************************/

@@ -21,7 +21,7 @@ public:
                 LAST_OPTION
         };
 
-        DisplayMenu (Config &c, IDisplay &d, FastStateMachine &m) : config (c), display (d), machine (m) {}
+        DisplayMenu (cfg::Config &c, IDisplay &d, FastStateMachine &m) : config (c), display (d), machine (m) {}
 
         void onShortPress ();
         void onLongPress ();
@@ -30,7 +30,7 @@ private:
         void prepareMenuForOption (Option o);
 
 private:
-        Config &config;
+        cfg::Config &config;
         IDisplay &display;
         FastStateMachine &machine;
         Option option = Option::STOP_WATCH;

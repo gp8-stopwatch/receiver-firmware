@@ -24,7 +24,13 @@ public:
         void setActive (bool b) { active = b; }
 
 private:
-        void on () { pin = true; }
+        void on ()
+        {
+#ifdef WITH_SOUND
+                pin = true;
+#endif
+        }
+
         void off () { pin = false; }
 
 private:

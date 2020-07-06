@@ -107,7 +107,7 @@ public:
                 0b00000000, // [space] 36
         };
 
-        void setResolution (Resolution res) override;
+        void setResolution (cfg::Resolution res) override;
 
 private:
         /// Turns a single display on or fof
@@ -134,7 +134,7 @@ private:
         uint8_t brightnessCycle = 0;
 
         bool flip = false;
-        Resolution resolution{};
+        cfg::Resolution resolution{};
         int factorIndex{};
         uint32_t prescaler = 1;
 };

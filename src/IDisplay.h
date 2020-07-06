@@ -45,5 +45,5 @@ struct IDisplay {
         virtual void clear () = 0;
         virtual void setFlip (bool b) = 0;
 
-        virtual void setResolution (Resolution res) = 0;
+        virtual void setResolution (cfg::Resolution res) = 0;
 };

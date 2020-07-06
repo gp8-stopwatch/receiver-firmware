@@ -121,18 +121,7 @@ int main ()
         /*+-------------------------------------------------------------------------+*/
 
         const uint32_t *MICRO_CONTROLLER_UID = new (reinterpret_cast<void *> (0x1FFFF7AC)) uint32_t;
-        Config config; // TODO read config from FLASH memory.
-
-        /*+-------------------------------------------------------------------------+*/
-        /*| Backlight, beeper                                                       |*/
-        /*+-------------------------------------------------------------------------+*/
-
-        Gpio buzzerPin (GPIOB, GPIO_PIN_14);
-        Buzzer buzzer (buzzerPin);
-
-        if (config.buzzerOn) {
-                buzzer.beep (20, 0, 1);
-        }
+        cfg::Config config; // TODO read config from FLASH memory.
 
         Gpio debugUartGpios (GPIOA, GPIO_PIN_9 | GPIO_PIN_10, GPIO_MODE_AF_OD, GPIO_PULLUP, GPIO_SPEED_FREQ_HIGH, GPIO_AF1_USART1);
         Usart debugUart (USART1, 115200);
@@ -167,6 +156,11 @@ int main ()
         /*+-------------------------------------------------------------------------+*/
 
 #ifdef WITH_FLASH
+        FlashEepromStorage<2048, 2> configStorage (2, 1, 0x08020000 - 4 * 2048);
+        configStorage.init ();
+        // Read the config (TODO move somewhere)
+        config = *reinterpret_cast<cfg::Config const *> (configStorage.read (nullptr, 2, 0, 0));
+
         History history{};
         FlashEepromStorage<2048, 4> hiScoreStorage (4, 1, 0x801E800 /*0x08020000 - 3 * 2048*/);
         hiScoreStorage.init ();
@@ -175,6 +169,17 @@ int main ()
         historyStorage.init ();
         history.setHistoryStorage (&historyStorage);
 #endif
+
+        /*+-------------------------------------------------------------------------+*/
+        /*| Backlight, beeper                                                       |*/
+        /*+-------------------------------------------------------------------------+*/
+
+        Gpio buzzerPin (GPIOB, GPIO_PIN_14);
+        Buzzer buzzer (buzzerPin);
+
+        if (config.buzzerOn) {
+                buzzer.beep (20, 0, 1);
+        }
 
         /*+-------------------------------------------------------------------------+*/
         /*| StopWatch, machine and IR                                               |*/
@@ -354,12 +359,15 @@ int main ()
                         buzzer.beep (20, 20, 2);
                 }
 
-                if (config.hasChanged) {
-                        config.hasChanged = false;
+                if (cfg::changed ()) {
+                        cfg::changed () = false;
 
                         display.setFlip (config.orientationFlip);
                         beam.setActive (config.irSensorOn);
                         buzzer.setActive (config.buzzerOn);
+
+                        // TODO absolutly move this from here!
+                        configStorage.store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
                 }
 
                 if (batteryTimer.isExpired ()) {
