@@ -33,6 +33,7 @@ extern "C" {
 #include "usbd_composite.h"
 #include "usbd_def.h"
 #include "usbd_ioreq.h"
+#include <stdbool.h>
 
 #define CDC_DATA_OUT_MAX_PACKET_SIZE USB_FS_MAX_PACKET_SIZE /* don't exceed USB_FS_MAX_PACKET_SIZE; Linux data loss happens otherwise */
 #define CDC_DATA_IN_MAX_PACKET_SIZE 256

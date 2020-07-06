@@ -136,7 +136,7 @@ void History::printHistory ()
                 if (en.result != std::numeric_limits<uint32_t>::max ()) {
                         ++cnt;
                         print (cnt);
-                        usbWrite (" ");
+                        // usbWrite (" ");
                         printEntry (en);
                         usbWrite ("\r\n");
                         newLine = true;

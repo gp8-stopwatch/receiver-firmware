@@ -265,7 +265,7 @@ int main ()
 
         auto c = cl::cli<String> (cl::cmd (String ("result"), [&history] { history.printHistory (); }),
                                   cl::cmd (String ("last"), [&history] { history.printLast (); }),
-                                  cl::cmd (String ("1"), [&history] { history.store (1); }),
+                                  cl::cmd (String ("1"), [&history] { history.store (111); }),
                                   cl::cmd (String ("10"),
                                            [&history] {
                                                    for (int i = 0; i < 10; ++i) {
@@ -275,7 +275,7 @@ int main ()
                                   cl::cmd (String ("28"),
                                            [&history] {
                                                    for (int i = 0; i < 28; ++i) {
-                                                           history.store (28);
+                                                           history.store (i + 1);
                                                    }
                                            }),
                                   cl::cmd (String ("date"), [&rtc] { rtc.getDate (); }),
