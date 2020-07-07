@@ -19,6 +19,7 @@ public:
                 ir_on,      // Whether IR sensor i active or not.
                 buzzer_on,
                 resolution,
+                stopMode,
                 last_option
         };
 

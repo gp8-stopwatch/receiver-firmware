@@ -41,6 +41,10 @@ void DisplayMenu::onLongPress ()
                 config.resolution = Resolution ((int (config.resolution) - 1) % RESOLUTION_NUMBER_OF_OPTIONS);
                 break;
 
+        case Option::stopMode:
+                config.stopMode = StopMode (!bool (config.stopMode));
+                break;
+
         default:
                 break;
         }
@@ -111,6 +115,15 @@ void DisplayMenu::prepareMenuForOption (Option o)
                         break;
                 }
 
+                break;
+
+        case Option::stopMode:
+                if (config.stopMode == StopMode::stop) {
+                        display.setText ("5.Stop");
+                }
+                else {
+                        display.setText ("5.loop");
+                }
                 break;
 
         default:

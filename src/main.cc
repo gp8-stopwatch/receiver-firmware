@@ -366,7 +366,6 @@ int main ()
         DisplayMenu menu (config, display, *fStateMachine);
 
         Timer displayTimer;
-        // Timer usbTimer;
         Timer batteryTimer;
         int refreshRate = 9; // Something different than 10 so the screen is a little bit out of sync. This way the last digit changes.
 
@@ -380,8 +379,6 @@ int main ()
         };
 
         refresh ();
-
-        getConfig ().stopMode = StopMode::restart;
 
         while (true) {
                 buzzer.run ();

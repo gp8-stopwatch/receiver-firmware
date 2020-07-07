@@ -38,19 +38,7 @@ public:
         static constexpr int BEAM_INTERRUPTION_EVENT = 5000;
         static constexpr int LOOP_DISPLAY_TIMEOUT = 1000;
 
-        enum State {
-                INIT,
-                WAIT_FOR_BEAM,
-                GP8_READY,
-                GP8_RUNNING,
-                GP8_STOP,
-                // LOOP_READY,
-                LOOP_RUNNING,
-                // LOOP_STOP,
-                // HI_CLEAR_READY,
-                // RES_CLEAR_READY,
-                PAUSED
-        };
+        enum State { INIT, WAIT_FOR_BEAM, GP8_READY, GP8_RUNNING, GP8_STOP, LOOP_RUNNING, PAUSED };
 
         static FastStateMachine *singleton ()
         {
