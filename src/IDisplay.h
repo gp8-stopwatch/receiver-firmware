@@ -7,7 +7,7 @@
  ****************************************************************************/
 
 #pragma once
-#include "Config.h"
+#include "Types.h"
 #include <cstdint>
 
 struct IDisplay {
@@ -26,7 +26,7 @@ struct IDisplay {
         virtual uint8_t getIcons () const = 0;
         virtual void setIcons (uint8_t bitmask) = 0;
 
-        virtual void setTime (uint32_t) = 0;
+        virtual void setTime (uint32_t, Resolution res) = 0;
         virtual void setText (const char *) = 0;
 
         /**
@@ -45,5 +45,5 @@ struct IDisplay {
         virtual void clear () = 0;
         virtual void setFlip (bool b) = 0;
 
-        virtual void setResolution (cfg::Resolution res) = 0;
+        virtual void setResolution (Resolution res) = 0;
 };

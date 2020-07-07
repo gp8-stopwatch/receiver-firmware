@@ -14,7 +14,7 @@
 
 /****************************************************************************/
 
-void StopWatch::setResolution (cfg::Resolution res)
+void StopWatch::setResolution (Resolution res)
 {
         if (running) {
                 std::terminate ();

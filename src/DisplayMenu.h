@@ -14,11 +14,12 @@
 class DisplayMenu {
 public:
         enum class Option {
-                STOP_WATCH,        // Normal stopwatch operation i.e. time is displayed. The main screen.
-                SCREEN_ORIENTATON, // Whether display is flipped horizontally or not.
-                IR_ON,             // Whether IR sensor i active or not.
-                BUZZER_ON,
-                LAST_OPTION
+                stop_watch, // Normal stopwatch operation i.e. time is displayed. The main screen.
+                flip,       // Whether display is flipped horizontally or not.
+                ir_on,      // Whether IR sensor i active or not.
+                buzzer_on,
+                resolution,
+                last_option
         };
 
         DisplayMenu (cfg::Config &c, IDisplay &d, FastStateMachine &m) : config (c), display (d), machine (m) {}
@@ -33,5 +34,5 @@ private:
         cfg::Config &config;
         IDisplay &display;
         FastStateMachine &machine;
-        Option option = Option::STOP_WATCH;
+        Option option = Option::stop_watch;
 };

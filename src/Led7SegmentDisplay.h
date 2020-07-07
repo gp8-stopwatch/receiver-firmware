@@ -46,7 +46,7 @@ public:
         uint8_t getIcons () const override { return 0; }
         void setIcons (uint8_t /*bitmask*/) override {}
 
-        void setTime (uint32_t) override;
+        void setTime (uint32_t time, Resolution res) override;
         void setText (const char *) override;
 
         void setFlip (bool b) override { flip = b; }
@@ -107,7 +107,7 @@ public:
                 0b00000000, // [space] 36
         };
 
-        void setResolution (cfg::Resolution res) override;
+        void setResolution (Resolution res) override;
 
 private:
         /// Turns a single display on or fof
@@ -134,7 +134,7 @@ private:
         uint8_t brightnessCycle = 0;
 
         bool flip = false;
-        cfg::Resolution resolution{};
+        Resolution resolution{};
         int factorIndex{};
         uint32_t prescaler = 1;
 };

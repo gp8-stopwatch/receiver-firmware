@@ -6,14 +6,11 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
-// #include "Config.h"
+#pragma once
+#include "Config.h"
+#include <storage/FlashEepromStorage.h>
 
-namespace cfg {
+extern cfg::Config &getConfig ();
 
-bool &changed ()
-{
-        static bool h = false; /// Says if the system should pay attention for settings that has been changed.
-        return h;
-}
-
-} // namespace cfg
+using ConfigFlashEepromStorage = FlashEepromStorage<2048, 2>;
+extern ConfigFlashEepromStorage getConfigFlashEepromStorage ();

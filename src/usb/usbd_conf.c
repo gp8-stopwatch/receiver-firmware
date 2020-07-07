@@ -26,7 +26,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "Config.h"
+#include "Types.h"
 #include "stm32f0xx_hal.h"
 #include "usbd_composite.h"
 #include "usbd_core.h"

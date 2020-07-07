@@ -28,7 +28,9 @@ enum class Event {
         irTrigger,   /// IR beam interrupted
         testTrigger, /// Test GPIO state changed
         canBusStart,
-        canBusStop
+        canBusStop,
+        pause,
+        reset, // Use for resume after pause
 };
 
 class FastStateMachine {
@@ -55,8 +57,7 @@ public:
         }
 
         void run (Event event);
-        void pause () { state = PAUSED; }
-        void resume () { state = INIT; }
+        bool isCounting () const { return state == State::GP8_RUNNING; }
 
         void setIr (IInfraRedBeam *i) { this->ir = i; }
         void setStopWatch (StopWatch *s) { this->stopWatch = s; }
@@ -66,14 +67,13 @@ public:
         void setButton (Button *b) { this->button = b; }
         void setCanProtocol (CanProtocol *cp) { protocol = cp; }
 
-        bool isCounting () const { return state == State::GP8_RUNNING; }
-
 private:
         void ready_entryAction (bool loop = false);
         void running_entryAction (bool canStart);
         void stop_entryAction (std::optional<uint32_t> time);
-        void hiClearReady_entryAction ();
-        void resultsClearReady_entryAction ();
+        // void hiClearReady_entryAction ();
+        // void resultsClearReady_entryAction ();
+        void pause_entryAction ();
 
         /*--------------------------------------------------------------------------*/
 
