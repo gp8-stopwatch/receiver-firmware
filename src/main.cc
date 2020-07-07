@@ -234,8 +234,6 @@ int main ()
 #ifdef WITH_CAN
         fStateMachine->setCanProtocol (&protocol);
 #endif
-        stopWatch->setResolution (config.resolution);
-        display.setResolution (config.resolution);
 
         /*+-------------------------------------------------------------------------+*/
         /*| Battery, light sensor, others                                            |*/
@@ -374,6 +372,8 @@ int main ()
                 display.setFlip (config.orientationFlip);
                 beam.setActive (config.irSensorOn);
                 buzzer.setActive (config.buzzerOn);
+                stopWatch->setResolution (config.resolution);
+                display.setResolution (config.resolution);
         };
 
         refresh ();
@@ -381,18 +381,6 @@ int main ()
         while (true) {
                 buzzer.run ();
                 button.run ();
-
-                // if (usbTimer.isExpired ()) {
-                //         // usbWrite ("Ala ma kota, a kot ma ale\r\n"); // 27
-                //         // // ::debug->print ("34");
-                //         // rtc.getDate ();
-
-                //         // debug.print ("Charging : ");
-                //         // debug.print (chargeInProgress.get ());
-                //         // debug.print (", complete : ");
-                //         // debug.println (chargeComplete.get ());
-                //         // usbTimer.start (1000);
-                // }
 
                 if (displayTimer.isExpired ()) {
                         fStateMachine->run (Event::timePassed);

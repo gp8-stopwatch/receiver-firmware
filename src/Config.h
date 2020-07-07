@@ -42,6 +42,7 @@ enum OperationMode {
 };
 
 enum ContestantsNumber { TWO = 0, ONE = 1 };
+static constexpr int RESOLUTION_NUMBER_OF_OPTIONS = 4;
 enum Resolution { us_10 = 0, us_100 = 1, ms_1 = 2, ms_10 = 3 };
 enum Brightness { level1 = 0, level2 = 1, level3 = 2, level4 = 3, level5 = 4, levelAuto = 0b111 };
 enum ParticipantsNumber { participants1 = 1, participants2 = 0 };
