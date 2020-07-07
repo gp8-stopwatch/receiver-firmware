@@ -274,27 +274,27 @@ int main ()
         auto c = cl::cli<String> (cl::cmd (String ("result"), [&history] { history.printHistory (); }),
                                   cl::cmd (String ("last"), [&history] { history.printLast (); }),
                                   cl::cmd (String ("date"), [&rtc] { rtc.getDate (); }),
-                                  cl::cmd (String ("store256"),
-                                           [&config, &configStorage] {
-                                                   for (int i = 0; i < 256; ++i) {
-                                                           configStorage.store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
-                                                           //    usbWrite (".\r\n");
-                                                   }
-                                           }),
-                                  cl::cmd (String ("store128"),
-                                           [&config, &configStorage] {
-                                                   for (int i = 0; i < 128; ++i) {
-                                                           configStorage.store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
-                                                           //    usbWrite (".\r\n");
-                                                   }
-                                           }),
-                                  cl::cmd (String ("store16"),
-                                           [&config, &configStorage] {
-                                                   for (int i = 0; i < 16; ++i) {
-                                                           configStorage.store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
-                                                           //    usbWrite (".\r\n");
-                                                   }
-                                           }),
+                                  //   cl::cmd (String ("store256"),
+                                  //            [&config, &configStorage] {
+                                  //                    for (int i = 0; i < 256; ++i) {
+                                  //                            configStorage.store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
+                                  //                            //    usbWrite (".\r\n");
+                                  //                    }
+                                  //            }),
+                                  //   cl::cmd (String ("store128"),
+                                  //            [&config, &configStorage] {
+                                  //                    for (int i = 0; i < 128; ++i) {
+                                  //                            configStorage.store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
+                                  //                            //    usbWrite (".\r\n");
+                                  //                    }
+                                  //            }),
+                                  //   cl::cmd (String ("store16"),
+                                  //            [&config, &configStorage] {
+                                  //                    for (int i = 0; i < 16; ++i) {
+                                  //                            configStorage.store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
+                                  //                            //    usbWrite (".\r\n");
+                                  //                    }
+                                  //            }),
                                   //   cl::cmd (String ("store1"),
                                   //            [&] {
                                   //                    ++iii;

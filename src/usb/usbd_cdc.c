@@ -253,6 +253,7 @@ void usbWriteData (const uint8_t *str, size_t size)
         context->begin = 0;
         context->end = size;
 #else
+        // TODO this can interfere with TIMx interrupts which can break time tracking!
         __disable_irq ();
 
         int begin = context->begin;
