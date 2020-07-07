@@ -38,7 +38,7 @@ void DisplayMenu::onLongPress ()
                 break;
 
         case Option::resolution:
-                config.resolution = cfg::Resolution ((int (config.resolution) - 1) % cfg::RESOLUTION_NUMBER_OF_OPTIONS);
+                config.resolution = Resolution ((int (config.resolution) - 1) % RESOLUTION_NUMBER_OF_OPTIONS);
                 break;
 
         default:
@@ -86,19 +86,19 @@ void DisplayMenu::prepareMenuForOption (Option o)
 
         case Option::resolution:
                 switch (config.resolution) {
-                case cfg::Resolution::ms_10:
+                case Resolution::ms_10:
                         display.setText ("4.ms.10");
                         break;
 
-                case cfg::Resolution::ms_1:
+                case Resolution::ms_1:
                         display.setText ("4.ms.1");
                         break;
 
-                case cfg::Resolution::us_100:
+                case Resolution::us_100:
                         display.setText ("4.us.100");
                         break;
 
-                case cfg::Resolution::us_10:
+                case Resolution::us_10:
                         display.setText ("4.us.10");
                         break;
 

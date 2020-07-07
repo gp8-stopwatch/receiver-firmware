@@ -33,7 +33,7 @@ public:
                 return &st;
         }
 
-        void setResolution (cfg::Resolution res);
+        void setResolution (Resolution res);
         void reset (bool canStart) { time = (canStart) ? CAN_LATENCY_CORRECTION : 0; }
 
         /**
@@ -67,5 +67,5 @@ private:
         bool running{};
         uint32_t time{}; // 10µs incremenets.
         uint32_t increment{};
-        cfg::Resolution resolution;
+        Resolution resolution;
 };

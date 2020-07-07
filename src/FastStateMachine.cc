@@ -132,7 +132,7 @@ void FastStateMachine::run (Event event)
                 }
 
                 // Refresh the screen
-                display->setTime (stopWatch->getTime ());
+                display->setTime (stopWatch->getTime (), Resolution::ms_10);
                 break;
 
         case GP8_STOP:
@@ -233,7 +233,7 @@ void FastStateMachine::run (Event event)
 void FastStateMachine::ready_entryAction (bool loop)
 {
         display->setDots (0);
-        display->setTime (0);
+        display->setTime (0, Resolution::ms_10);
 
         if (loop) {
                 buzzer->beep (10, 10, 1);
@@ -261,7 +261,7 @@ void FastStateMachine::stop_entryAction (std::optional<uint32_t> time)
         stopWatch->stop ();
         startTimeout.start (BEAM_INTERRUPTION_EVENT);
         uint32_t result = (time) ? (*time) : (stopWatch->getTime ());
-        display->setTime (result);
+        display->setTime (result, Resolution::ms_10);
 
         if (history != nullptr) {
                 int dif = result - history->getHiScore ();

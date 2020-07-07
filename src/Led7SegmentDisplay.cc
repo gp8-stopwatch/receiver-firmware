@@ -82,7 +82,7 @@ void Led7SegmentDisplay::outputDigit (uint8_t position)
 
 /*****************************************************************************/
 
-void Led7SegmentDisplay::setTime (uint32_t time)
+void Led7SegmentDisplay::setTime (uint32_t time, Resolution res)
 {
         constexpr std::array<int8_t, 9> FACTORS{10, 10, 10, 10, 10, 10, 6, 10, 1};
 
@@ -100,24 +100,26 @@ void Led7SegmentDisplay::setTime (uint32_t time)
                 cntTmp /= factor;
         }
 
-        // // 2nd digit of 1/100-s of second (0-99)
-        // setDigit (5, cntTmp % 10);
-        // cntTmp /= 10;
-        // // First digit of 1/100-s of second (0-99)
-        // setDigit (4, cntTmp % 10);
-        // cntTmp /= 10;
+        switch (res) {
+        case Resolution::ms_10:
+                setDots (0b1010);
+                break;
 
-        // // Second digit of second (0-99)
-        // setDigit (3, cntTmp % 10);
-        // cntTmp /= 10;
-        // // First digit of second (0-99)
-        // setDigit (2, cntTmp % 6);
-        // cntTmp /= 6;
+        case Resolution::ms_1:
+                setDots (0b10100);
+                break;
 
-        // // Second digit of miniutes
-        // setDigit (1, cntTmp % 10);
-        // cntTmp /= 10;
-        // setDigit (0, cntTmp);
+        case Resolution::us_100:
+                setDots (0b101000);
+                break;
+
+        case Resolution::us_10:
+                setDots (0b010000);
+                break;
+
+        default:
+                break;
+        }
 }
 
 /*****************************************************************************/
@@ -166,7 +168,7 @@ void Led7SegmentDisplay::clear ()
 
 /*****************************************************************************/
 
-void Led7SegmentDisplay::setResolution (cfg::Resolution res)
+void Led7SegmentDisplay::setResolution (Resolution res)
 {
         // static constexpr std::array<uint8_t, 4> FACTOR_INDEX_INITIAL_VALUE{3, 2, 1, 0};
         // factorIndex = FACTOR_INDEX_INITIAL_VALUE.at (int (res));
