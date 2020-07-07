@@ -55,13 +55,18 @@ void DisplayMenu::prepareMenuForOption (Option o)
 {
         display.clear ();
 
+        if (o == Option::stop_watch) {
+                machine.run (Event::reset);
+        }
+        else {
+                machine.run (Event::pasue);
+        }
+
         switch (o) {
         case Option::stop_watch:
-                machine.resume ();
                 break;
 
         case Option::flip:
-                machine.pause ();
                 display.setText ("1.FLIP");
                 break;
 

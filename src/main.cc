@@ -11,7 +11,7 @@
 #include "Can.h"
 #include "CanProtocol.h"
 #include "Cli.h"
-#include "Config.h"
+#include "Container.h"
 #include "Debug.h"
 #include "DisplayMenu.h"
 #include "FastStateMachine.h"
@@ -33,7 +33,6 @@
 #include <etl/cstring.h>
 #include <new>
 #include <stm32f0xx_hal.h>
-#include <storage/FlashEepromStorage.h>
 
 static void SystemClock_Config ();
 USBD_HandleTypeDef USBD_Device{};
@@ -121,7 +120,7 @@ int main ()
         /*+-------------------------------------------------------------------------+*/
 
         const uint32_t *MICRO_CONTROLLER_UID = new (reinterpret_cast<void *> (0x1FFFF7AC)) uint32_t;
-        cfg::Config config; // TODO read config from FLASH memory.
+        cfg::Config &config = getConfig ();
 
         Gpio debugUartGpios (GPIOA, GPIO_PIN_9 | GPIO_PIN_10, GPIO_MODE_AF_OD, GPIO_PULLUP, GPIO_SPEED_FREQ_HIGH, GPIO_AF1_USART1);
         Usart debugUart (USART1, 115200);
@@ -156,10 +155,10 @@ int main ()
         /*+-------------------------------------------------------------------------+*/
 
 #ifdef WITH_FLASH
-        FlashEepromStorage<2048, 2> configStorage (2, 1, 0x08020000 - 4 * 2048);
-        configStorage.init ();
+        // FlashEepromStorage<2048, 2> configStorage (2, 1, 0x08020000 - 4 * 2048);
+        // configStorage.init ();
         // Read the config (TODO move somewhere)
-        config = *reinterpret_cast<cfg::Config const *> (configStorage.read (nullptr, 2, 0, 0));
+        // config = *reinterpret_cast<cfg::Config const *> (configStorage.read (nullptr, 2, 0, 0));
 
         // uint16_t iii = 0;
         // iii = *reinterpret_cast<uint16_t const *> (configStorage.read (nullptr, 2, 0, 0));
@@ -324,7 +323,7 @@ int main ()
                                                    history.clearHiScore ();
                                                    history.clearResults ();
                                            }),
-                                  cl::cmd (String ("factory"), [&configStorage] { configStorage.clear (); }),
+                                  cl::cmd (String ("factory"), [] { getConfigFlashEepromStorage ().clear (); }),
                                   cl::cmd (String ("help"), [] { usbWrite ("battery, clear, last, result\r\n\r\n"); }),
                                   cl::cmd (String ("battery"),
                                            [&power] {
@@ -400,7 +399,7 @@ int main ()
                 if (cfg::changed ()) {
                         cfg::changed () = false;
                         refresh ();
-                        configStorage.store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
+                        getConfigFlashEepromStorage ().store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
                 }
 
                 if (batteryTimer.isExpired ()) {
@@ -482,8 +481,8 @@ void SystemClock_Config ()
 namespace __gnu_cxx {
 void __verbose_terminate_handler ()
 {
-        while (true)
-                ;
+        while (true) {
+        }
 }
 } // namespace __gnu_cxx
 

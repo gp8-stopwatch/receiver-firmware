@@ -102,19 +102,19 @@ void Led7SegmentDisplay::setTime (uint32_t time, Resolution res)
 
         switch (res) {
         case Resolution::ms_10:
-                setDots (0b1010);
+                setDots (0b001010);
                 break;
 
         case Resolution::ms_1:
-                setDots (0b10100);
+                setDots (0b000101);
                 break;
 
         case Resolution::us_100:
-                setDots (0b101000);
+                setDots (0b000010);
                 break;
 
         case Resolution::us_10:
-                setDots (0b010000);
+                setDots (0b000001);
                 break;
 
         default:

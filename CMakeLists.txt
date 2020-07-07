@@ -45,7 +45,7 @@ IF (DEFINED DEVICE)
         "src/Rtc.cc"
         "src/PowerManagement.cc"
         "src/Config.cc"
-
+        "src/Container.cc"
 
         "src/usb/usbd_cdc.c"
         "src/usb/usbd_composite.c"

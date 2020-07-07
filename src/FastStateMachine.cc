@@ -10,6 +10,7 @@
 #include "Button.h"
 #include "Buzzer.h"
 #include "CanProtocol.h"
+#include "Container.h"
 #include "Debug.h"
 #include "History.h"
 #include "IDisplay.h"
@@ -25,16 +26,14 @@
 
 void FastStateMachine::run (Event event)
 {
-        // #if 0
-        //         uint8_t i = display->getIcons ();
+        if (event == Event::pasue) {
+                state = State::PAUSED;
+                pause_entryAction ();
+        }
+        else if (event == Event::reset) {
+                state = State::INIT;
+        }
 
-        //         if (!ir->isBeamPresent ()) {
-        //                 display->setIcons (i | IDisplay::MINUS_SIGN);
-        //         }
-        //         else {
-        //                 display->setIcons (i & ~IDisplay::MINUS_SIGN);
-        //         }
-        // #endif
         switch (state) {
         case INIT:
 #ifdef DEBUG_STATES
@@ -132,7 +131,7 @@ void FastStateMachine::run (Event event)
                 }
 
                 // Refresh the screen
-                display->setTime (stopWatch->getTime (), Resolution::ms_10);
+                display->setTime (stopWatch->getTime (), getConfig ().resolution);
                 break;
 
         case GP8_STOP:
@@ -223,6 +222,7 @@ void FastStateMachine::run (Event event)
                 //                 break;
                 // #endif
 
+        case State::PAUSED:
         default:
                 break;
         }
@@ -232,8 +232,8 @@ void FastStateMachine::run (Event event)
 
 void FastStateMachine::ready_entryAction (bool loop)
 {
-        display->setDots (0);
-        display->setTime (0, Resolution::ms_10);
+        // display->setDots (0);
+        display->setTime (0, getConfig ().resolution);
 
         if (loop) {
                 buzzer->beep (10, 10, 1);
@@ -261,7 +261,7 @@ void FastStateMachine::stop_entryAction (std::optional<uint32_t> time)
         stopWatch->stop ();
         startTimeout.start (BEAM_INTERRUPTION_EVENT);
         uint32_t result = (time) ? (*time) : (stopWatch->getTime ());
-        display->setTime (result, Resolution::ms_10);
+        display->setTime (result, getConfig ().resolution);
 
         if (history != nullptr) {
                 int dif = result - history->getHiScore ();
@@ -283,3 +283,7 @@ void FastStateMachine::stop_entryAction (std::optional<uint32_t> time)
                 history->store (result);
         }
 }
+
+/****************************************************************************/
+
+void FastStateMachine::pause_entryAction () { stopWatch->stop (); }

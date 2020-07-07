@@ -62,7 +62,6 @@ private:
         friend void TIM14_IRQHandler ();
         void onInterrupt ();
 
-private:
         TIM_HandleTypeDef stopWatchTimHandle{};
         bool running{};
         uint32_t time{}; // 10µs incremenets.
