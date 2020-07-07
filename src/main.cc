@@ -156,13 +156,13 @@ int main ()
         /*+-------------------------------------------------------------------------+*/
 
 #ifdef WITH_FLASH
-        FlashEepromStorage<16, 2> configStorage (2, 1, 0x08020000 - 4 * 2048);
+        FlashEepromStorage<2048, 2> configStorage (2, 1, 0x08020000 - 4 * 2048);
         configStorage.init ();
         // Read the config (TODO move somewhere)
-        // config = *reinterpret_cast<cfg::Config const *> (configStorage.read (nullptr, 2, 0, 0));
+        config = *reinterpret_cast<cfg::Config const *> (configStorage.read (nullptr, 2, 0, 0));
 
-        uint16_t iii = 0;
-        iii = *reinterpret_cast<uint16_t const *> (configStorage.read (nullptr, 2, 0, 0));
+        // uint16_t iii = 0;
+        // iii = *reinterpret_cast<uint16_t const *> (configStorage.read (nullptr, 2, 0, 0));
 
         History history{};
         FlashEepromStorage<2048, 4> hiScoreStorage (4, 1, 0x801E800 /*0x08020000 - 3 * 2048*/);
@@ -274,28 +274,42 @@ int main ()
         auto c = cl::cli<String> (cl::cmd (String ("result"), [&history] { history.printHistory (); }),
                                   cl::cmd (String ("last"), [&history] { history.printLast (); }),
                                   cl::cmd (String ("date"), [&rtc] { rtc.getDate (); }),
-                                  cl::cmd (String ("store"),
+                                  cl::cmd (String ("store256"),
                                            [&config, &configStorage] {
-                                                   for (int i = 0; i < 512; ++i) {
+                                                   for (int i = 0; i < 256; ++i) {
                                                            configStorage.store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
-                                                           usbWrite (".\r\n");
+                                                           //    usbWrite (".\r\n");
                                                    }
                                            }),
-                                  cl::cmd (String ("store1"),
-                                           [&] {
-                                                   ++iii;
-                                                   configStorage.store (reinterpret_cast<uint8_t *> (&iii), sizeof (iii), 0);
-                                                   //    configStorage.store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
+                                  cl::cmd (String ("store128"),
+                                           [&config, &configStorage] {
+                                                   for (int i = 0; i < 128; ++i) {
+                                                           configStorage.store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
+                                                           //    usbWrite (".\r\n");
+                                                   }
                                            }),
+                                  cl::cmd (String ("store16"),
+                                           [&config, &configStorage] {
+                                                   for (int i = 0; i < 16; ++i) {
+                                                           configStorage.store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
+                                                           //    usbWrite (".\r\n");
+                                                   }
+                                           }),
+                                  //   cl::cmd (String ("store1"),
+                                  //            [&] {
+                                  //                    ++iii;
+                                  //                    configStorage.store (reinterpret_cast<uint8_t *> (&iii), sizeof (iii), 0);
+                                  //                    //    configStorage.store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
+                                  //            }),
 
-                                  cl::cmd (String ("read"),
-                                           [&] {
-                                                   iii = *reinterpret_cast<uint16_t const *> (configStorage.read (nullptr, 2, 0, 0));
-                                                   std::array<char, 11> buf{};
-                                                   itoa ((unsigned int)iii, buf.data ());
-                                                   usbWrite (buf.cbegin ());
-                                                   usbWrite ("\r\n");
-                                           }),
+                                  //   cl::cmd (String ("read"),
+                                  //            [&] {
+                                  //                    iii = *reinterpret_cast<uint16_t const *> (configStorage.read (nullptr, 2, 0, 0));
+                                  //                    std::array<char, 11> buf{};
+                                  //                    itoa ((unsigned int)iii, buf.data ());
+                                  //                    usbWrite (buf.cbegin ());
+                                  //                    usbWrite ("\r\n");
+                                  //            }),
 
                                   cl::cmd (String ("iscounting"),
                                            [&fStateMachine] {
@@ -360,6 +374,8 @@ int main ()
                 beam.setActive (config.irSensorOn);
                 buzzer.setActive (config.buzzerOn);
         };
+
+        refresh ();
 
         while (true) {
                 buzzer.run ();
