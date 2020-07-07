@@ -150,22 +150,17 @@ template <size_t PAGE_SIZE, size_t WRITE_SIZE> void FlashEepromStorage<PAGE_SIZE
         currentPage = 0;
 
         for (size_t i = capacity; i < PAGE_SIZE * numOfPages; i += capacity + WRITE_SIZE) {
-                if (memcmp (END_MARKER.data (), contents + i, WRITE_SIZE) != 0) {
+                if (memcmp (END_MARKER.data (), contents + i, WRITE_SIZE) != 0) { // No end marker found
                         break;
                 }
 
+                // End marker has been found
                 currentOffset += capacity + WRITE_SIZE;
 
                 if (currentOffset >= PAGE_SIZE) {
                         ++currentPage;
                         currentOffset %= PAGE_SIZE;
                 }
-        }
-
-        if (currentPage >= numOfPages) {
-                clear ();
-                currentOffset = 0;
-                currentPage = 0;
         }
 }
 
@@ -202,13 +197,13 @@ template <size_t PAGE_SIZE, size_t WRITE_SIZE>
 void FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::storeImpl (uint8_t *d, size_t length, size_t offset)
 {
         // We are on the last page, and this write will exceed it
-        if (currentPage == numOfPages - 1 && currentOffset + capacity + WRITE_SIZE > PAGE_SIZE) {
+        if ((currentPage == numOfPages - 1 && currentOffset + capacity + WRITE_SIZE > PAGE_SIZE) || currentPage >= numOfPages) {
                 currentPage = 0;
                 currentOffset = 0;
                 clearPage (address);
         }
 
-        // Store capacity bytes of data alngside with end-marker.
+        // Store capacity bytes of data alongside with end-marker.
         for (size_t i = 0; i < capacity / WRITE_SIZE; ++i) {
                 storeWriteSize (d + i * WRITE_SIZE);
         }
@@ -222,7 +217,8 @@ template <size_t PAGE_SIZE, size_t WRITE_SIZE> void FlashEepromStorage<PAGE_SIZE
 {
         size_t address = this->address + currentPage * PAGE_SIZE + currentOffset;
         storeWriteSizeImpl (word, address);
-        increaseAndClear ();
+        // increaseAndClear ();
+        currentOffset += WRITE_SIZE;
 }
 
 /*****************************************************************************/
@@ -231,8 +227,14 @@ template <size_t PAGE_SIZE, size_t WRITE_SIZE>
 void FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::storeWriteSizeImpl (uint8_t const *word, size_t address)
 {
 #ifndef UNIT_TEST
-        HAL_FLASH_Unlock ();
+        if (HAL_FLASH_Unlock () != HAL_OK) {
+                Error_Handler ();
+        }
+
         HAL_StatusTypeDef status{};
+
+        while ((status = FLASH_WaitForLastOperation (1000)) == HAL_TIMEOUT) {
+        }
 
         if constexpr (WRITE_SIZE == 2) {
                 status = HAL_FLASH_Program (FLASH_TYPEPROGRAM_HALFWORD, address, *reinterpret_cast<uint16_t const *> (word));

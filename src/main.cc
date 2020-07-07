@@ -156,10 +156,13 @@ int main ()
         /*+-------------------------------------------------------------------------+*/
 
 #ifdef WITH_FLASH
-        FlashEepromStorage<2048, 2> configStorage (2, 1, 0x08020000 - 4 * 2048);
+        FlashEepromStorage<16, 2> configStorage (2, 1, 0x08020000 - 4 * 2048);
         configStorage.init ();
         // Read the config (TODO move somewhere)
-        config = *reinterpret_cast<cfg::Config const *> (configStorage.read (nullptr, 2, 0, 0));
+        // config = *reinterpret_cast<cfg::Config const *> (configStorage.read (nullptr, 2, 0, 0));
+
+        uint16_t iii = 0;
+        iii = *reinterpret_cast<uint16_t const *> (configStorage.read (nullptr, 2, 0, 0));
 
         History history{};
         FlashEepromStorage<2048, 4> hiScoreStorage (4, 1, 0x801E800 /*0x08020000 - 3 * 2048*/);
@@ -271,6 +274,29 @@ int main ()
         auto c = cl::cli<String> (cl::cmd (String ("result"), [&history] { history.printHistory (); }),
                                   cl::cmd (String ("last"), [&history] { history.printLast (); }),
                                   cl::cmd (String ("date"), [&rtc] { rtc.getDate (); }),
+                                  cl::cmd (String ("store"),
+                                           [&config, &configStorage] {
+                                                   for (int i = 0; i < 512; ++i) {
+                                                           configStorage.store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
+                                                           usbWrite (".\r\n");
+                                                   }
+                                           }),
+                                  cl::cmd (String ("store1"),
+                                           [&] {
+                                                   ++iii;
+                                                   configStorage.store (reinterpret_cast<uint8_t *> (&iii), sizeof (iii), 0);
+                                                   //    configStorage.store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
+                                           }),
+
+                                  cl::cmd (String ("read"),
+                                           [&] {
+                                                   iii = *reinterpret_cast<uint16_t const *> (configStorage.read (nullptr, 2, 0, 0));
+                                                   std::array<char, 11> buf{};
+                                                   itoa ((unsigned int)iii, buf.data ());
+                                                   usbWrite (buf.cbegin ());
+                                                   usbWrite ("\r\n");
+                                           }),
+
                                   cl::cmd (String ("iscounting"),
                                            [&fStateMachine] {
                                                    if (fStateMachine->isCounting ()) {
@@ -328,6 +354,13 @@ int main ()
         Timer batteryTimer;
         int refreshRate = 9; // Something different than 10 so the screen is a little bit out of sync. This way the last digit changes.
 
+        // Refresh stopwatch state to reflect the config.
+        auto refresh = [&] {
+                display.setFlip (config.orientationFlip);
+                beam.setActive (config.irSensorOn);
+                buzzer.setActive (config.buzzerOn);
+        };
+
         while (true) {
                 buzzer.run ();
                 button.run ();
@@ -361,12 +394,7 @@ int main ()
 
                 if (cfg::changed ()) {
                         cfg::changed () = false;
-
-                        display.setFlip (config.orientationFlip);
-                        beam.setActive (config.irSensorOn);
-                        buzzer.setActive (config.buzzerOn);
-
-                        // TODO absolutly move this from here!
+                        refresh ();
                         configStorage.store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
                 }
 

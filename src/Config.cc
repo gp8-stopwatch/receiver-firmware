@@ -12,7 +12,7 @@ namespace cfg {
 
 bool &changed ()
 {
-        static bool h = true; /// Says if the system should pay attention for settings that has been changed. Not user-settable.
+        static bool h = false; /// Says if the system should pay attention for settings that has been changed.
         return h;
 }
 
