@@ -119,14 +119,14 @@ void FastStateMachine::run (Event event)
                         protocol->sendStop (stopWatch->getTime ());
                 }
 
-                if (event == Event::canBusStart) {
-                        state = GP8_RUNNING;
-                        running_entryAction (true);
-                }
-
                 if (event == Event::canBusStop) {
                         state = GP8_STOP;
                         stop_entryAction (protocol->getLastRemoteStopTime ());
+                }
+
+                if (event == Event::canBusStart) {
+                        state = GP8_RUNNING;
+                        running_entryAction (true);
                 }
 
                 // Refresh the screen
@@ -160,66 +160,6 @@ void FastStateMachine::run (Event event)
                 }
 
                 break;
-
-                // #if 0
-                //         case LOOP_READY:
-                //                 if (ir->isBeamPresent () && ir->isBeamInterrupted ()) {
-                //                         state = LOOP_RUNNING;
-                //                         running_entryAction ();
-                //                 }
-
-                //                 if (button && button->getPressClear ()) {
-                //                         state = HI_CLEAR_READY;
-                //                         hiClearReady_entryAction ();
-                //                 }
-
-                //                 break;
-
-                //         case LOOP_RUNNING:
-                //                 if ((ir->isBeamPresent () && ir->isBeamInterrupted () && startTimeout.isExpired ()) || buttonPendingCopy) {
-                //                         state = LOOP_STOP;
-                //                         stop_entryAction ({});
-                //                 }
-
-                //                 break;
-
-                //         case LOOP_STOP:
-                //                 if ((ir->isBeamPresent () && ir->isBeamInterrupted () && startTimeout.isExpired ()) || buttonPendingCopy) {
-                //                         state = LOOP_RUNNING;
-                //                         running_entryAction ();
-                //                 }
-
-                //                 if (button && button->getPressClear ()) {
-                //                         state = HI_CLEAR_READY;
-                //                         hiClearReady_entryAction ();
-                //                 }
-
-                //                 break;
-
-                //         case HI_CLEAR_READY:
-                //                 if (button && button->getLongPressClear ()) {
-                //                         buzzer->beep (200, 0, 1);
-                //                         history->clearHiScore ();
-                //                 }
-
-                //                 if (button && button->getPressClear ()) {
-                //                         state = RES_CLEAR_READY;
-                //                         resultsClearReady_entryAction ();
-                //                 }
-                //                 break;
-
-                //         case RES_CLEAR_READY:
-                //                 if (button && button->getLongPressClear ()) {
-                //                         buzzer->beep (200, 0, 1);
-                //                         history->clearResults ();
-                //                 }
-
-                //                 if (button && button->getPressClear ()) {
-                //                         buzzer->beep (10, 10, 1);
-                //                         state = INIT;
-                //                 }
-                //                 break;
-                // #endif
 
         default:
                 break;

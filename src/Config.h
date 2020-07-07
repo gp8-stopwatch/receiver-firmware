@@ -36,16 +36,18 @@ namespace cfg {
  * Values are chosen so after loading from empty flash (0xff everywhere), everyting would
  * have some meaningfull value.
  */
-enum OperationMode {
-        LOOP = 0,  // First interruption of IR starts the timer, and every consecutive one resets it, but does not stop it.
-        NORMAL = 1 // First break in IR barrier turns the stopwatch ON, second OFF and so on
-};
-
-enum ContestantsNumber { TWO = 0, ONE = 1 };
 enum Resolution { us_10 = 0, us_100 = 1, ms_1 = 2, ms_10 = 3 };
 enum Brightness { level1 = 0, level2 = 1, level3 = 2, level4 = 3, level5 = 4, levelAuto = 0b111 };
-enum ParticipantsNumber { participants1 = 1, participants2 = 0 };
-enum StopMode { stop = 1, restart = 0 }; // Loop
+
+enum ParticipantsNumber {
+        one = 1, // One contestant
+        two = 0  // Two simultaneously
+};
+
+enum StopMode {
+        stop = 1,   // (default) First break in IR barrier turns the stopwatch ON, second OFF and so on
+        restart = 0 // (loop) First interruption of IR starts the timer, and every consecutive one resets it, but does not stop it.
+};
 
 /**
  * System wide configuration. Available to the user and stored in the flash.
@@ -54,11 +56,9 @@ struct Config {
 
         Config ()
         {
-                mode = OperationMode::NORMAL;
-                contestantsNum = ContestantsNumber::ONE;
                 resolution = Resolution::ms_10;
                 brightness = Brightness::levelAuto;
-                participantsNumber = ParticipantsNumber::participants1;
+                participantsNumber = ParticipantsNumber::one;
                 stopMode = StopMode::stop;
                 // size_t beamInterruptionEventMs{5000}; // Blind period after IR trigger
 
@@ -67,8 +67,6 @@ struct Config {
                 buzzerOn = true;
         }
 
-        OperationMode mode : 1;
-        ContestantsNumber contestantsNum : 1;
         Resolution resolution : 2;
         Brightness brightness : 3;
         ParticipantsNumber participantsNumber : 1;

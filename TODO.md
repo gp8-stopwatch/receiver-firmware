@@ -155,3 +155,7 @@ Under Manjaro it behaves very unstable. Only 1 byte at a time san be sent to tyh
 ```
 
 Solved. The problem was due to lack of USBD_CDC_ReceivePacket calls. So it seems that my prebious implementation was deaf do USB requests, and it broke all communications under Manjaro, whereas under Windows and Ubuntu it worked (the device was able to send, and the host received the data).
+
+# Refactoring
+* [ ] USB - change `__disable_irq ()` to NVIC-disable USB.
+* [ ] Config object should be globally available. 

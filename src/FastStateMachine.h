@@ -86,4 +86,6 @@ private:
         History *history{};
         Button *button{};
         CanProtocol *protocol{};
+
+        bool loop = true; // Temporary - use Config::stopMode instead.
 };
