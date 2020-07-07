@@ -326,6 +326,7 @@ int main ()
                                                    history.clearHiScore ();
                                                    history.clearResults ();
                                            }),
+                                  cl::cmd (String ("factory"), [&configStorage] { configStorage.clear (); }),
                                   cl::cmd (String ("help"), [] { usbWrite ("battery, clear, last, result\r\n\r\n"); }),
                                   cl::cmd (String ("battery"),
                                            [&power] {

@@ -21,12 +21,11 @@ struct IDisplay;
  */
 class StopWatch {
 public:
-        static constexpr std::array PRESCALERS{10000, 100000, 1000000, 1000000};
-        static constexpr std::array<uint32_t, 4> PERIODS{100, 100, 100, 10};
-        static constexpr uint32_t CAN_LATENCY_CORRECTION = 63; // Warning! Correct only with -O3
-        // 100 minutes in 10µs units.
-        static constexpr unsigned int MAX_TIME = 100U * 60U * 100000U - 1U;
-        static constexpr std::array INCREMENTS{1000, 100, 10, 1};
+        static constexpr std::array PRESCALERS{1000000, 1000000, 100000, 10000};
+        static constexpr std::array<uint32_t, 4> PERIODS{10, 100, 100, 100};
+        static constexpr uint32_t CAN_LATENCY_CORRECTION = 63;              // Warning! Correct only with -O3
+        static constexpr unsigned int MAX_TIME = 100U * 60U * 100000U - 1U; // 100 minutes in 10µs units.
+        static constexpr std::array INCREMENTS{1, 10, 100, 1000};
 
         static StopWatch *singleton ()
         {

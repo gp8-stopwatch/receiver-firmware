@@ -117,16 +117,18 @@ void FastStateMachine::run (Event event)
                         state = GP8_STOP;
                         stop_entryAction ({});
                         protocol->sendStop (stopWatch->getTime ());
-                }
-
-                if (event == Event::canBusStart) {
-                        state = GP8_RUNNING;
-                        running_entryAction (true);
+                        break;
                 }
 
                 if (event == Event::canBusStop) {
                         state = GP8_STOP;
                         stop_entryAction (protocol->getLastRemoteStopTime ());
+                        break;
+                }
+
+                if (event == Event::canBusStart) {
+                        state = GP8_RUNNING;
+                        running_entryAction (true);
                 }
 
                 // Refresh the screen
