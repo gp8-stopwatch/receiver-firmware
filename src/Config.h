@@ -22,7 +22,7 @@ struct Config {
                 resolution = Resolution::ms_10;
                 brightness = Brightness::levelAuto;
                 participantsNumber = ParticipantsNumber::one;
-                stopMode = StopMode::stop;
+                stopMode = StopMode::restart;
                 // size_t beamInterruptionEventMs{5000}; // Blind period after IR trigger
 
                 orientationFlip = true;

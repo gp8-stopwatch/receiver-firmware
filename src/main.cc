@@ -56,6 +56,8 @@ template <> void output<const char *> (const char *const &tok) { usbWrite (tok);
 // Hack to be able to pass the cli object pointer to the C-like function.
 static void *cliPointer{};
 
+void readConfigFromFlash () { getConfig () = *reinterpret_cast<cfg::Config const *> (getConfigFlashEepromStorage ().read (nullptr, 2, 0, 0)); }
+
 /*****************************************************************************/
 
 int main ()
@@ -121,6 +123,7 @@ int main ()
 
         const uint32_t *MICRO_CONTROLLER_UID = new (reinterpret_cast<void *> (0x1FFFF7AC)) uint32_t;
         cfg::Config &config = getConfig ();
+        readConfigFromFlash ();
 
         Gpio debugUartGpios (GPIOA, GPIO_PIN_9 | GPIO_PIN_10, GPIO_MODE_AF_OD, GPIO_PULLUP, GPIO_SPEED_FREQ_HIGH, GPIO_AF1_USART1);
         Usart debugUart (USART1, 115200);
@@ -377,6 +380,8 @@ int main ()
         };
 
         refresh ();
+
+        getConfig ().stopMode = StopMode::restart;
 
         while (true) {
                 buzzer.run ();

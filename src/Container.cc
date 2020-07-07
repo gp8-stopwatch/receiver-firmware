@@ -11,7 +11,6 @@
 cfg::Config &getConfig ()
 {
         static cfg::Config c;
-        c = *reinterpret_cast<cfg::Config const *> (getConfigFlashEepromStorage ().read (nullptr, 2, 0, 0));
         return c;
 }
 

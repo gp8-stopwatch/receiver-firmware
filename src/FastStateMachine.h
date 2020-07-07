@@ -36,17 +36,19 @@ enum class Event {
 class FastStateMachine {
 public:
         static constexpr int BEAM_INTERRUPTION_EVENT = 5000;
+        static constexpr int LOOP_DISPLAY_TIMEOUT = 1000;
+
         enum State {
                 INIT,
                 WAIT_FOR_BEAM,
                 GP8_READY,
                 GP8_RUNNING,
                 GP8_STOP,
-                LOOP_READY,
+                // LOOP_READY,
                 LOOP_RUNNING,
-                LOOP_STOP,
-                HI_CLEAR_READY,
-                RES_CLEAR_READY,
+                // LOOP_STOP,
+                // HI_CLEAR_READY,
+                // RES_CLEAR_READY,
                 PAUSED
         };
 
@@ -74,6 +76,7 @@ private:
         // void hiClearReady_entryAction ();
         // void resultsClearReady_entryAction ();
         void pause_entryAction ();
+        void loop_entryAction (bool canStart);
 
         /*--------------------------------------------------------------------------*/
 
@@ -81,6 +84,7 @@ private:
         IInfraRedBeam *ir{};
         StopWatch *stopWatch{};
         Timer startTimeout;
+        Timer loopDisplayTimeout;
         IDisplay *display{};
         Buzzer *buzzer{};
         History *history{};

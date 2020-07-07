@@ -63,10 +63,10 @@ void FastStateMachine::run (Event event)
                         state = GP8_READY;
                 }
 
-                if (button && button->getPressClear ()) {
-                        state = LOOP_READY;
-                        ready_entryAction (true);
-                }
+                // if (button && button->getPressClear ()) {
+                //         state = LOOP_READY;
+                //         ready_entryAction (true);
+                // }
 
                 if (event == Event::canBusStart) {
                         state = GP8_RUNNING;
@@ -90,10 +90,10 @@ void FastStateMachine::run (Event event)
                         protocol->sendStart ();
                 }
 
-                if (button && button->getPressClear ()) {
-                        state = LOOP_READY;
-                        ready_entryAction (true);
-                }
+                // if (button && button->getPressClear ()) {
+                //         state = LOOP_READY;
+                //         ready_entryAction (true);
+                // }
 
                 if (event == Event::canBusStart) {
                         state = GP8_RUNNING;
@@ -113,9 +113,18 @@ void FastStateMachine::run (Event event)
 #endif
                 if (((ir->isBeamPresent () && ir->isBeamInterrupted ()) || event == Event::testTrigger || event == Event::irTrigger)
                     && startTimeout.isExpired ()) {
-                        state = GP8_STOP;
-                        stop_entryAction ({});
-                        protocol->sendStop (stopWatch->getTime ());
+
+                        if (getConfig ().stopMode == StopMode::stop) {
+                                state = GP8_STOP;
+                                stop_entryAction ({});
+                                protocol->sendStop (stopWatch->getTime ());
+                        }
+                        else { // Loop
+                                state = LOOP_RUNNING;
+                                loop_entryAction (false);
+                                protocol->sendStart (/* stopWatch->getTime () */);
+                        }
+
                         break;
                 }
 
@@ -123,11 +132,6 @@ void FastStateMachine::run (Event event)
                         state = GP8_STOP;
                         stop_entryAction (protocol->getLastRemoteStopTime ());
                         break;
-                }
-
-                if (event == Event::canBusStart) {
-                        state = GP8_RUNNING;
-                        running_entryAction (true);
                 }
 
                 if (event == Event::canBusStart) {
@@ -150,10 +154,10 @@ void FastStateMachine::run (Event event)
                         protocol->sendStart ();
                 }
 
-                if (button && button->getPressClear ()) {
-                        state = LOOP_READY;
-                        ready_entryAction (true);
-                }
+                // if (button && button->getPressClear ()) {
+                //         state = LOOP_READY;
+                //         ready_entryAction (true);
+                // }
 
                 if (event == Event::canBusStart) {
                         state = GP8_RUNNING;
@@ -163,6 +167,30 @@ void FastStateMachine::run (Event event)
                 if (event == Event::canBusStop) {
                         state = GP8_STOP;
                         stop_entryAction (protocol->getLastRemoteStopTime ());
+                }
+
+                break;
+
+        case LOOP_RUNNING:
+                if (((ir->isBeamPresent () && ir->isBeamInterrupted ()) || event == Event::testTrigger || event == Event::irTrigger)
+                    && startTimeout.isExpired ()) {
+                        loop_entryAction (false);
+                        protocol->sendStart (/* stopWatch->getTime () */);
+                }
+
+                if (event == Event::canBusStop) {
+                        loop_entryAction (false);
+                        protocol->sendStart (/* stopWatch->getTime () */);
+                }
+
+                if (event == Event::canBusStart) {
+                        loop_entryAction (false);
+                        protocol->sendStart (/* stopWatch->getTime () */);
+                }
+
+                if (loopDisplayTimeout.isExpired ()) {
+                        // Refresh the screen
+                        display->setTime (stopWatch->getTime (), getConfig ().resolution);
                 }
 
                 break;
@@ -232,3 +260,23 @@ void FastStateMachine::stop_entryAction (std::optional<uint32_t> time)
 /****************************************************************************/
 
 void FastStateMachine::pause_entryAction () { stopWatch->stop (); }
+
+/*****************************************************************************/
+
+void FastStateMachine::loop_entryAction (bool canStart)
+{
+        // TODO CanBus?
+        // uint32_t result = (time) ? (*time) : (stopWatch->getTime ());
+        stopWatch->stop ();
+        uint32_t result = stopWatch->getTime ();
+
+        stopWatch->reset (canStart);
+        stopWatch->start ();
+        buzzer->beep (100, 0, 1);
+        startTimeout.start (BEAM_INTERRUPTION_EVENT);
+        loopDisplayTimeout.start (LOOP_DISPLAY_TIMEOUT);
+
+        display->setTime (result, getConfig ().resolution);
+
+        // TODO beep + history store
+}

@@ -42,6 +42,7 @@ void CanProtocol::onCanError (uint32_t e) {}
 /*****************************************************************************/
 
 void CanProtocol::sendStart () { can.send (CanFrame{uid, true, 1, uint8_t (Messages::START)}, 0); }
+// void CanProtocol::sendStart (uint32_t time) { can.send (CanFrame{uid, true, 1, uint8_t (Messages::START)}, 0); }
 
 /*****************************************************************************/
 
