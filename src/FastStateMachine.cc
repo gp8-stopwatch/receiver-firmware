@@ -26,7 +26,7 @@
 
 void FastStateMachine::run (Event event)
 {
-        if (event == Event::pasue) {
+        if (event == Event::pause) {
                 state = State::PAUSED;
                 pause_entryAction ();
         }

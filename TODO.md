@@ -75,7 +75,7 @@
 * [ ] Result resolution setting (100µs)
 
 # Firmware
-* [ ] Settings memory (screen flip & sound on/off should be persisted)
+* [x] Settings memory (screen flip & sound on/off should be persisted)
 * [x] USB firmware upgrade
   * [x] Test
   * [ ] Document
@@ -83,15 +83,16 @@
 * [ ] RTC
   * [x] Write time and date to the output
   * [x] Rtc date and time is persisted when power is turned off
-  * [ ] test with low quiescent LDO.
+  * [x] test with low quiescent LDO.
+  * [ ] Display 
  * [x] battery level sensing.
-   * [ ] There's something wrong with the LEDs
+   * [x] There's something wrong with the LEDs
  * [ ] loop measurements 
  * [x] input in console
- * [ ] Time bigger than 16b in history and everywhere else.
+ * [x] Time bigger than 16b in history and everywhere else.
    * [x] Measuring.
    * [x] Saving to flash.
-   * [ ] Sending through CAN bus.
+   * [x] Sending through CAN bus.
    * [x] USB output.
  * [ ] Kiedy nie ma IR, to wyświetlać same kreski, albo -no ir-
  * [ ] Optimize spaghetti code in the FastState machine
@@ -99,7 +100,11 @@
  * [x] When other CAN devices are absent, we should deal with it gracefully. Now I throw hundreds of error messages driving system useless.
  * [x] buzzer volume or if buzzer at all.
  * [x] Screen dims itself to 0 sometimes.
- * [ ] Dots indicating the resolution of the time display.
+ * [x] Dots indicating the resolution of the time display.
+ 
+ # Bugs
+ * [ ] So it happened that it couldnt save results history when the page overflowed from 1 back to 0 (after 128 measurements). Probably it didn't cleared the flash.
+ * [ ] Sometimes when the `reset` command is issued the display is not cleared (stop watch stops, but the last result is persisted on the screen).
 
 # Piotr
 * [x] Zapis ustawień

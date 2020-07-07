@@ -317,6 +317,7 @@ int main ()
                                                            usbWrite ("0\r\n\r\n");
                                                    }
                                            }),
+                                  cl::cmd (String ("reset"), [&fStateMachine] { fStateMachine->run (Event::reset); }),
 
                                   cl::cmd (String ("clear"),
                                            [&history] {
@@ -324,7 +325,7 @@ int main ()
                                                    history.clearResults ();
                                            }),
                                   cl::cmd (String ("factory"), [] { getConfigFlashEepromStorage ().clear (); }),
-                                  cl::cmd (String ("help"), [] { usbWrite ("battery, clear, last, result\r\n\r\n"); }),
+                                  cl::cmd (String ("help"), [] { usbWrite ("battery, clear, last, result, reset\r\n\r\n"); }),
                                   cl::cmd (String ("battery"),
                                            [&power] {
                                                    std::array<char, 11> buf{};

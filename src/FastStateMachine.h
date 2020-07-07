@@ -29,7 +29,7 @@ enum class Event {
         testTrigger, /// Test GPIO state changed
         canBusStart,
         canBusStop,
-        pasue,
+        pause,
         reset, // Use for resume after pause
 };
 

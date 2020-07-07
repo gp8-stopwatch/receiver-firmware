@@ -59,7 +59,7 @@ void DisplayMenu::prepareMenuForOption (Option o)
                 machine.run (Event::reset);
         }
         else {
-                machine.run (Event::pasue);
+                machine.run (Event::pause);
         }
 
         switch (o) {
