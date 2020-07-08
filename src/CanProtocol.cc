@@ -21,6 +21,8 @@ void CanProtocol::onCanNewFrame (CanFrame const &frame)
 
         if (frame.dlc >= 1) {
                 if (Messages (frame.data[0]) == Messages::START && onStart) {
+                        uint8_t ii[4] = {frame.data[1], frame.data[2], frame.data[3], frame.data[4]};
+                        remoteStopTime = *reinterpret_cast<uint32_t *> (ii);
                         onStart ();
                 }
 
@@ -41,8 +43,11 @@ void CanProtocol::onCanError (uint32_t e) {}
 
 /*****************************************************************************/
 
-void CanProtocol::sendStart () { can.send (CanFrame{uid, true, 1, uint8_t (Messages::START)}, 0); }
-// void CanProtocol::sendStart (uint32_t time) { can.send (CanFrame{uid, true, 1, uint8_t (Messages::START)}, 0); }
+void CanProtocol::sendStart (uint32_t time)
+{
+        uint8_t *p = reinterpret_cast<uint8_t *> (&time);
+        can.send (CanFrame{uid, true, 5, uint8_t (Messages::START), *p, *(p + 1), *(p + 2), *(p + 3)}, 0);
+}
 
 /*****************************************************************************/
 

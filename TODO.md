@@ -101,6 +101,7 @@
  * [x] buzzer volume or if buzzer at all.
  * [x] Screen dims itself to 0 sometimes.
  * [x] Dots indicating the resolution of the time display.
+ * [ ] CAN_LATENCY_CORRECTION must be assesed again becasue I've changed how the START is sent (4B additionally).
  
  # Bugs
  * [ ] So it happened that it couldnt save results history when the page overflowed from 1 back to 0 (after 128 measurements). Probably it didn't cleared the flash.

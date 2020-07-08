@@ -36,7 +36,7 @@ enum class Event {
 class FastStateMachine {
 public:
         static constexpr int BEAM_INTERRUPTION_EVENT = 5000;
-        static constexpr int LOOP_DISPLAY_TIMEOUT = 1000;
+        static constexpr int LOOP_DISPLAY_TIMEOUT = BEAM_INTERRUPTION_EVENT - 1000;
 
         enum State { INIT, WAIT_FOR_BEAM, GP8_READY, GP8_RUNNING, GP8_STOP, LOOP_RUNNING, PAUSED };
 
@@ -64,7 +64,7 @@ private:
         // void hiClearReady_entryAction ();
         // void resultsClearReady_entryAction ();
         void pause_entryAction ();
-        void loop_entryAction (bool canStart);
+        void loop_entryAction (bool canStart, std::optional<uint32_t> time);
 
         /*--------------------------------------------------------------------------*/
 

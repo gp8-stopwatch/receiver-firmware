@@ -22,7 +22,8 @@ public:
 
         CanProtocol (Can &can, uint32_t u) : can (can), uid (u & 0x1FFFFFFF) {}
 
-        void sendStart ();
+        // 0 means
+        void sendStart (uint32_t time = 0);
         void sendStop (uint32_t time);
 
         void onCanNewFrame (CanFrame const &frame) override;
