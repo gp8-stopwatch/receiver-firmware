@@ -11,9 +11,11 @@
 #define USB_PRIORITY 3
 
 #ifdef __cplusplus
+#include <cstdint>
 #include <etl/cstring.h>
 
 using String = etl::string<16>;
+using Result = uint32_t; /// Results are in 10µs units. Maybe someday I'll use std::chrono
 
 constexpr size_t DISPLAY_TIMER_PRIORITY = 2;
 constexpr size_t CAN_BUS_PRIORITY = 1;
@@ -32,7 +34,6 @@ enum OperationMode {
         NORMAL = 1 // First break in IR barrier turns the stopwatch ON, second OFF and so on
 };
 
-// enum ContestantsNumber { TWO = 0, ONE = 1 };
 static constexpr int RESOLUTION_NUMBER_OF_OPTIONS = 4;
 enum Resolution { us_10 = 0, us_100 = 1, ms_1 = 2, ms_10 = 3 };
 enum Brightness { level1 = 0, level2 = 1, level3 = 2, level4 = 3, level5 = 4, levelAuto = 0b111 };

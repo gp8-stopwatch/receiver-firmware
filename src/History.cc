@@ -39,11 +39,19 @@ void printTime (uint32_t time)
 
 /*****************************************************************************/
 
-void History::store (uint32_t t)
+void History::run ()
 {
-        historyStorage->store (reinterpret_cast<uint8_t *> (&t), sizeof (t), 0);
-        storeHiScoreIf (t);
+        while (!flashQueue.empty ()) {
+                Result t = flashQueue.front ();
+                flashQueue.pop ();
+                historyStorage->store (reinterpret_cast<uint8_t *> (&t), sizeof (t), 0);
+                storeHiScoreIf (t);
+        }
 }
+
+/*****************************************************************************/
+
+void History::store (uint32_t t) { flashQueue.push (t); }
 
 /*****************************************************************************/
 

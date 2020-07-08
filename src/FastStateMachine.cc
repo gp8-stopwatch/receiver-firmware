@@ -249,22 +249,19 @@ void FastStateMachine::stop_entryAction (std::optional<uint32_t> time)
         display->setTime (result, getConfig ().resolution);
 
         if (history != nullptr) {
-                int dif = result - history->getHiScore ();
+                // int dif = result - history->getHiScore ();
 
-                if (dif < 0) {
-                        buzzer->beep (1000, 0, 1);
-                }
-                else {
-                        int slots = (dif / 50) + 1;
+                // if (dif < 0) {
+                //         buzzer->beep (1000, 0, 1);
+                // }
+                // else {
+                //         int slots = (dif / 50) + 1;
 
-                        if (slots > 5) {
-                                slots = 5;
-                        }
+                //         if (slots > 5) {
+                //                 slots = 5;
+                //         }
 
-                        buzzer->beep (70, 50, slots);
-                }
-
-                // TODO same here - storing into flash can be too slow to be used in an IRQ
+                buzzer->beep (70, 50, 3);
                 history->store (result);
         }
 }
@@ -292,5 +289,15 @@ void FastStateMachine::loop_entryAction (bool canStart, std::optional<uint32_t> 
 
         display->setTime (result, getConfig ().resolution);
 
-        // TODO beep + history store
+        if (history != nullptr) {
+                buzzer->beep (70, 50, 2);
+
+                /*
+                 * "This means that code or data fetches cannot be made while a program/erase operation is ongoing". p.57
+                 * In loop mode saving the result to flash causes 200µs error. In normal (non-loop) mode there is no such
+                 * problem as the timer stops. This problem is hard to resolve. One option would be to use external flash
+                 * (for storing the results), the other would be to move parts of the code (ISRs) to RAM?
+                 */
+                // history->store (result);
+        }
 }

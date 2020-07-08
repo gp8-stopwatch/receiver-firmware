@@ -6,10 +6,10 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
-#ifndef GP8_HISTORY_H
-#define GP8_HISTORY_H
-
+#pragma once
+#include "Types.h"
 #include <cstdint>
+#include <etl/queue.h>
 #include <limits>
 #include <storage/ICircullarQueueStorage.h>
 #include <storage/IRandomAccessStorage.h>
@@ -18,9 +18,10 @@ class History {
 public:
         static constexpr size_t MAX_RESULTS_NUM = 64;
 
-        void store (uint32_t t);
+        void store (Result t);
+        void run ();
 
-        uint32_t getHiScore () const { return hiScore; }
+        Result getHiScore () const { return hiScore; }
         void printHistory ();
         void printLast ();
 
@@ -28,19 +29,17 @@ public:
         void setHiScoreStorage (IRandomAccessStorage *value)
         {
                 hiScoreStorage = value;
-                hiScore = *reinterpret_cast<uint32_t const *> (hiScoreStorage->read (nullptr, sizeof (uint32_t), 0));
+                hiScore = *reinterpret_cast<Result const *> (hiScoreStorage->read (nullptr, sizeof (Result), 0));
         }
 
         void clearHiScore ();
         void clearResults ();
 
 private:
-        void storeHiScoreIf (uint32_t t);
+        void storeHiScoreIf (Result t);
 
-private:
-        uint32_t hiScore = std::numeric_limits<uint32_t>::max ();
+        Result hiScore = std::numeric_limits<Result>::max ();
         IRandomAccessStorage *hiScoreStorage = nullptr;
         ICircullarQueueStorage *historyStorage = nullptr;
+        etl::queue<Result, 4> flashQueue;
 };
-
-#endif // HISTORY_H

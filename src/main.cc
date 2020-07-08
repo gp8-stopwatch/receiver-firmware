@@ -383,6 +383,7 @@ int main ()
         while (true) {
                 buzzer.run ();
                 button.run ();
+                history.run ();
 
                 if (displayTimer.isExpired ()) {
                         fStateMachine->run (Event::timePassed);
