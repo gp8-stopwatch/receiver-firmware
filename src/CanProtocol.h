@@ -18,19 +18,20 @@
 class CanProtocol : public ICanCallback {
 public:
         using Callback = std::function<void (void)>;
-        enum class Messages : uint8_t { START, STOP };
+        enum class Messages : uint8_t { START, LOOP_START, STOP };
 
         CanProtocol (Can &can, uint32_t u) : can (can), uid (u & 0x1FFFFFFF) {}
 
-        // 0 means
-        void sendStart (uint32_t time = 0);
+        void sendStart ();
+        void sendLoopStart (uint32_t time);
         void sendStop (uint32_t time);
+
+        void setOnStart (Callback const &callback) { onStart = callback; }
+        void setOnLoopStart (Callback const &callback) { onLoopStart = callback; }
+        void setOnStop (Callback const &callback) { onStop = callback; }
 
         void onCanNewFrame (CanFrame const &frame) override;
         void onCanError (uint32_t e) override;
-
-        void setOnStart (Callback const &callback) { onStart = callback; }
-        void setOnStop (Callback const &callback) { onStop = callback; }
 
         /// This is a little hack to get rid of passing the time in the event, which would be difficult, since an event is an enum.
         uint32_t getLastRemoteStopTime () const { return remoteStopTime; }
@@ -40,6 +41,7 @@ private:
         uint32_t uid;
 
         Callback onStart;
+        Callback onLoopStart;
         Callback onStop;
 
         mutable uint32_t remoteStopTime = 0;

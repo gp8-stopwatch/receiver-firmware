@@ -16,7 +16,6 @@
 #include "IDisplay.h"
 #include "InfraRedBeamModulated.h"
 #include "StopWatch.h"
-//#define DEBUG_STATES 1
 
 #ifdef DEBUG_STATES
 #warning "DEBUG_STATES is ON - fast state machine operation may be disturbed."
@@ -26,54 +25,44 @@
 
 void FastStateMachine::run (Event event)
 {
-        // Global transition
+        auto canTime = protocol->getLastRemoteStopTime ();
+
+        // Global transitions (the same for every state)
         if (event == Event::pause) {
                 state = State::PAUSED;
         }
-        // Global transition
         else if (event == Event::reset) {
                 state = State::WAIT_FOR_BEAM;
         }
-        /// Global transition for every state other than PAUSE
         else if (state != PAUSED && ir->isActive () && !ir->isBeamPresent ()) {
                 state = State::WAIT_FOR_BEAM;
         }
+        // Czanbus events are handled in every state
+        else if (event == Event::canBusStart) {
+                state = GP8_RUNNING;
+                running_entryAction (true);
+        }
+        else if (event == Event::canBusLoopStart) {
+                state = LOOP_RUNNING;
+                loop_entryAction (true, canTime);
+        }
+        else if (event == Event::canBusStop) {
+                state = GP8_STOP;
+                stop_entryAction (canTime);
+        }
 
+        // Entry actions and transitions distinct for every state.
         switch (state) {
-        case WAIT_FOR_BEAM: {
-#ifdef DEBUG_STATES
-                debug->print ("w");
-#endif
-
+        case WAIT_FOR_BEAM:
                 waitForBeam_entryAction ();
 
-                if (ir->isBeamPresent ()) {
+                if (ir->isBeamPresent () || !ir->isActive ()) {
                         state = GP8_READY;
                 }
 
-                auto remote = protocol->getLastRemoteStopTime ();
+                break;
 
-                if (event == Event::canBusStart) {
-                        if (remote == 0) {
-                                state = GP8_RUNNING;
-                                running_entryAction (true);
-                        }
-                        else {
-                                state = LOOP_RUNNING;
-                                loop_entryAction (true, remote);
-                        }
-                }
-
-                if (event == Event::canBusStop) {
-                        state = GP8_STOP;
-                        stop_entryAction (remote);
-                }
-        } break;
-
-        case GP8_READY: {
-#ifdef DEBUG_STATES
-                debug->print ("r");
-#endif
+        case GP8_READY:
                 ready_entryAction ();
 
                 if (ir->isBeamInterrupted () || event == Event::testTrigger || event == Event::irTrigger) {
@@ -81,30 +70,9 @@ void FastStateMachine::run (Event event)
                         running_entryAction (false);
                         protocol->sendStart ();
                 }
+                break;
 
-                auto remote = protocol->getLastRemoteStopTime ();
-
-                if (event == Event::canBusStart) {
-                        if (remote == 0) {
-                                state = GP8_RUNNING;
-                                running_entryAction (true);
-                        }
-                        else {
-                                state = LOOP_RUNNING;
-                                loop_entryAction (true, remote);
-                        }
-                }
-
-                if (event == Event::canBusStop) {
-                        state = GP8_STOP;
-                        stop_entryAction (remote);
-                }
-        } break;
-
-        case GP8_RUNNING: {
-#ifdef DEBUG_STATES
-                debug->print ("u");
-#endif
+        case GP8_RUNNING:
                 if (((ir->isBeamPresent () && ir->isBeamInterrupted ()) || event == Event::testTrigger || event == Event::irTrigger)
                     && startTimeout.isExpired ()) {
 
@@ -121,33 +89,11 @@ void FastStateMachine::run (Event event)
                         break;
                 }
 
-                auto remote = protocol->getLastRemoteStopTime ();
-
-                if (event == Event::canBusStart) {
-                        if (remote == 0) {
-                                state = GP8_RUNNING;
-                                running_entryAction (true);
-                        }
-                        else {
-                                state = LOOP_RUNNING;
-                                loop_entryAction (true, remote);
-                        }
-                }
-
-                if (event == Event::canBusStop) {
-                        state = GP8_STOP;
-                        stop_entryAction (remote);
-                        break;
-                }
-
                 // Refresh the screen
                 display->setTime (stopWatch->getTime (), getConfig ().resolution);
-        } break;
+                break;
 
-        case GP8_STOP: {
-#ifdef DEBUG_STATES
-                debug->print ("s");
-#endif
+        case GP8_STOP:
                 if (((ir->isBeamPresent () && ir->isBeamInterrupted ()) || event == Event::testTrigger || event == Event::irTrigger)
                     && startTimeout.isExpired ()) {
                         state = GP8_RUNNING;
@@ -155,33 +101,12 @@ void FastStateMachine::run (Event event)
                         protocol->sendStart ();
                 }
 
-                auto remote = protocol->getLastRemoteStopTime ();
-
-                if (event == Event::canBusStart) {
-                        if (remote == 0) {
-                                state = GP8_RUNNING;
-                                running_entryAction (true);
-                        }
-                        else {
-                                state = LOOP_RUNNING;
-                                loop_entryAction (true, remote);
-                        }
-                }
-
-                if (event == Event::canBusStop) {
-                        state = GP8_STOP;
-                        stop_entryAction (remote);
-                }
-        } break;
+                break;
 
         case LOOP_RUNNING:
                 if (((ir->isBeamPresent () && ir->isBeamInterrupted ()) || event == Event::testTrigger || event == Event::irTrigger)
                     && startTimeout.isExpired ()) {
                         loop_entryAction (false, {});
-                }
-
-                if (event == Event::canBusStop || event == Event::canBusStart) {
-                        loop_entryAction (true, protocol->getLastRemoteStopTime ());
                 }
 
                 if (loopDisplayTimeout.isExpired ()) {
@@ -203,7 +128,7 @@ void FastStateMachine::run (Event event)
 
 void FastStateMachine::waitForBeam_entryAction ()
 {
-        if (!ir->isBeamPresent ()) {
+        if (ir->isActive () && !ir->isBeamPresent ()) {
                 display->setDots (0);
                 display->setText (" noI.R. ");
         }
@@ -246,11 +171,11 @@ void FastStateMachine::pause_entryAction () { stopWatch->stop (); }
 
 void FastStateMachine::loop_entryAction (bool canStart, std::optional<uint32_t> time)
 {
-        uint32_t result = (time) ? (*time) : (stopWatch->getTime ());
         stopWatch->stop ();
+        uint32_t result = (time) ? (*time) : (stopWatch->getTime ());
 
         if (!canStart) {
-                protocol->sendStart (stopWatch->getTime ());
+                protocol->sendLoopStart (result);
         }
 
         stopWatch->reset (canStart);

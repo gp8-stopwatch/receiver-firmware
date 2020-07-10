@@ -29,6 +29,7 @@ enum class Event {
         irTrigger,   /// IR beam interrupted
         testTrigger, /// Test GPIO state changed
         canBusStart,
+        canBusLoopStart,
         canBusStop,
         pause,
         reset, // Use for resume after pause

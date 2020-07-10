@@ -234,6 +234,7 @@ int main ()
 
 #ifdef WITH_CAN
         protocol.setOnStart ([fStateMachine] { fStateMachine->run (Event::canBusStart); });
+        protocol.setOnLoopStart ([fStateMachine] { fStateMachine->run (Event::canBusLoopStart); });
         protocol.setOnStop ([fStateMachine] { fStateMachine->run (Event::canBusStop); });
 #endif
         fStateMachine->setIr (&beam);
