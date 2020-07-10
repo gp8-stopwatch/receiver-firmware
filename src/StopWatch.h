@@ -42,28 +42,45 @@ public:
          */
         void start ()
         {
-                running = true;
-                TIM14->CNT = 0;
+                // running = true;
+                TIM3->CNT = 0;
+                TIM2->CNT = 0;
+
+                HAL_TIM_Base_Start (&mainStopWatchTimHandle);
+                HAL_TIM_Base_Start (&prescalerStopWatchTimHandle);
         }
 
         void stop ()
         {
-                running = false;
+                HAL_TIM_Base_Stop (&prescalerStopWatchTimHandle);
+                HAL_TIM_Base_Stop (&mainStopWatchTimHandle);
 
-                // It has value [0, 99] or [0, 9] in case of 10µs resolution
-                if (TIM14->CNT >= (PERIODS.at (int (resolution)) / 2)) {
-                        // Rounding
-                        time += increment;
-                }
+                // running = false;
+
+                // // It has value [0, 99] or [0, 9] in case of 10µs resolution
+                // if (TIM14->CNT >= (PERIODS.at (int (resolution)) / 2)) {
+                //         // Rounding
+                //         time += increment;
+                // }
         }
 
-        unsigned int getTime () const { return time; }
+        Result getTime () const
+        {
+                auto t = TIM2->CNT;
+
+                if (TIM3->CNT >= (PERIODS.at (int (resolution)) / 2)) {
+                        ++t;
+                }
+
+                return t;
+        }
 
 private:
         friend void TIM14_IRQHandler ();
         void onInterrupt ();
 
-        TIM_HandleTypeDef stopWatchTimHandle{};
+        TIM_HandleTypeDef prescalerStopWatchTimHandle{};
+        TIM_HandleTypeDef mainStopWatchTimHandle{};
         bool running{};
         uint32_t time{}; // 10µs incremenets.
         uint32_t increment{};

@@ -199,7 +199,7 @@ void FastStateMachine::loop_entryAction (bool canEvent, std::optional<uint32_t> 
                  * problem as the timer stops. This problem is hard to resolve. One option would be to use external flash
                  * (for storing the results), the other would be to move parts of the code (ISRs) to RAM?
                  */
-                // history->store (result);
+                history->store (result);
         }
 }
 
