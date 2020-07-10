@@ -25,7 +25,7 @@
 * [x] Crystal oscillator footprint suitable for modern TCXOs, not this THT crap.
 * [ ] ~~Reduce holes for CAN socket supports (thise 2 plastic one sticking out)~~ The case is holding the socket in place. Too much effort.
 * [x] Ldo for etc should be 3v3 not 1v8. Voltage difference would be smaller.
-* [ ] Przetestować RTC z tym małym LDO.
+* [x] Przetestować RTC z tym małym LDO.
 * [ ] Battery protection in software
   * [ ] When powered off no software is running. What is the current draw of ldo plus rtc?
   * [ ] Measure what all elements except the µC and LEDs are drawing, and whether we should optimize this, or leave alone.
@@ -45,10 +45,10 @@
 * [ ] Jeszcze osłabić sygnał IR.
 * [x] USB 2.0 port can source only 500mA while, I am charging at 660mA. Maybe I should lower the consumption?
 * [x] Route the transmitter (mcu branch)
-* [ ] Identify what causes spurious trigger release when power line noise is present. Is it the test trigger, or the IR trigger. Observe what happens using an oscilloscope. Turning a solder iron or hotair on/off causes this to happen.
-  * [ ] Fix. 
-  * [ ] Consider disabling the test trigger in production IF this is caused by it.
-* [ ] Schotky diode from +BATT to one of the 6P6C socket pins. This would be for powering some smaller peripherals. Why haven't I thought about this earlier!
+* [x] Identify what causes spurious trigger release when power line noise is present. Is it the test trigger, or the IR trigger. Observe what happens using an oscilloscope. Turning a solder iron or hotair on/off causes this to happen (It was a long cable connecting the signal generator with the transmitter. It was the transmitter which caused this).
+  * [x] Fix. Problem does not occur when the test trigger is disconnected.
+  * [x] ~~Consider disabling the test trigger in production IF this is caused by it.~~ Not neccessary.
+* [x] Schotky diode from +BATT to one of the 6P6C socket pins. This would be for powering some smaller peripherals. Why haven't I thought about this earlier!
 
 # Case
 * [ ] Make sure the battery holder is well supported by case's back wall. It has to be fixed in place. This way we can ignore the screws that would normally fix the holder to the PCB.
@@ -59,7 +59,7 @@
 * [ ] On screen menu
   * [ ] Brightness (1/2/3/auto). Auto as default.
   * [ ] 1 or 2 participants
-  * [ ] Loop mode / normal
+  * [x] Loop mode / normal
   * [ ] Date / time setting
   * [ ] Time display
 * [ ] USB menu should include all what on-display provides plus:
@@ -87,7 +87,7 @@
   * [ ] Display 
  * [x] battery level sensing.
    * [x] There's something wrong with the LEDs
- * [ ] loop measurements 
+ * [x] loop measurements 
  * [x] input in console
  * [x] Time bigger than 16b in history and everywhere else.
    * [x] Measuring.
@@ -95,7 +95,7 @@
    * [x] Sending through CAN bus.
    * [x] USB output.
  * [x] Kiedy nie ma IR, to wyświetlać same kreski, albo -no ir-
- * [ ] Optimize spaghetti code in the FastState machine
+ * [x] Optimize spaghetti code in the FastState machine
  * [x] LED multiplexing driven by hardware timer to prevent frying it in case of program hang.
  * [x] When other CAN devices are absent, we should deal with it gracefully. Now I throw hundreds of error messages driving system useless.
  * [x] buzzer volume or if buzzer at all.

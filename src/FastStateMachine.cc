@@ -17,10 +17,6 @@
 #include "InfraRedBeamModulated.h"
 #include "StopWatch.h"
 
-#ifdef DEBUG_STATES
-#warning "DEBUG_STATES is ON - fast state machine operation may be disturbed."
-#endif
-
 /*****************************************************************************/
 
 void FastStateMachine::run (Event event)
@@ -69,22 +65,20 @@ void FastStateMachine::run (Event event)
         case GP8_READY:
                 ready_entryAction ();
 
-                if (ir->isBeamInterrupted () || event == Event::testTrigger || event == Event::irTrigger) {
+                if (isInternalTrigger (event)) {
                         state = GP8_RUNNING;
                         running_entryAction (false);
-                        protocol->sendStart ();
                 }
                 break;
 
         case GP8_RUNNING:
-                if (((ir->isBeamPresent () && ir->isBeamInterrupted ()) || event == Event::testTrigger || event == Event::irTrigger)
-                    && startTimeout.isExpired ()) {
+                if (isInternalTrigger (event) && startTimeout.isExpired ()) {
 
                         if (getConfig ().stopMode == StopMode::stop) {
                                 state = GP8_STOP;
                                 stop_entryAction (false, {});
                         }
-                        else { // Loop
+                        else {
                                 state = LOOP_RUNNING;
                                 loop_entryAction (false, {});
                         }
@@ -92,29 +86,24 @@ void FastStateMachine::run (Event event)
                         break;
                 }
 
-                // Refresh the screen
-                display->setTime (stopWatch->getTime (), getConfig ().resolution);
+                display->setTime (stopWatch->getTime (), getConfig ().resolution); // Refresh the screen (shows the time is running)
                 break;
 
         case GP8_STOP:
-                if (((ir->isBeamPresent () && ir->isBeamInterrupted ()) || event == Event::testTrigger || event == Event::irTrigger)
-                    && startTimeout.isExpired ()) {
+                if (isInternalTrigger (event) && startTimeout.isExpired ()) {
                         state = GP8_RUNNING;
                         running_entryAction (false);
-                        protocol->sendStart ();
                 }
 
                 break;
 
         case LOOP_RUNNING:
-                if (((ir->isBeamPresent () && ir->isBeamInterrupted ()) || event == Event::testTrigger || event == Event::irTrigger)
-                    && startTimeout.isExpired ()) {
+                if (isInternalTrigger (event) && startTimeout.isExpired ()) {
                         loop_entryAction (false, {});
                 }
 
                 if (loopDisplayTimeout.isExpired ()) {
-                        // Refresh the screen
-                        display->setTime (stopWatch->getTime (), getConfig ().resolution);
+                        display->setTime (stopWatch->getTime (), getConfig ().resolution); // Refresh the screen (shows the time is running)
                 }
 
                 break;
@@ -125,6 +114,13 @@ void FastStateMachine::run (Event event)
         default:
                 break;
         }
+}
+
+/*****************************************************************************/
+
+bool FastStateMachine::isInternalTrigger (Event event) const
+{
+        return ((ir->isBeamPresent () && ir->isBeamInterrupted ()) || event == Event::testTrigger || event == Event::irTrigger);
 }
 
 /*****************************************************************************/
@@ -143,12 +139,16 @@ void FastStateMachine::ready_entryAction (bool loop) { display->setTime (0, getC
 
 /*****************************************************************************/
 
-void FastStateMachine::running_entryAction (bool canStart)
+void FastStateMachine::running_entryAction (bool canEvent)
 {
-        stopWatch->reset (canStart);
+        stopWatch->reset (canEvent);
         stopWatch->start ();
         buzzer->beep (100, 0, 1);
         startTimeout.start (BEAM_INTERRUPTION_EVENT);
+
+        if (!canEvent) {
+                protocol->sendStart ();
+        }
 }
 
 /*****************************************************************************/

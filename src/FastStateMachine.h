@@ -59,10 +59,12 @@ public:
 private:
         void waitForBeam_entryAction ();
         void ready_entryAction (bool loop = false);
-        void running_entryAction (bool canStart);
+        void running_entryAction (bool canEvent);
         void stop_entryAction (bool canEvent, std::optional<uint32_t> time);
-        void pause_entryAction ();
         void loop_entryAction (bool canEvent, std::optional<uint32_t> time);
+        void pause_entryAction ();
+
+        bool isInternalTrigger (Event event) const;
 
         /*--------------------------------------------------------------------------*/
 

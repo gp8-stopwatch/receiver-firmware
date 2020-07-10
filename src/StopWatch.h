@@ -23,7 +23,8 @@ class StopWatch {
 public:
         static constexpr std::array PRESCALERS{1000000, 1000000, 100000, 10000};
         static constexpr std::array<uint32_t, 4> PERIODS{10, 100, 100, 100};
-        static constexpr uint32_t CAN_LATENCY_CORRECTION = 63;              // Warning! Correct only with -O3
+        // Warning! Correct only with -O3. For a CanFrame with DLC == 0 63 was OK. This is for DLC == 4
+        static constexpr uint32_t CAN_LATENCY_CORRECTION = 98;
         static constexpr unsigned int MAX_TIME = 100U * 60U * 100000U - 1U; // 100 minutes in 10µs units.
         static constexpr std::array INCREMENTS{1, 10, 100, 1000};
 
