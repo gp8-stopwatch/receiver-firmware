@@ -32,7 +32,7 @@ void FastStateMachine::run (Event event)
         }
         // Global transition
         else if (event == Event::reset) {
-                state = State::INIT;
+                state = State::WAIT_FOR_BEAM;
         }
         /// Global transition for every state other than PAUSE
         else if (state != PAUSED && ir->isActive () && !ir->isBeamPresent ()) {
@@ -40,30 +40,6 @@ void FastStateMachine::run (Event event)
         }
 
         switch (state) {
-        case INIT: {
-#ifdef DEBUG_STATES
-                debug->print ("i");
-#endif
-                state = WAIT_FOR_BEAM;
-                auto remote = protocol->getLastRemoteStopTime ();
-
-                if (event == Event::canBusStart) {
-                        if (remote == 0) {
-                                state = GP8_RUNNING;
-                                running_entryAction (true);
-                        }
-                        else {
-                                state = LOOP_RUNNING;
-                                loop_entryAction (true, remote);
-                        }
-                }
-
-                if (event == Event::canBusStop) {
-                        state = GP8_STOP;
-                        stop_entryAction (protocol->getLastRemoteStopTime ());
-                }
-        } break;
-
         case WAIT_FOR_BEAM: {
 #ifdef DEBUG_STATES
                 debug->print ("w");
@@ -228,26 +204,14 @@ void FastStateMachine::run (Event event)
 void FastStateMachine::waitForBeam_entryAction ()
 {
         if (!ir->isBeamPresent ()) {
-                display->setDot (0);
+                display->setDots (0);
                 display->setText (" noI.R. ");
         }
 }
 
 /*****************************************************************************/
 
-void FastStateMachine::ready_entryAction (bool loop)
-{
-        // display->setDots (0);
-        display->setTime (0, getConfig ().resolution);
-
-        // if (loop) {
-        //         buzzer->beep (10, 10, 1);
-        //         display->setIcons (IDisplay::TOP_LEFT_ARROW);
-        // }
-        // else {
-        //         display->setIcons (IDisplay::BOTTOM_LEFT_ARROW);
-        // }
-}
+void FastStateMachine::ready_entryAction (bool loop) { display->setTime (0, getConfig ().resolution); }
 
 /*****************************************************************************/
 
@@ -269,18 +233,6 @@ void FastStateMachine::stop_entryAction (std::optional<uint32_t> time)
         display->setTime (result, getConfig ().resolution);
 
         if (history != nullptr) {
-                // int dif = result - history->getHiScore ();
-
-                // if (dif < 0) {
-                //         buzzer->beep (1000, 0, 1);
-                // }
-                // else {
-                //         int slots = (dif / 50) + 1;
-
-                //         if (slots > 5) {
-                //                 slots = 5;
-                //         }
-
                 buzzer->beep (70, 50, 3);
                 history->store (result);
         }

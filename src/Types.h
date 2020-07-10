@@ -41,6 +41,7 @@ enum ParticipantsNumber { one = 1, two = 0 };
 enum StopMode { stop = 1, restart = 0 }; // Loop
 
 static constexpr int BEAM_INTERRUPTION_EVENT = 5000;
+static constexpr int NO_IR_DETECTED_MS = 5000;
 static constexpr int LOOP_DISPLAY_TIMEOUT = BEAM_INTERRUPTION_EVENT - 1000;
 
 #endif // __cplusplus

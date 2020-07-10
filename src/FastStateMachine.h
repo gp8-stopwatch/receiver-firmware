@@ -36,7 +36,7 @@ enum class Event {
 
 class FastStateMachine {
 public:
-        enum State { INIT, WAIT_FOR_BEAM, GP8_READY, GP8_RUNNING, GP8_STOP, LOOP_RUNNING, PAUSED };
+        enum State { WAIT_FOR_BEAM, GP8_READY, GP8_RUNNING, GP8_STOP, LOOP_RUNNING, PAUSED };
 
         static FastStateMachine *singleton ()
         {
@@ -67,7 +67,7 @@ private:
 
         /*--------------------------------------------------------------------------*/
 
-        State state{INIT};
+        State state{WAIT_FOR_BEAM};
         IInfraRedBeam *ir{};
         StopWatch *stopWatch{};
         Timer startTimeout;

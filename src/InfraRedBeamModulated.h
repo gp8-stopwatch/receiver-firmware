@@ -98,7 +98,7 @@ public:
 
                 if (state == IrBeam::absent) {
                         onTrigger ();
-                        lastStateChange.start (BEAM_INTERRUPTION_EVENT);
+                        lastStateChange.start (NO_IR_DETECTED_MS);
                 }
                 else {
                         lastStateChange.start (0);
