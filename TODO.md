@@ -94,7 +94,7 @@
    * [x] Saving to flash.
    * [x] Sending through CAN bus.
    * [x] USB output.
- * [ ] Kiedy nie ma IR, to wyświetlać same kreski, albo -no ir-
+ * [x] Kiedy nie ma IR, to wyświetlać same kreski, albo -no ir-
  * [ ] Optimize spaghetti code in the FastState machine
  * [x] LED multiplexing driven by hardware timer to prevent frying it in case of program hang.
  * [x] When other CAN devices are absent, we should deal with it gracefully. Now I throw hundreds of error messages driving system useless.

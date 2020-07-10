@@ -196,10 +196,19 @@ int main ()
 
         /*--------------------------------------------------------------------------*/
 
-        InfraRedBeamExti beam;
         Gpio irTriggerPin (GPIOA, GPIO_PIN_8, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
-        irTriggerPin.setOnToggle ([&beam, &irTriggerPin] { beam.onExti (irTriggerPin.get ()); });
-        beam.onTrigger = [fStateMachine] { fStateMachine->run (Event::irTrigger); };
+        InfraRedBeamExti beam{(irTriggerPin.get ()) ? (IrBeam::absent) : (IrBeam::present)};
+        irTriggerPin.setOnToggle ([&beam, &irTriggerPin] { beam.onExti ((irTriggerPin.get ()) ? (IrBeam::absent) : (IrBeam::present)); });
+        beam.onTrigger = [fStateMachine] {
+#ifdef TEST_TRIGGER_MOD_2
+                static int i{};
+                if (++i % 2 == 0) {
+                        fStateMachine->run (Event::irTrigger);
+                }
+#else
+                fStateMachine->run (Event::irTrigger);
+#endif
+        };
 
         /*--------------------------------------------------------------------------*/
 
@@ -388,6 +397,15 @@ int main ()
                 if (displayTimer.isExpired ()) {
                         fStateMachine->run (Event::timePassed);
                         displayTimer.start (refreshRate);
+
+                        // if (beam.isBeamPresent ()) {
+                        //         // display.setText ("IR");
+                        //         usbWrite ("I");
+                        // }
+                        // else {
+                        //         // display.setText ("no");
+                        //         usbWrite (" ");
+                        // }
                 }
 
                 if (button.getPressClear ()) {

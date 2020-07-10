@@ -26,12 +26,17 @@
 
 void FastStateMachine::run (Event event)
 {
+        // Global transition
         if (event == Event::pause) {
                 state = State::PAUSED;
-                pause_entryAction ();
         }
+        // Global transition
         else if (event == Event::reset) {
                 state = State::INIT;
+        }
+        /// Global transition for every state other than PAUSE
+        else if (state != PAUSED && ir->isActive () && !ir->isBeamPresent ()) {
+                state = State::WAIT_FOR_BEAM;
         }
 
         switch (state) {
@@ -39,7 +44,6 @@ void FastStateMachine::run (Event event)
 #ifdef DEBUG_STATES
                 debug->print ("i");
 #endif
-                ready_entryAction ();
                 state = WAIT_FOR_BEAM;
                 auto remote = protocol->getLastRemoteStopTime ();
 
@@ -64,6 +68,8 @@ void FastStateMachine::run (Event event)
 #ifdef DEBUG_STATES
                 debug->print ("w");
 #endif
+
+                waitForBeam_entryAction ();
 
                 if (ir->isBeamPresent ()) {
                         state = GP8_READY;
@@ -92,6 +98,8 @@ void FastStateMachine::run (Event event)
 #ifdef DEBUG_STATES
                 debug->print ("r");
 #endif
+                ready_entryAction ();
+
                 if (ir->isBeamInterrupted () || event == Event::testTrigger || event == Event::irTrigger) {
                         state = GP8_RUNNING;
                         running_entryAction (false);
@@ -208,8 +216,20 @@ void FastStateMachine::run (Event event)
                 break;
 
         case State::PAUSED:
+                pause_entryAction ();
+                break;
         default:
                 break;
+        }
+}
+
+/*****************************************************************************/
+
+void FastStateMachine::waitForBeam_entryAction ()
+{
+        if (!ir->isBeamPresent ()) {
+                display->setDot (0);
+                display->setText (" noI.R. ");
         }
 }
 
@@ -220,13 +240,13 @@ void FastStateMachine::ready_entryAction (bool loop)
         // display->setDots (0);
         display->setTime (0, getConfig ().resolution);
 
-        if (loop) {
-                buzzer->beep (10, 10, 1);
-                display->setIcons (IDisplay::TOP_LEFT_ARROW);
-        }
-        else {
-                display->setIcons (IDisplay::BOTTOM_LEFT_ARROW);
-        }
+        // if (loop) {
+        //         buzzer->beep (10, 10, 1);
+        //         display->setIcons (IDisplay::TOP_LEFT_ARROW);
+        // }
+        // else {
+        //         display->setIcons (IDisplay::BOTTOM_LEFT_ARROW);
+        // }
 }
 
 /*****************************************************************************/

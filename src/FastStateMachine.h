@@ -8,6 +8,7 @@
 
 #pragma once
 #include "Timer.h"
+#include "Types.h"
 #include <optional>
 
 class IInfraRedBeam;
@@ -35,9 +36,6 @@ enum class Event {
 
 class FastStateMachine {
 public:
-        static constexpr int BEAM_INTERRUPTION_EVENT = 5000;
-        static constexpr int LOOP_DISPLAY_TIMEOUT = BEAM_INTERRUPTION_EVENT - 1000;
-
         enum State { INIT, WAIT_FOR_BEAM, GP8_READY, GP8_RUNNING, GP8_STOP, LOOP_RUNNING, PAUSED };
 
         static FastStateMachine *singleton ()
@@ -58,6 +56,7 @@ public:
         void setCanProtocol (CanProtocol *cp) { protocol = cp; }
 
 private:
+        void waitForBeam_entryAction ();
         void ready_entryAction (bool loop = false);
         void running_entryAction (bool canStart);
         void stop_entryAction (std::optional<uint32_t> time);

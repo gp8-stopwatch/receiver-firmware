@@ -6,17 +6,13 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
-#ifndef INFRAREDBEAM_H
-#define INFRAREDBEAM_H
-
+#pragma once
 #include "Gpio.h"
 #include "Hal.h"
 #include "Timer.h"
+#include "Types.h"
 #include <cstdint>
 #include <stm32f0xx_hal.h>
-
-// extern "C" void TIM3_IRQHandler ();
-// extern "C" void TIM1_BRK_UP_TRG_COM_IRQHandler ();
 
 /**
  * How much update events since last rise (noOfUpdateEventsSinceLastRise) indicates
@@ -24,7 +20,7 @@
  * TODO Is 50 not to much?
  */
 #define UPDATE_EVENT_TRESHOLD 20
-#define BEAM_GONE 25000
+// #define BEAM_GONE 25000
 
 /**
  *Base for various receivers.
@@ -82,29 +78,45 @@ private:
         uint32_t noOfSuccesiveRises = 0;
 };
 
+/// State of the IR beam (light).
+enum class IrBeam { absent, present };
+
 /**
  * Non modulatred for IR barriers and curtains like TSSP 4056.
  * They output
  */
 class InfraRedBeamExti : public IInfraRedBeam {
 public:
-        void onExti (bool state)
+        /// Based on what was the state at the time of powering on.
+        explicit InfraRedBeamExti (IrBeam initialState) : lastState{initialState} {}
+
+        void onExti (IrBeam state)
         {
                 if (!active) {
                         return;
                 }
 
-                lastStateChange.start (0);
-
-                if (state == true) { // High means no IR.
+                if (state == IrBeam::absent) {
                         onTrigger ();
+                        lastStateChange.start (BEAM_INTERRUPTION_EVENT);
+                }
+                else {
+                        lastStateChange.start (0);
                 }
 
                 lastState = state;
         }
 
         /// Returns false if the beam was interrupted for more than 3s. True otherwise.
-        bool isBeamPresent () const override { return !(lastState == true && lastStateChange.elapsed () >= 3000); }
+        bool isBeamPresent () const override
+        {
+                if (lastStateChange.isExpired ()) {
+                        return lastState == IrBeam::present;
+                }
+
+                return true;
+        }
+
         /// This metod does not make sense when using EXTI (this method is for polling)
         bool isBeamInterrupted () const override { return false; }
 
@@ -112,8 +124,8 @@ public:
         void setActive (bool b) override
         {
                 active = b;
-                lastState = true;
-                lastStateChange.start (0);
+                // lastState = IrBeam::absent;
+                // lastStateChange.start (BEAM_INTERRUPTION_EVENT);
         }
 
         // TODO do not use dynamic allocation.
@@ -121,8 +133,6 @@ public:
 
 private:
         Timer lastStateChange;
-        bool lastState{false}; // High means no IR.
+        IrBeam lastState;
         bool active{true};
 };
-
-#endif // INFRAREDBEAM_H
