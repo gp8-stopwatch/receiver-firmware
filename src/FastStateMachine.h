@@ -60,11 +60,9 @@ private:
         void waitForBeam_entryAction ();
         void ready_entryAction (bool loop = false);
         void running_entryAction (bool canStart);
-        void stop_entryAction (std::optional<uint32_t> time);
-        // void hiClearReady_entryAction ();
-        // void resultsClearReady_entryAction ();
+        void stop_entryAction (bool canEvent, std::optional<uint32_t> time);
         void pause_entryAction ();
-        void loop_entryAction (bool canStart, std::optional<uint32_t> time);
+        void loop_entryAction (bool canEvent, std::optional<uint32_t> time);
 
         /*--------------------------------------------------------------------------*/
 

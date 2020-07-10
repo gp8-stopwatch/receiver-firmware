@@ -34,21 +34,25 @@ void FastStateMachine::run (Event event)
         else if (event == Event::reset) {
                 state = State::WAIT_FOR_BEAM;
         }
-        else if (state != PAUSED && ir->isActive () && !ir->isBeamPresent ()) {
-                state = State::WAIT_FOR_BEAM;
-        }
-        // Czanbus events are handled in every state
-        else if (event == Event::canBusStart) {
-                state = GP8_RUNNING;
-                running_entryAction (true);
-        }
-        else if (event == Event::canBusLoopStart) {
-                state = LOOP_RUNNING;
-                loop_entryAction (true, canTime);
-        }
-        else if (event == Event::canBusStop) {
-                state = GP8_STOP;
-                stop_entryAction (canTime);
+
+        // Global except for the PAUSED state
+        if (state != PAUSED) {
+                if (ir->isActive () && !ir->isBeamPresent ()) {
+                        state = State::WAIT_FOR_BEAM;
+                }
+                // Czanbus events are handled in every state
+                else if (event == Event::canBusStart) {
+                        state = GP8_RUNNING;
+                        running_entryAction (true);
+                }
+                else if (event == Event::canBusLoopStart) {
+                        state = LOOP_RUNNING;
+                        loop_entryAction (true, canTime);
+                }
+                else if (event == Event::canBusStop) {
+                        state = GP8_STOP;
+                        stop_entryAction (true, canTime);
+                }
         }
 
         // Entry actions and transitions distinct for every state.
@@ -78,8 +82,7 @@ void FastStateMachine::run (Event event)
 
                         if (getConfig ().stopMode == StopMode::stop) {
                                 state = GP8_STOP;
-                                stop_entryAction ({});
-                                protocol->sendStop (stopWatch->getTime ());
+                                stop_entryAction (false, {});
                         }
                         else { // Loop
                                 state = LOOP_RUNNING;
@@ -150,11 +153,16 @@ void FastStateMachine::running_entryAction (bool canStart)
 
 /*****************************************************************************/
 
-void FastStateMachine::stop_entryAction (std::optional<uint32_t> time)
+void FastStateMachine::stop_entryAction (bool canEvent, std::optional<uint32_t> time)
 {
         stopWatch->stop ();
         startTimeout.start (BEAM_INTERRUPTION_EVENT);
         uint32_t result = (time) ? (*time) : (stopWatch->getTime ());
+
+        if (!canEvent) {
+                protocol->sendStop (result);
+        }
+
         display->setTime (result, getConfig ().resolution);
 
         if (history != nullptr) {
@@ -163,22 +171,18 @@ void FastStateMachine::stop_entryAction (std::optional<uint32_t> time)
         }
 }
 
-/****************************************************************************/
-
-void FastStateMachine::pause_entryAction () { stopWatch->stop (); }
-
 /*****************************************************************************/
 
-void FastStateMachine::loop_entryAction (bool canStart, std::optional<uint32_t> time)
+void FastStateMachine::loop_entryAction (bool canEvent, std::optional<uint32_t> time)
 {
         stopWatch->stop ();
         uint32_t result = (time) ? (*time) : (stopWatch->getTime ());
 
-        if (!canStart) {
+        if (!canEvent) {
                 protocol->sendLoopStart (result);
         }
 
-        stopWatch->reset (canStart);
+        stopWatch->reset (canEvent);
         stopWatch->start ();
         buzzer->beep (100, 0, 1);
         startTimeout.start (BEAM_INTERRUPTION_EVENT);
@@ -198,3 +202,7 @@ void FastStateMachine::loop_entryAction (bool canStart, std::optional<uint32_t> 
                 // history->store (result);
         }
 }
+
+/****************************************************************************/
+
+void FastStateMachine::pause_entryAction () { stopWatch->stop (); }
