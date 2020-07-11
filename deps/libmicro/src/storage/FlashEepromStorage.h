@@ -118,7 +118,7 @@ FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::FlashEepromStorage (size_t capacity, 
         }
 
         // If capacity is to big, we cannot properly calculate where is the end of stored data (the gap is to smal).
-        if (capacity + WRITE_SIZE >= PAGE_SIZE / 2) {
+        if (capacity + WRITE_SIZE > PAGE_SIZE / 2) {
                 Error_Handler ();
         }
 }
@@ -197,7 +197,15 @@ template <size_t PAGE_SIZE, size_t WRITE_SIZE>
 void FlashEepromStorage<PAGE_SIZE, WRITE_SIZE>::storeImpl (uint8_t *d, size_t length, size_t offset)
 {
         // We are on the last page, and this write will exceed it
-        if ((currentPage == numOfPages - 1 && currentOffset + capacity + WRITE_SIZE > PAGE_SIZE) || currentPage >= numOfPages) {
+        if (currentOffset + capacity + WRITE_SIZE > PAGE_SIZE) {
+                ++currentPage;
+                currentPage %= numOfPages;
+                currentOffset = 0;
+                clearPage (address + currentPage * PAGE_SIZE);
+        }
+
+        // Some special case that I cannot remember what was for.
+        if (currentPage >= numOfPages) {
                 currentPage = 0;
                 currentOffset = 0;
                 clearPage (address);
