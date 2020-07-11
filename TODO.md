@@ -109,6 +109,31 @@
 * [ ] Long press in tne "results/counter" mode crashes the firmware. Fix and do the reset then.
 * [ ] Clear command makes the next trigger event to be skipped / missed.
 * [ ] USB - can't output more than 2048B at once. In case of overflow the rest of text is clipped.
+* [ ] When history is short (16B per page) results are working somewhat oddly:
+
+```
+00:05,00998
+
+result
+Hi 00:00,00000
+
+00:05,00998
+00:10,02000
+
+result
+Hi 00:00,00000
+
+00:05,00998
+00:05,00998
+
+result
+Hi 00:00,00000
+
+00:05,00998
+00:10,01998
+00:05,00998
+00:10,01998
+```
 
 # Piotr
 * [x] Zapis ustawień
