@@ -192,13 +192,6 @@ void FastStateMachine::loop_entryAction (bool canEvent, std::optional<uint32_t> 
 
         if (history != nullptr) {
                 buzzer->beep (70, 50, 2);
-
-                /*
-                 * "This means that code or data fetches cannot be made while a program/erase operation is ongoing". p.57
-                 * In loop mode saving the result to flash causes 200µs error. In normal (non-loop) mode there is no such
-                 * problem as the timer stops. This problem is hard to resolve. One option would be to use external flash
-                 * (for storing the results), the other would be to move parts of the code (ISRs) to RAM?
-                 */
                 history->store (result);
         }
 }

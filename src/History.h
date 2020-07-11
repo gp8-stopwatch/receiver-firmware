@@ -41,5 +41,5 @@ private:
         Result hiScore = std::numeric_limits<Result>::max ();
         IRandomAccessStorage *hiScoreStorage = nullptr;
         ICircullarQueueStorage *historyStorage = nullptr;
-        etl::queue<Result, 4> flashQueue;
+        etl::queue<Result, FLASH_QUEUE_SIZE> flashQueue;
 };
