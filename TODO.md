@@ -26,9 +26,9 @@
 * [ ] ~~Reduce holes for CAN socket supports (thise 2 plastic one sticking out)~~ The case is holding the socket in place. Too much effort.
 * [x] Ldo for etc should be 3v3 not 1v8. Voltage difference would be smaller.
 * [x] Przetestować RTC z tym małym LDO.
-* [ ] Battery protection in software
-  * [ ] When powered off no software is running. What is the current draw of ldo plus rtc?
-  * [ ] Measure what all elements except the µC and LEDs are drawing, and whether we should optimize this, or leave alone.
+* [ ] Battery protection in software (for overdischarge)
+  * [x] When powered off no software is running. What is the current draw of ldo plus rtc? 0.5µA (includeing RTC + low Q LDO)
+  * [x] Measure what all elements except the µC and LEDs are drawing, and whether we should optimize this, or leave alone.
   * [ ] When powered on, simply go to sleep, calculate current, maybe modify HW so it draws less quiescent current.
   * [ ] Same for the transmitter
 * [x] If the transmitter had an uc, we could use the charging led to indicate that it is running, and there would be no changes to the casing necessary.
@@ -39,7 +39,7 @@
   * [x] Rough range tests shows that there's no noticeable change.
 * [x] 56kHz transmitter.
 * [x] Test points.
-* [ ] ~~Fix the distance between the holes on 18650 battery holder. **Not until new arrive**.~~ Besides : the holder is supported by case's back wall.
+* [x] ~~Fix the distance between the holes on 18650 battery holder. **Not until new arrive**.~~ Besides : the holder is supported by case's back wall.
 * [x] Route the receiver PCB
 * [ ] Poprawić działanie we wnętrzach (incadescent lights & cameras) ????
 * [ ] Jeszcze osłabić sygnał IR.
@@ -69,10 +69,10 @@
 # Possible features
 * [x] µC in the transmitter
   * [x] Battery sensing in the transmitter
-* [ ] ~~Hardware battery protection in both devices~~ I went with software one.
+* [x] ~~Hardware battery protection in both devices~~ I went with software one.
 * [x] Test trigger in the transmitter (same as receiver) - a test point(s)
 * [ ] Speed trap. Receivers connected together would measure the speed.
-* [ ] Result resolution setting (100µs)
+* [x] Result resolution setting (100µs)
 
 # Firmware
 * [x] Settings memory (screen flip & sound on/off should be persisted)
@@ -108,6 +108,7 @@
 * [ ] Sometimes when the `reset` command is issued the display is not cleared (stop watch stops, but the last result is persisted on the screen).
 * [ ] Long press in tne "results/counter" mode crashes the firmware. Fix and do the reset then.
 * [ ] Clear command makes the next trigger event to be skipped / missed.
+* [ ] USB - can't output more than 2048B at once. In case of overflow the rest of text is clipped.
 
 # Piotr
 * [x] Zapis ustawień
@@ -118,7 +119,7 @@
 * [ ] Zewnętrzny czujnik
 * [x] Opcja tyrybu /zawody/trening. Opcje zawody to takie dzialanie jak jest teraz. Trening : Liczy, wyswietla czas przez 10s, w miedzyczasie liczy "drugie okrazenie, i znowu po przecieciu wiazki pokazuje czas przez 10s i jednoczesnie liczy czas do nastepnego.
   * [x] Z zewnętrznym czujnikiem.
-  * [ ] Loop na dwa czujniki i dwa nadajniki
+  * [x] Loop na dwa czujniki i dwa nadajniki
 * [x] Opcja /restart : Wyslanie tej komendy powoduje zatrzymanie liczenia czasu jesli bylo wlaczone, ustawia wyswietlacz na 0:00 i czeka na przeciecie wiazki i pomiar
   * [ ] Błąd - czasem nie czyści.
 * [x] Pipczenie - jesli mozesz zobic na start 1 pip a na pomiar w trybie zawodow 3xpip. Pomiar w tyrybie /trening 2x pip
@@ -169,4 +170,4 @@ Solved. The problem was due to lack of USBD_CDC_ReceivePacket calls. So it seems
 
 # Refactoring
 * [ ] USB - change `__disable_irq ()` to NVIC-disable USB.
-* [ ] Config object should be globally available. 
+* [x] Config object should be globally available. 
