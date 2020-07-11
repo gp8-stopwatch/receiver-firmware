@@ -14,12 +14,8 @@
 
 /****************************************************************************/
 
-void StopWatch::setResolution (Resolution res)
+StopWatch::StopWatch ()
 {
-        if (running) {
-                std::terminate ();
-        }
-
         /*+-------------------------------------------------------------------------+*/
         /*| Stopwatch 32bit main timer (slave)                                      |*/
         /*+-------------------------------------------------------------------------+*/
@@ -55,22 +51,18 @@ void StopWatch::setResolution (Resolution res)
         /*| Stopwatch 16bit prescaler timer (master)                                |*/
         /*+-------------------------------------------------------------------------+*/
 
-        resolution = res;
-        increment = INCREMENTS.at (int (resolution));
+        // resolution = res;
+        // increment = INCREMENTS.at (int (resolution));
 
-        int div = PRESCALERS.at (int (res));
+        // int div = PRESCALERS.at (int (res));
         prescalerStopWatchTimHandle.Instance = TIM3;
-        prescalerStopWatchTimHandle.Init.Prescaler = (uint32_t) (HAL_RCC_GetHCLKFreq () / div) - 1;
-        prescalerStopWatchTimHandle.Init.Period = PERIODS.at (int (res)) - 1;
+        prescalerStopWatchTimHandle.Init.Prescaler = (uint32_t) (HAL_RCC_GetHCLKFreq () / 1000000) - 1;
+        prescalerStopWatchTimHandle.Init.Period = 10 - 1;
         prescalerStopWatchTimHandle.Init.ClockDivision = 0;
         prescalerStopWatchTimHandle.Init.CounterMode = TIM_COUNTERMODE_UP;
         prescalerStopWatchTimHandle.Init.RepetitionCounter = 0;
 
         __HAL_RCC_TIM3_CLK_ENABLE ();
-
-        // Highest priority.
-        // HAL_NVIC_SetPriority (TIM3_IRQn, STOPWATCH_PRIORITY, 0);
-        // HAL_NVIC_EnableIRQ (TIM3_IRQn);
 
         if (HAL_TIM_Base_Init (&prescalerStopWatchTimHandle) != HAL_OK) {
                 Error_Handler ();
@@ -84,35 +76,7 @@ void StopWatch::setResolution (Resolution res)
                 Error_Handler ();
         }
 
-        // if (HAL_TIM_Base_Start_IT (&prescalerStopWatchTimHandle) != HAL_OK) {
-        //         Error_Handler ();
-        // }
         if (HAL_TIM_Base_Start (&prescalerStopWatchTimHandle) != HAL_OK) {
                 Error_Handler ();
-        }
-}
-
-/**
- * Stop-watch ISR.
- * Here the value displayed is updated. 100Hz / 1kHz / 10kHz / 100kHz.
- */
-// extern "C" void TIM14_IRQHandler ()
-// {
-//         __HAL_TIM_CLEAR_IT (&StopWatch::singleton ()->prescalerStopWatchTimHandle, TIM_IT_UPDATE);
-//         StopWatch::singleton ()->onInterrupt ();
-// }
-
-/*****************************************************************************/
-
-inline void StopWatch::onInterrupt ()
-{
-        if (!running) {
-                return;
-        }
-
-        time += increment;
-
-        if (time >= MAX_TIME) {
-                time = 0;
         }
 }

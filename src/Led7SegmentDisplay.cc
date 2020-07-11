@@ -170,8 +170,7 @@ void Led7SegmentDisplay::clear ()
 
 void Led7SegmentDisplay::setResolution (Resolution res)
 {
-        // static constexpr std::array<uint8_t, 4> FACTOR_INDEX_INITIAL_VALUE{3, 2, 1, 0};
-        // factorIndex = FACTOR_INDEX_INITIAL_VALUE.at (int (res));
+        static constexpr std::array INCREMENTS{1, 10, 100, 1000};
         factorIndex = int (res);
-        prescaler = StopWatch::INCREMENTS.at (int (res));
+        prescaler = INCREMENTS.at (int (res));
 }
