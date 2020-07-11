@@ -398,15 +398,6 @@ int main ()
                 if (displayTimer.isExpired ()) {
                         fStateMachine->run (Event::timePassed);
                         displayTimer.start (refreshRate);
-
-                        // if (beam.isBeamPresent ()) {
-                        //         // display.setText ("IR");
-                        //         usbWrite ("I");
-                        // }
-                        // else {
-                        //         // display.setText ("no");
-                        //         usbWrite (" ");
-                        // }
                 }
 
                 if (button.getPressClear ()) {

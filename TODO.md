@@ -103,10 +103,11 @@
  * [x] Dots indicating the resolution of the time display.
  * [ ] CAN_LATENCY_CORRECTION must be assesed again becasue I've changed how the START is sent (4B additionally).
  
- # Bugs
+# Bugs
 * [ ] So it happened that it couldnt save results history when the page overflowed from 1 back to 0 (after 128 measurements). Probably it didn't cleared the flash.
 * [ ] Sometimes when the `reset` command is issued the display is not cleared (stop watch stops, but the last result is persisted on the screen).
 * [ ] Long press in tne "results/counter" mode crashes the firmware. Fix and do the reset then.
+* [ ] Clear command makes the next trigger event to be skipped / missed.
 
 # Piotr
 * [x] Zapis ustawień

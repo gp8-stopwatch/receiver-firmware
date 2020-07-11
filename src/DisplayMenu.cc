@@ -50,7 +50,10 @@ void DisplayMenu::onLongPress ()
         }
 
         prepareMenuForOption (option);
-        cfg::changed () = true;
+
+        if (option != Option::stop_watch) {
+                cfg::changed () = true;
+        }
 }
 
 /*****************************************************************************/
