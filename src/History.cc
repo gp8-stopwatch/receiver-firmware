@@ -100,7 +100,7 @@ History::Entry &fixEntry (History::Entry &e)
 
 /*****************************************************************************/
 
-void History::store (uint32_t t) { flashQueue.push (t); }
+void History::store (uint32_t t) { flashQueue.push_from_unlocked (t); }
 
 /*****************************************************************************/
 
@@ -116,17 +116,12 @@ void History::storeHiScoreIf (uint32_t t)
 
 void History::run ()
 {
-        // TODO use queue_spc_locked
-        while (!flashQueue.empty ()) {
-                Result t = flashQueue.front ();
-                flashQueue.pop ();
-                // historyStorage->store (reinterpret_cast<uint8_t *> (&t), sizeof (t), 0);
-
+        Result t{};
+        while (flashQueue.pop (t)) {
                 History::Entry entry{};
                 std::tie (entry.date, entry.time) = rtc.getDate ();
                 entry.result = t;
                 historyStorage->store (reinterpret_cast<uint8_t *> (&entry), sizeof (entry), 0);
-
                 storeHiScoreIf (t);
         }
 }

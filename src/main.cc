@@ -59,6 +59,7 @@ static void *cliPointer{};
 void readConfigFromFlash () { getConfig () = *reinterpret_cast<cfg::Config const *> (getConfigFlashEepromStorage ().read (nullptr, 2, 0, 0)); }
 
 /*****************************************************************************/
+void fff () {}
 
 int main ()
 {

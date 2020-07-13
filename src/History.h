@@ -10,7 +10,8 @@
 #include "Rtc.h"
 #include "Types.h"
 #include <cstdint>
-#include <etl/queue.h>
+#include <etl/function.h>
+#include <etl/queue_spsc_locked.h>
 #include <limits>
 #include <storage/ICircullarQueueStorage.h>
 #include <storage/IRandomAccessStorage.h>
@@ -49,6 +50,6 @@ private:
         Result hiScore = std::numeric_limits<Result>::max ();
         IRandomAccessStorage *hiScoreStorage = nullptr;
         ICircullarQueueStorage *historyStorage = nullptr;
-        etl::queue<Result, FLASH_QUEUE_SIZE> flashQueue;
+        etl::queue_spsc_locked<Result, FLASH_QUEUE_SIZE, etl::memory_model::MEMORY_MODEL_SMALL> flashQueue{lock, unlock};
         Rtc &rtc;
 };

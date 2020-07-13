@@ -11,6 +11,7 @@
 #define USB_PRIORITY 3
 
 #ifdef __cplusplus
+#include "Hal.h"
 #include <cstdint>
 #include <etl/cstring.h>
 
@@ -22,7 +23,7 @@ constexpr size_t CAN_BUS_PRIORITY = 1;
 constexpr size_t BUTTON_AND_IR_EXTI_PRIORITY = 1;
 constexpr size_t TEST_TRIGGER_EXTI_PRIORITY = 1;
 
-static const char *VERSION = "1.0.3";
+static const char *VERSION = "1.0.4";
 
 /**
  * Values are chosen so after loading from empty flash (0xff everywhere), everyting would
@@ -42,5 +43,8 @@ enum StopMode { stop = 1, restart = 0 }; // Loop
 static constexpr int BEAM_INTERRUPTION_EVENT = 5000;
 static constexpr int NO_IR_DETECTED_MS = 5000;
 static constexpr int LOOP_DISPLAY_TIMEOUT = BEAM_INTERRUPTION_EVENT - 1000;
+
+const etl::function_fv<__disable_irq> lock{};
+const etl::function_fv<__enable_irq> unlock{};
 
 #endif // __cplusplus
