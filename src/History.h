@@ -7,6 +7,7 @@
  ****************************************************************************/
 
 #pragma once
+#include "Rtc.h"
 #include "Types.h"
 #include <cstdint>
 #include <etl/queue.h>
@@ -17,9 +18,16 @@
 class History {
 public:
         static constexpr size_t MAX_RESULTS_NUM = 64;
+        explicit History (Rtc &r) : rtc{r} {}
 
         void store (Result t);
         void run ();
+
+        struct Entry {
+                RTC_DateTypeDef date;
+                Time time;
+                Result result;
+        };
 
         Result getHiScore () const { return hiScore; }
         void printHistory ();
@@ -42,4 +50,5 @@ private:
         IRandomAccessStorage *hiScoreStorage = nullptr;
         ICircullarQueueStorage *historyStorage = nullptr;
         etl::queue<Result, FLASH_QUEUE_SIZE> flashQueue;
+        Rtc &rtc;
 };

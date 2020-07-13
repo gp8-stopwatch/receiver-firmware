@@ -154,15 +154,21 @@ int main ()
 #endif
 
         /*+-------------------------------------------------------------------------+*/
+        /*| RTC                                                                     |*/
+        /*+-------------------------------------------------------------------------+*/
+
+        Rtc rtc;
+
+        /*+-------------------------------------------------------------------------+*/
         /*| History saved in the flash                                              |*/
         /*+-------------------------------------------------------------------------+*/
 
 #ifdef WITH_FLASH
-        History history{};
-        FlashEepromStorage<2048, 4> hiScoreStorage (4, 1, 0x801E800 /*0x08020000 - 3 * 2048*/);
+        History history{rtc};
+        FlashEepromStorage<2048, 4> hiScoreStorage (12, 1, 0x801E800 /*0x08020000 - 3 * 2048*/);
         hiScoreStorage.init ();
         history.setHiScoreStorage (&hiScoreStorage);
-        FlashEepromStorage<2048, 4> historyStorage (4, 2, 0x801F000 /*0x08020000 - 2 * 2048*/);
+        FlashEepromStorage<2048, 4> historyStorage (12, 2, 0x801F000 /*0x08020000 - 2 * 2048*/);
         historyStorage.init ();
         history.setHistoryStorage (&historyStorage);
 #endif
@@ -246,12 +252,6 @@ int main ()
         PowerManagement power;
 
         /*+-------------------------------------------------------------------------+*/
-        /*| RTC                                                                     |*/
-        /*+-------------------------------------------------------------------------+*/
-
-        Rtc rtc;
-
-        /*+-------------------------------------------------------------------------+*/
         /*| USB                                                                     |*/
         /*+-------------------------------------------------------------------------+*/
 
@@ -273,71 +273,71 @@ int main ()
                 usbWrite ("\r\n");
         });
 
-        auto c = cl::cli<String> (cl::cmd (String ("result"), [&history] { history.printHistory (); }),
-                                  cl::cmd (String ("last"), [&history] { history.printLast (); }),
-                                  cl::cmd (String ("date"), [&rtc] { rtc.getDate (); }),
+        auto cli = cl::cli<String> (cl::cmd (String ("result"), [&history] { history.printHistory (); }),
+                                    cl::cmd (String ("last"), [&history] { history.printLast (); }),
+                                    cl::cmd (String ("date"), [&rtc] { rtc.getDate (); }),
 
-                                  cl::cmd (String ("store128"),
-                                           [&history] {
-                                                   for (int i = 0; i < 128; ++i) {
-                                                           history.store (i);
-                                                   }
-                                           }),
-                                  cl::cmd (String ("store127"),
-                                           [&history] {
-                                                   for (int i = 0; i < 127; ++i) {
-                                                           history.store (i);
-                                                   }
-                                           }),
-                                  cl::cmd (String ("store16"),
-                                           [&history] {
-                                                   for (int i = 0; i < 16; ++i) {
-                                                           history.store (i);
-                                                   }
-                                           }),
-                                  cl::cmd (String ("store1"), [&] { history.store (666); }),
+                                    cl::cmd (String ("store128"),
+                                             [&history] {
+                                                     for (int i = 0; i < 128; ++i) {
+                                                             history.store (i);
+                                                     }
+                                             }),
+                                    cl::cmd (String ("store127"),
+                                             [&history] {
+                                                     for (int i = 0; i < 127; ++i) {
+                                                             history.store (i);
+                                                     }
+                                             }),
+                                    cl::cmd (String ("store16"),
+                                             [&history] {
+                                                     for (int i = 0; i < 16; ++i) {
+                                                             history.store (i);
+                                                     }
+                                             }),
+                                    cl::cmd (String ("store1"), [&] { history.store (666); }),
 
-                                  cl::cmd (String ("iscounting"),
-                                           [&fStateMachine] {
-                                                   if (fStateMachine->isCounting ()) {
-                                                           usbWrite ("1\r\n\r\n");
-                                                   }
-                                                   else {
-                                                           usbWrite ("0\r\n\r\n");
-                                                   }
-                                           }),
-                                  cl::cmd (String ("reset"), [&fStateMachine] { fStateMachine->run (Event::reset); }),
+                                    cl::cmd (String ("iscounting"),
+                                             [&fStateMachine] {
+                                                     if (fStateMachine->isCounting ()) {
+                                                             usbWrite ("1\r\n\r\n");
+                                                     }
+                                                     else {
+                                                             usbWrite ("0\r\n\r\n");
+                                                     }
+                                             }),
+                                    cl::cmd (String ("reset"), [&fStateMachine] { fStateMachine->run (Event::reset); }),
 
-                                  cl::cmd (String ("clear"),
-                                           [&history] {
-                                                   history.clearHiScore ();
-                                                   history.clearResults ();
-                                           }),
-                                  cl::cmd (String ("factory"), [] { getConfigFlashEepromStorage ().clear (); }),
-                                  cl::cmd (String ("help"), [] { usbWrite ("battery, clear, last, result, reset\r\n\r\n"); }),
-                                  cl::cmd (String ("battery"),
-                                           [&power] {
-                                                   std::array<char, 11> buf{};
-                                                   itoa ((unsigned int)(power.getBatteryVoltage ()), buf.data ());
-                                                   usbWrite (buf.cbegin ());
-                                                   usbWrite ("mV, ");
+                                    cl::cmd (String ("clear"),
+                                             [&history] {
+                                                     history.clearHiScore ();
+                                                     history.clearResults ();
+                                             }),
+                                    cl::cmd (String ("factory"), [] { getConfigFlashEepromStorage ().clear (); }),
+                                    cl::cmd (String ("help"), [] { usbWrite ("battery, clear, last, result, reset\r\n\r\n"); }),
+                                    cl::cmd (String ("battery"),
+                                             [&power] {
+                                                     std::array<char, 11> buf{};
+                                                     itoa ((unsigned int)(power.getBatteryVoltage ()), buf.data ());
+                                                     usbWrite (buf.cbegin ());
+                                                     usbWrite ("mV, ");
 
-                                                   itoa ((unsigned int)(power.getBatteryPercent ()), buf.data ());
-                                                   usbWrite (buf.cbegin ());
-                                                   usbWrite ("%\r\n\r\n");
-                                           })
+                                                     itoa ((unsigned int)(power.getBatteryPercent ()), buf.data ());
+                                                     usbWrite (buf.cbegin ());
+                                                     usbWrite ("%\r\n\r\n");
+                                             })
 
         );
 
-        using CliType = decltype (c);
-        cliPointer = &c;
+        using CliType = decltype (cli);
+        cliPointer = &cli;
 
         usbOnData ([] (const uint8_t *data, size_t len) {
-                auto *c = reinterpret_cast<CliType *> (cliPointer);
+                auto *cli = reinterpret_cast<CliType *> (cliPointer);
 
                 for (size_t i = 0; i < len; ++i) {
                         auto dt = gsl::span{data, len};
-                        c->run (char (dt[i]));
+                        cli->input (char (dt[i]));
                 }
         });
 
@@ -370,6 +370,7 @@ int main ()
                 buzzer.run ();
                 button.run ();
                 history.run ();
+                cli.run ();
 
                 if (displayTimer.isExpired ()) {
                         fStateMachine->run (Event::timePassed);

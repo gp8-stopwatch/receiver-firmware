@@ -46,7 +46,7 @@ static USBD_StatusTypeDef USBD_CDC_TransmitPacket (USBD_HandleTypeDef *pdev, uns
 
 static int8_t CDC_Itf_Control (USBD_CDC_HandleTypeDef *hcdc, uint8_t cmd, uint8_t *pbuf, uint16_t length);
 static void Error_Handler (void);
-static void ComPort_Config (USBD_CDC_HandleTypeDef *hcdc);
+// static void ComPort_Config (USBD_CDC_HandleTypeDef *hcdc);
 static void ComPort_Anneal (USBD_CDC_HandleTypeDef *hcdc);
 
 /* CDC interface class callbacks structure that is used by main.c */
@@ -230,8 +230,6 @@ static uint8_t USBD_CDC_DataOut (USBD_HandleTypeDef *pdev, uint8_t epnum)
                         /* Get the received data length */
                         RxLength = USBD_LL_GetRxDataSize (pdev, epnum);
 
-                        // usbWriteData ((uint8_t *)hcdc->OutboundBuffer, RxLength);
-
                         if (onData) {
                                 (*onData) ((uint8_t *)hcdc->OutboundBuffer, RxLength);
                         }
@@ -244,16 +242,8 @@ static uint8_t USBD_CDC_DataOut (USBD_HandleTypeDef *pdev, uint8_t epnum)
         return USBD_OK;
 }
 
-void usbWrite (const char *str) { usbWriteData ((const uint8_t *)str, strlen (str)); }
-
-void usbWriteData (const uint8_t *str, size_t size)
+bool usbWriteDataUnprotected (const uint8_t *str, size_t size)
 {
-#if 0
-        memcpy (((uint8_t *)context[0].InboundBuffer), str, size);
-        context->begin = 0;
-        context->end = size;
-#else
-        // TODO this can interfere with TIMx interrupts which can break time tracking!
         __disable_irq ();
 
         int begin = context->begin;
@@ -273,7 +263,7 @@ void usbWriteData (const uint8_t *str, size_t size)
         // We cant let the begin and end to be equal when filing the buffer, because this means the buffer is empty
         if (actualSize + size >= INBOUND_BUFFER_SIZE) {
                 __enable_irq ();
-                return; // flase
+                return false;
         }
 
         if (end + size > INBOUND_BUFFER_SIZE) {
@@ -290,7 +280,35 @@ void usbWriteData (const uint8_t *str, size_t size)
         }
 
         __enable_irq ();
-#endif
+        return true;
+}
+
+bool usbWriteUnprotected (const char *str) { return usbWriteDataUnprotected ((const uint8_t *)str, strlen (str)); }
+
+void usbWrite (const char *str)
+{
+        uint32_t start = HAL_GetTick ();
+
+        while (!usbWriteUnprotected (str)) {
+                if (HAL_GetTick () - start > OUTPUT_TIMEOUT_MS) {
+                        break;
+                }
+
+                HAL_Delay (1);
+        }
+}
+
+void usbWriteData (const uint8_t *str, size_t size)
+{
+        uint32_t start = HAL_GetTick ();
+
+        while (!usbWriteDataUnprotected (str, size)) {
+                if (HAL_GetTick () - start > OUTPUT_TIMEOUT_MS) {
+                        break;
+                }
+
+                HAL_Delay (1);
+        }
 }
 
 static uint8_t USBD_CDC_SOF (struct _USBD_HandleTypeDef *pdev)
@@ -474,75 +492,75 @@ static int8_t CDC_Itf_Control (USBD_CDC_HandleTypeDef *hcdc, uint8_t cmd, uint8_
 //         }
 // }
 
-static void ComPort_Config (USBD_CDC_HandleTypeDef *hcdc)
-{
-        // if (hcdc->UartHandle.State != HAL_UART_STATE_RESET)
-        //         if (HAL_UART_DeInit (&hcdc->UartHandle) != HAL_OK) {
-        //                 /* Initialization Error */
-        //                 Error_Handler ();
-        //         }
+// static void ComPort_Config (USBD_CDC_HandleTypeDef *hcdc)
+// {
+//         // if (hcdc->UartHandle.State != HAL_UART_STATE_RESET)
+//         //         if (HAL_UART_DeInit (&hcdc->UartHandle) != HAL_OK) {
+//         //                 /* Initialization Error */
+//         //                 Error_Handler ();
+//         //         }
 
-        // /* set the Stop bit */
-        // switch (hcdc->LineCoding.format) {
-        // case 0:
-        //         hcdc->UartHandle.Init.StopBits = UART_STOPBITS_1;
-        //         break;
-        // case 2:
-        //         hcdc->UartHandle.Init.StopBits = UART_STOPBITS_2;
-        //         break;
-        // default:
-        //         hcdc->UartHandle.Init.StopBits = UART_STOPBITS_1;
-        //         break;
-        // }
+//         // /* set the Stop bit */
+//         // switch (hcdc->LineCoding.format) {
+//         // case 0:
+//         //         hcdc->UartHandle.Init.StopBits = UART_STOPBITS_1;
+//         //         break;
+//         // case 2:
+//         //         hcdc->UartHandle.Init.StopBits = UART_STOPBITS_2;
+//         //         break;
+//         // default:
+//         //         hcdc->UartHandle.Init.StopBits = UART_STOPBITS_1;
+//         //         break;
+//         // }
 
-        // /* set the parity bit*/
-        // switch (hcdc->LineCoding.paritytype) {
-        // case 0:
-        //         hcdc->UartHandle.Init.Parity = UART_PARITY_NONE;
-        //         break;
-        // case 1:
-        //         hcdc->UartHandle.Init.Parity = UART_PARITY_ODD;
-        //         break;
-        // case 2:
-        //         hcdc->UartHandle.Init.Parity = UART_PARITY_EVEN;
-        //         break;
-        // default:
-        //         hcdc->UartHandle.Init.Parity = UART_PARITY_NONE;
-        //         break;
-        // }
+//         // /* set the parity bit*/
+//         // switch (hcdc->LineCoding.paritytype) {
+//         // case 0:
+//         //         hcdc->UartHandle.Init.Parity = UART_PARITY_NONE;
+//         //         break;
+//         // case 1:
+//         //         hcdc->UartHandle.Init.Parity = UART_PARITY_ODD;
+//         //         break;
+//         // case 2:
+//         //         hcdc->UartHandle.Init.Parity = UART_PARITY_EVEN;
+//         //         break;
+//         // default:
+//         //         hcdc->UartHandle.Init.Parity = UART_PARITY_NONE;
+//         //         break;
+//         // }
 
-        // /*set the data type : only 8bits and 9bits is supported */
-        // switch (hcdc->LineCoding.datatype) {
-        // case 0x07:
-        //         /* With this configuration a parity (Even or Odd) must be set */
-        //         hcdc->UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
-        //         break;
-        // case 0x08:
-        //         if (hcdc->UartHandle.Init.Parity == UART_PARITY_NONE) {
-        //                 hcdc->UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
-        //         }
-        //         else {
-        //                 hcdc->UartHandle.Init.WordLength = UART_WORDLENGTH_9B;
-        //         }
+//         // /*set the data type : only 8bits and 9bits is supported */
+//         // switch (hcdc->LineCoding.datatype) {
+//         // case 0x07:
+//         //         /* With this configuration a parity (Even or Odd) must be set */
+//         //         hcdc->UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
+//         //         break;
+//         // case 0x08:
+//         //         if (hcdc->UartHandle.Init.Parity == UART_PARITY_NONE) {
+//         //                 hcdc->UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
+//         //         }
+//         //         else {
+//         //                 hcdc->UartHandle.Init.WordLength = UART_WORDLENGTH_9B;
+//         //         }
 
-        //         break;
-        // default:
-        //         hcdc->UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
-        //         break;
-        // }
+//         //         break;
+//         // default:
+//         //         hcdc->UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
+//         //         break;
+//         // }
 
-        // hcdc->UartHandle.Init.BaudRate = hcdc->LineCoding.bitrate;
-        // hcdc->UartHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-        // hcdc->UartHandle.Init.Mode = UART_MODE_TX_RX;
+//         // hcdc->UartHandle.Init.BaudRate = hcdc->LineCoding.bitrate;
+//         // hcdc->UartHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+//         // hcdc->UartHandle.Init.Mode = UART_MODE_TX_RX;
 
-        // if (HAL_UART_Init (&hcdc->UartHandle) != HAL_OK) {
-        //         /* Initialization Error */
-        //         Error_Handler ();
-        // }
+//         // if (HAL_UART_Init (&hcdc->UartHandle) != HAL_OK) {
+//         //         /* Initialization Error */
+//         //         Error_Handler ();
+//         // }
 
-        /* Start reception */
-        // HAL_UART_Receive_DMA (&hcdc->UartHandle, (uint8_t *)(hcdc->InboundBuffer), INBOUND_BUFFER_SIZE);
-}
+//         /* Start reception */
+//         // HAL_UART_Receive_DMA (&hcdc->UartHandle, (uint8_t *)(hcdc->InboundBuffer), INBOUND_BUFFER_SIZE);
+// }
 
 static void ComPort_Anneal (USBD_CDC_HandleTypeDef *hcdc)
 {

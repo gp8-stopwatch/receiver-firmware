@@ -33,7 +33,8 @@ private:
 
         void off () { pin = false; }
 
-private:
+        /*--------------------------------------------------------------------------*/
+
         Gpio &pin;
         Timer timer;
         uint16_t periodOn = 0;

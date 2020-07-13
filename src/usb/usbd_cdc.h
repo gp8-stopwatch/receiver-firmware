@@ -33,6 +33,7 @@ extern "C" {
 #include "usbd_composite.h"
 #include "usbd_def.h"
 #include "usbd_ioreq.h"
+#include <stdbool.h>
 
 #define CDC_DATA_OUT_MAX_PACKET_SIZE USB_FS_MAX_PACKET_SIZE /* don't exceed USB_FS_MAX_PACKET_SIZE; Linux data loss happens otherwise */
 #define CDC_DATA_IN_MAX_PACKET_SIZE 256
@@ -92,8 +93,14 @@ typedef void (*UsbOnData) (const uint8_t *, size_t);
 typedef void (*UsbOnConnected) ();
 typedef void (*UsbOnDisconnected) ();
 
+#define OUTPUT_TIMEOUT_MS 1000
 extern void usbWrite (const char *str);
 extern void usbWriteData (const uint8_t *str, size_t size);
+
+// TODO remove
+extern bool usbWriteUnprotected (const char *str);
+extern bool usbWriteDataUnprotected (const uint8_t *str, size_t size);
+
 extern void usbOnData (UsbOnData callback);
 extern void usbOnConnected (UsbOnConnected callback);
 extern void usbOnDisconnected (UsbOnConnected callback);
