@@ -104,12 +104,13 @@
  * [ ] CAN_LATENCY_CORRECTION must be assesed again becasue I've changed how the START is sent (4B additionally).
  
 # Bugs
-* [ ] So it happened that it couldnt save results history when the page overflowed from 1 back to 0 (after 128 measurements). Probably it didn't cleared the flash.
+* [x] So it happened that it couldnt save results history when the page overflowed from 1 back to 0 (after 128 measurements). Probably it didn't cleared the flash.
 * [ ] Sometimes when the `reset` command is issued the display is not cleared (stop watch stops, but the last result is persisted on the screen).
-* [ ] Long press in tne "results/counter" mode crashes the firmware. Fix and do the reset then.
-* [ ] Clear command makes the next trigger event to be skipped / missed.
+* [x] Long press in tne "results/counter" mode crashes the firmware. Fix and do the reset then.
+* [x] ~~Clear command makes the next trigger event to be skipped / missed.~~ It does not. It stops the CPU for some period of time (few miliseconds) and thus `startTimeout` in the `FastStateMachine` measures more than 5000ms. My signal gen was set to 5010ms and this little difference (of only 10ms) was too small.
 * [ ] USB - can't output more than 2048B at once. In case of overflow the rest of text is clipped.
 * [ ] When history is short (16B per page) results are working somewhat oddly:
+* [ ] after 10 mins there's something wrong going on with the time display. No leading 1 or something. Reported by Pyxis.
 
 ```
 00:05,00998
