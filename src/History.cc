@@ -49,18 +49,6 @@ void printResult (Result time)
 
 /*****************************************************************************/
 
-void History::run ()
-{
-        while (!flashQueue.empty ()) {
-                Result t = flashQueue.front ();
-                flashQueue.pop ();
-                historyStorage->store (reinterpret_cast<uint8_t *> (&t), sizeof (t), 0);
-                storeHiScoreIf (t);
-        }
-}
-
-/*****************************************************************************/
-
 void printDate (RTC_DateTypeDef const &date, Time const &time)
 {
         char buf[11];
@@ -120,12 +108,26 @@ void History::storeHiScoreIf (uint32_t t)
 {
         if (t < hiScore) {
                 hiScore = t;
+                hiScoreStorage->store (reinterpret_cast<uint8_t *> (&t), sizeof (t), 0);
+        }
+}
+
+/*****************************************************************************/
+
+void History::run ()
+{
+        // TODO use queue_spc_locked
+        while (!flashQueue.empty ()) {
+                Result t = flashQueue.front ();
+                flashQueue.pop ();
+                // historyStorage->store (reinterpret_cast<uint8_t *> (&t), sizeof (t), 0);
 
                 History::Entry entry{};
                 std::tie (entry.date, entry.time) = rtc.getDate ();
                 entry.result = t;
+                historyStorage->store (reinterpret_cast<uint8_t *> (&entry), sizeof (entry), 0);
 
-                hiScoreStorage->store (reinterpret_cast<uint8_t *> (&entry), sizeof (entry), 0);
+                storeHiScoreIf (t);
         }
 }
 
@@ -170,7 +172,7 @@ void History::printHistory ()
 
 void History::printLast ()
 {
-        Entry last{};
+        std::optional<Entry> last{};
 
         for (int i = MAX_RESULTS_NUM - 1; i >= 0; --i) {
                 Entry en = *reinterpret_cast<Entry const *> (historyStorage->read (nullptr, sizeof (Entry), 0, i));
@@ -181,8 +183,12 @@ void History::printLast ()
                 }
         }
 
-        printEntry (last);
-        usbWrite ("\r\n\r\n");
+        if (last) {
+                printEntry (*last);
+                usbWrite ("\r\n");
+        }
+
+        usbWrite ("\r\n");
 }
 
 /*****************************************************************************/

@@ -165,7 +165,7 @@ int main ()
 
 #ifdef WITH_FLASH
         History history{rtc};
-        FlashEepromStorage<2048, 4> hiScoreStorage (12, 1, 0x801E800 /*0x08020000 - 3 * 2048*/);
+        FlashEepromStorage<2048, 4> hiScoreStorage (4, 1, 0x801E800 /*0x08020000 - 3 * 2048*/);
         hiScoreStorage.init ();
         history.setHiScoreStorage (&hiScoreStorage);
         FlashEepromStorage<2048, 4> historyStorage (12, 2, 0x801F000 /*0x08020000 - 2 * 2048*/);
@@ -277,15 +277,15 @@ int main ()
                                     cl::cmd (String ("last"), [&history] { history.printLast (); }),
                                     cl::cmd (String ("date"), [&rtc] { rtc.getDate (); }),
 
-                                    cl::cmd (String ("store128"),
+                                    cl::cmd (String ("store64"),
                                              [&history] {
-                                                     for (int i = 0; i < 128; ++i) {
+                                                     for (int i = 0; i < 64; ++i) {
                                                              history.store (i);
                                                      }
                                              }),
-                                    cl::cmd (String ("store127"),
+                                    cl::cmd (String ("store32"),
                                              [&history] {
-                                                     for (int i = 0; i < 127; ++i) {
+                                                     for (int i = 0; i < 32; ++i) {
                                                              history.store (i);
                                                      }
                                              }),
