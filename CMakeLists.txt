@@ -47,7 +47,7 @@ IF (DEFINED DEVICE)
         "src/PowerManagement.cc"
         "src/Config.cc"
         "src/Container.cc"
-
+        
         "src/usb/usbd_cdc.c"
         "src/usb/usbd_composite.c"
         "src/usb/usbd_conf.c"
@@ -55,7 +55,8 @@ IF (DEFINED DEVICE)
         "src/usb/usbd_ctlreq.c"
         "src/usb/usbd_desc.c"
         "src/usb/usbd_ioreq.c"
-        
+        "src/usb/UsbHelpers.cc"
+
         "${LIB_MICRO_ROOT}/src/ErrorHandler.c"
         "${LIB_MICRO_ROOT}/src/TimerF.cc"
         "${LIB_MICRO_ROOT}/src/HardwareTimer.cc"

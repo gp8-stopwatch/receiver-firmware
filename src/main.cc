@@ -25,6 +25,7 @@
 #include "StopWatch.h"
 #include "Timer.h"
 #include "Usart.h"
+#include "usb/UsbHelpers.h"
 #include "usbd_cdc.h"
 #include "usbd_composite.h"
 #include "usbd_desc.h"
@@ -273,7 +274,12 @@ int main ()
 
         auto cli = cl::cli<String> (cl::cmd (String ("result"), [&history] { history.printHistory (); }),
                                     cl::cmd (String ("last"), [&history] { history.printLast (); }),
-                                    cl::cmd (String ("date"), [&rtc] { rtc.getDate (); }),
+                                    cl::cmd (String ("date"),
+                                             [&rtc] {
+                                                     auto r = rtc.getDate ();
+                                                     printDate (r.first, r.second);
+                                                     usbWrite ("\r\n\r\n");
+                                             }),
 
                                     cl::cmd (String ("store64"),
                                              [&history] {

@@ -140,39 +140,6 @@ void Rtc::deactivateWakeup ()
 
 /*****************************************************************************/
 
-// void rtcTimeShow ()
-// {
-//         RTC_DateTypeDef sdatestructureget;
-//         RTC_TimeTypeDef stimestructureget;
-
-//         /* Get the RTC current Time */
-//         HAL_RTC_GetTime (&rtcHandle, &stimestructureget, RTC_FORMAT_BIN);
-//         /* Get the RTC current Date */
-//         HAL_RTC_GetDate (&rtcHandle, &sdatestructureget, RTC_FORMAT_BIN);
-//         /* Display time Format : hh:mm:ss */
-//         //        printf ("%d:%d:%d\n", stimestructureget.Hours, stimestructureget.Minutes, stimestructureget.Seconds);
-//         //        usb.log (SATELITES_NUMBER, SATELITES_NUMBER_T, &stimestructureget.Hours);
-//         //        usb.log (SATELITES_NUMBER, SATELITES_NUMBER_T, &stimestructureget.Minutes);
-//         //        usb.log (SATELITES_NUMBER, SATELITES_NUMBER_T, &stimestructureget.Seconds);
-// }
-
-// void Rtc::setDate (MicroDate d)
-// {
-//         RTC_TimeTypeDef sTime;
-//         RTC_DateTypeDef sDate;
-//         microDateToCube (d, &sTime, &sDate);
-
-//         if (HAL_RTC_SetDate (&rtcHandle, &sDate, RTC_FORMAT_BIN) != HAL_OK) {
-//                 Error_Handler ();
-//         }
-
-//         if (HAL_RTC_SetTime (&rtcHandle, &sTime, RTC_FORMAT_BIN) != HAL_OK) {
-//                 Error_Handler ();
-//         }
-// }
-
-/*****************************************************************************/
-
 std::pair<RTC_DateTypeDef, Time> Rtc::getDate () const
 {
         RTC_DateTypeDef sDate;
