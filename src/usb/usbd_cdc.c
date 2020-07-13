@@ -573,6 +573,7 @@ static void ComPort_Anneal (USBD_CDC_HandleTypeDef *hcdc)
         hcdc->InboundTransferInProgress = 0;
         hcdc->OutboundTransferNeedsRenewal = 1;
         hcdc->begin = 0;
+        hcdc->end = 0;
 }
 
 void HAL_UART_ErrorCallback (UART_HandleTypeDef *UartHandle)

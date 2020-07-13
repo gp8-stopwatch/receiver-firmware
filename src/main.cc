@@ -53,8 +53,11 @@ template <> void output<const char *> (const char *const &tok) { usbWrite (tok);
 
 } // namespace cl
 
+namespace {
 // Hack to be able to pass the cli object pointer to the C-like function.
-static void *cliPointer{};
+void *cliPointer{};
+bool showGreeting{};
+} // namespace
 
 void readConfigFromFlash () { getConfig () = *reinterpret_cast<cfg::Config const *> (getConfigFlashEepromStorage ().read (nullptr, 2, 0, 0)); }
 
@@ -132,8 +135,6 @@ int main ()
         Debug debug (&debugUart);
         Debug::singleton () = &debug;
         ::debug = Debug::singleton ();
-        // ::debug->print ("gp8 stopwatch ready. UID : ");
-        // ::debug->println (*MICRO_CONTROLLER_UID);
 
         /*+-------------------------------------------------------------------------+*/
         /*| CAN                                                                     |*/
@@ -268,11 +269,7 @@ int main ()
         /* Start Device Process */
         USBD_Start (&USBD_Device);
 
-        usbOnConnected ([] {
-                usbWrite ("GP8 stopwatch version: ");
-                usbWrite (VERSION);
-                usbWrite ("\r\n");
-        });
+        usbOnConnected ([] { showGreeting = true; });
 
         auto cli = cl::cli<String> (cl::cmd (String ("result"), [&history] { history.printHistory (); }),
                                     cl::cmd (String ("last"), [&history] { history.printLast (); }),
@@ -416,6 +413,13 @@ int main ()
                         debug.println (newBrightness);
 #endif
                         display.setBrightness (newBrightness);
+                }
+
+                if (showGreeting) {
+                        usbWrite ("GP8 stopwatch version: ");
+                        usbWrite (VERSION);
+                        usbWrite ("\r\n");
+                        showGreeting = false;
                 }
         }
 }
