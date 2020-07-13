@@ -24,7 +24,9 @@ public:
         void setActive (bool b) { active = b; }
 
 private:
-        void on () { pin = true; }
+        void on ()
+        { /* pin = true; */
+        }
         void off () { pin = false; }
 
 private:

@@ -93,8 +93,14 @@ typedef void (*UsbOnData) (const uint8_t *, size_t);
 typedef void (*UsbOnConnected) ();
 typedef void (*UsbOnDisconnected) ();
 
+#define OUTPUT_TIMEOUT_MS 1000
 extern void usbWrite (const char *str);
 extern void usbWriteData (const uint8_t *str, size_t size);
+
+// TODO remove
+extern bool usbWriteUnprotected (const char *str);
+extern bool usbWriteDataUnprotected (const uint8_t *str, size_t size);
+
 extern void usbOnData (UsbOnData callback);
 extern void usbOnConnected (UsbOnConnected callback);
 extern void usbOnDisconnected (UsbOnConnected callback);

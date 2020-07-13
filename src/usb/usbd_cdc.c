@@ -230,8 +230,6 @@ static uint8_t USBD_CDC_DataOut (USBD_HandleTypeDef *pdev, uint8_t epnum)
                         /* Get the received data length */
                         RxLength = USBD_LL_GetRxDataSize (pdev, epnum);
 
-                        // usbWriteData ((uint8_t *)hcdc->OutboundBuffer, RxLength);
-
                         if (onData) {
                                 (*onData) ((uint8_t *)hcdc->OutboundBuffer, RxLength);
                         }
@@ -289,14 +287,26 @@ bool usbWriteUnprotected (const char *str) { return usbWriteDataUnprotected ((co
 
 void usbWrite (const char *str)
 {
+        uint32_t start = HAL_GetTick ();
+
         while (!usbWriteUnprotected (str)) {
+                if (HAL_GetTick () - start > OUTPUT_TIMEOUT_MS) {
+                        break;
+                }
+
                 HAL_Delay (1);
         }
 }
 
 void usbWriteData (const uint8_t *str, size_t size)
 {
+        uint32_t start = HAL_GetTick ();
+
         while (!usbWriteDataUnprotected (str, size)) {
+                if (HAL_GetTick () - start > OUTPUT_TIMEOUT_MS) {
+                        break;
+                }
+
                 HAL_Delay (1);
         }
 }
