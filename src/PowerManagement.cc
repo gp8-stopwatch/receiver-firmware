@@ -18,7 +18,7 @@
 
 /****************************************************************************/
 
-PowerManagement::PowerManagement ()
+PowerManagement::PowerManagement (IDisplay &d, FastStateMachine &m) : display{d}, machine{m}
 {
         __HAL_RCC_ADC1_CLK_ENABLE ();
 
@@ -99,6 +99,12 @@ PowerManagement::PowerManagement ()
 
 void PowerManagement::run ()
 {
+        if (!batteryTimer.isExpired ()) {
+                return;
+        }
+
+        batteryTimer.start (1000);
+
         uint32_t VREFINT_CAL = *VREFINT_CAL_ADDR;
         // uint32_t TEMP30_CAL = *TEMP30_CAL_ADDR;
         // uint32_t TEMP110_CAL = *TEMP110_CAL_ADDR;
@@ -132,9 +138,6 @@ void PowerManagement::run ()
                         v *= float (VREFINT_CAL) / VREFINT_DATA;
                         lastBatteryVoltage = int32_t (v + 0.5F) * 2 + 20; // Experimentally
 
-                        if (lastBatteryVoltage < 3000) {
-                                sleep ();
-                        }
                 } break;
 
                         // case Channels::temperature: {
@@ -150,6 +153,48 @@ void PowerManagement::run ()
         }
 
         senseOn = false;
+
+        /*--------------------------------------------------------------------------*/
+
+        if (getBatteryVoltage () > 0) {
+                // Show message, go to sleep (if we are not beeing charged)
+                if (getBatteryVoltage () < LOW_VOLTAGE_MV && !chargeInProgress) {
+                        display.setText ("lowbat");
+                        display.setDots (0);
+                        machine.run (Event::pause);
+                        HAL_Delay (1000);
+                        // sleep ();
+                }
+
+                if (getBatteryVoltage () < LOW_VOLTAGE_CRITICAL_MV) {
+                        display.setText (" dead ");
+                        display.setDots (0);
+                        machine.run (Event::pause);
+                        HAL_Delay (1000);
+                        // sleep ();
+                }
+        }
+
+        uint32_t ambientLightVoltage = getAmbientLight ();
+
+        /*
+         * 50- : 1
+         * 50-100 : 2
+         * 100-150 : 3
+         * 150-200 : 4
+         * 200+ : 5
+         */
+
+        uint8_t newBrightness = (std::max<int> ((int (ambientLightVoltage) - 1), 0) / 819) + 1;
+
+#if 0
+        debug.print ("Ambient : ");
+        debug.print (ambientLightVoltage);
+        debug.print (", brightness : ");
+        debug.println (newBrightness);
+#endif
+
+        display.setBrightness (newBrightness);
 }
 
 /****************************************************************************/

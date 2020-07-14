@@ -10,6 +10,7 @@
 #include "Config.h"
 #include "FastStateMachine.h"
 #include "IDisplay.h"
+#include "Rtc.h"
 
 class DisplayMenu {
 public:
@@ -20,20 +21,25 @@ public:
                 buzzer_on,
                 resolution,
                 stopMode,
+                time,
+                date,
                 last_option
         };
 
-        DisplayMenu (cfg::Config &c, IDisplay &d, FastStateMachine &m) : config (c), display (d), machine (m) {}
+        DisplayMenu (cfg::Config &c, IDisplay &d, FastStateMachine &m, Rtc &rtc) : config{c}, display{d}, machine{m}, rtc{rtc} {}
 
         void onShortPress ();
         void onLongPress ();
+        void run ();
 
 private:
         void prepareMenuForOption (Option o);
 
-private:
         cfg::Config &config;
         IDisplay &display;
         FastStateMachine &machine;
         Option option = Option::stop_watch;
+        Rtc &rtc;
+        Timer timeDisplay;
+        int settingState{}; // Some menu options require turning stopwatch into a state. Like when setting the time.
 };

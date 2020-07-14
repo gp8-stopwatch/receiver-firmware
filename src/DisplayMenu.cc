@@ -45,6 +45,14 @@ void DisplayMenu::onLongPress ()
                 config.stopMode = StopMode (!bool (config.stopMode));
                 break;
 
+        case Option::time:
+                ++settingState;
+                settingState %= 4; // 1 : set hour, 2 : set minutes, 3 : set seconds, 0 : exit setting
+                break;
+
+        case Option::date:
+                break;
+
         default:
                 break;
         }
@@ -129,7 +137,43 @@ void DisplayMenu::prepareMenuForOption (Option o)
                 }
                 break;
 
+        case Option::time: {
+                auto d = rtc.getDate ();
+                auto &t = d.second;
+
+                display.setDigit (0, t.Hours / 10);
+                display.setDigit (1, t.Hours % 10);
+                display.setDigit (2, t.Minutes / 10);
+                display.setDigit (3, t.Minutes % 10);
+                display.setDigit (4, t.Seconds / 10);
+                display.setDigit (5, t.Seconds % 10);
+                display.setDots (0b001010);
+        } break;
+
+        case Option::date: {
+                auto d = rtc.getDate ();
+                auto &r = d.first;
+
+                display.setDigit (0, r.Year / 10);
+                display.setDigit (1, r.Year % 10);
+                display.setDigit (2, r.Month / 10);
+                display.setDigit (3, r.Month % 10);
+                display.setDigit (4, r.Date / 10);
+                display.setDigit (5, r.Date % 10);
+                display.setDots (0b001010);
+        } break;
+
         default:
                 break;
+        }
+}
+
+/****************************************************************************/
+
+void DisplayMenu::run ()
+{
+        if ((option == Option::time || option == Option::date) && timeDisplay.isExpired () && settingState == 0) {
+                prepareMenuForOption (option);
+                timeDisplay.start (1000);
         }
 }

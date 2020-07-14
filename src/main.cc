@@ -252,7 +252,7 @@ int main ()
         /*| Battery, light sensor, others                                            |*/
         /*+-------------------------------------------------------------------------+*/
 
-        PowerManagement power;
+        PowerManagement power{display, *fStateMachine};
 
         /*+-------------------------------------------------------------------------+*/
         /*| USB                                                                     |*/
@@ -353,14 +353,13 @@ int main ()
         /*| Menu                                                                    |*/
         /*+-------------------------------------------------------------------------+*/
 
-        DisplayMenu menu (config, display, *fStateMachine);
+        DisplayMenu menu (config, display, *fStateMachine, rtc);
 
         Timer displayTimer;
-        Timer batteryTimer;
         int refreshRate = 9; // Something different than 10 so the screen is a little bit out of sync. This way the last digit changes.
 
         // Refresh stopwatch state to reflect the config.
-        auto refresh = [&] {
+        auto refreshSettings = [&] {
                 display.setFlip (config.orientationFlip);
                 beam.setActive (config.irSensorOn);
                 buzzer.setActive (config.buzzerOn);
@@ -368,13 +367,15 @@ int main ()
                 display.setResolution (config.resolution);
         };
 
-        refresh ();
+        refreshSettings ();
 
         while (true) {
                 buzzer.run ();
                 button.run ();
                 history.run ();
                 cli.run ();
+                menu.run ();
+                power.run ();
 
                 if (displayTimer.isExpired ()) {
                         fStateMachine->run (Event::timePassed);
@@ -393,32 +394,8 @@ int main ()
 
                 if (cfg::changed ()) {
                         cfg::changed () = false;
-                        refresh ();
+                        refreshSettings ();
                         getConfigFlashEepromStorage ().store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
-                }
-
-                if (batteryTimer.isExpired ()) {
-                        power.run ();
-                        batteryTimer.start (1000);
-                        uint32_t ambientLightVoltage = power.getAmbientLight ();
-
-                        /*
-                         * 50- : 1
-                         * 50-100 : 2
-                         * 100-150 : 3
-                         * 150-200 : 4
-                         * 200+ : 5
-                         */
-
-                        uint8_t newBrightness = (std::max<int> ((int (ambientLightVoltage) - 1), 0) / 819) + 1;
-
-#if 0
-                        debug.print ("Ambient : ");
-                        debug.print (ambientLightVoltage);
-                        debug.print (", brightness : ");
-                        debug.println (newBrightness);
-#endif
-                        display.setBrightness (newBrightness);
                 }
 
                 if (showGreeting) {

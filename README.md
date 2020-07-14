@@ -1,6 +1,10 @@
 See [link link](http://) to see more.
 Buy [on Tinidie](http://) TODO.
 
+# How to set up
+* Turn the transmitter off, and receiver on.
+* Receiver should show "no i.r.". It that's not the case, the sunlight, or fluorescent light might interfere with it. Avoid placing the receiver so the sensor faces the sun or other intense source of light.
+
 # Firmware upgrade
 ## Linux
 Manjaro : install dfu-util and run it as so:

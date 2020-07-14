@@ -25,6 +25,9 @@ constexpr size_t TEST_TRIGGER_EXTI_PRIORITY = 1;
 
 static const char *VERSION = "1.0.4";
 
+constexpr int LOW_VOLTAGE_MV = 3000;
+constexpr int LOW_VOLTAGE_CRITICAL_MV = 2900;
+
 /**
  * Values are chosen so after loading from empty flash (0xff everywhere), everyting would
  * have some meaningfull value.

@@ -26,11 +26,11 @@
 * [ ] ~~Reduce holes for CAN socket supports (thise 2 plastic one sticking out)~~ The case is holding the socket in place. Too much effort.
 * [x] Ldo for etc should be 3v3 not 1v8. Voltage difference would be smaller.
 * [x] Przetestować RTC z tym małym LDO.
-* [ ] Battery protection in software (for overdischarge)
+* [x] Battery protection in software (for overdischarge)
   * [x] When powered off no software is running. What is the current draw of ldo plus rtc? 0.5µA (includeing RTC + low Q LDO)
   * [x] Measure what all elements except the µC and LEDs are drawing, and whether we should optimize this, or leave alone.
-  * [ ] When powered on, simply go to sleep, calculate current, maybe modify HW so it draws less quiescent current.
-  * [ ] Same for the transmitter
+  * [x] When powered on, simply go to sleep, calculate current, maybe modify HW so it draws less quiescent current.
+  * [x] Same for the transmitter
 * [x] If the transmitter had an uc, we could use the charging led to indicate that it is running, and there would be no changes to the casing necessary.
 * [x] ~~Charging led to uc,~~ charger outputs as well. This way we could sense when charger plugged in.
 * [x] Check common cathode configuration
@@ -101,7 +101,7 @@
  * [x] buzzer volume or if buzzer at all.
  * [x] Screen dims itself to 0 sometimes.
  * [x] Dots indicating the resolution of the time display.
- * [ ] CAN_LATENCY_CORRECTION must be assesed again becasue I've changed how the START is sent (4B additionally).
+ * [x] CAN_LATENCY_CORRECTION must be assesed again becasue I've changed how the START is sent (4B additionally).
  
 # Bugs
 * [x] So it happened that it couldnt save results history when the page overflowed from 1 back to 0 (after 128 measurements). Probably it didn't cleared the flash.
@@ -149,6 +149,7 @@ Hi 00:00,00000
 * [x] Opcja /restart : Wyslanie tej komendy powoduje zatrzymanie liczenia czasu jesli bylo wlaczone, ustawia wyswietlacz na 0:00 i czeka na przeciecie wiazki i pomiar
   * [ ] Błąd - czasem nie czyści.
 * [x] Pipczenie - jesli mozesz zobic na start 1 pip a na pomiar w trybie zawodow 3xpip. Pomiar w tyrybie /trening 2x pip
+* [ ] Wyniki
     
 # Infrastructure
 * [x] Clean the code (prepare for new repo that is)

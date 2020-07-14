@@ -8,8 +8,11 @@
 
 #pragma once
 
+#include "FastStateMachine.h"
 #include "Gpio.h"
 #include "Hal.h"
+#include "IDisplay.h"
+#include "Timer.h"
 #include <cstdint>
 
 class PowerManagement {
@@ -17,7 +20,7 @@ public:
         enum class Channels { ambient, battery, /* temperature, */ vref };
         static constexpr uint32_t RANGE_12BITS = 4095;
 
-        PowerManagement ();
+        PowerManagement (IDisplay &d, FastStateMachine &m);
 
         void run ();
         void sleep ();
@@ -35,4 +38,7 @@ private:
         uint32_t lastAmbientLight{};
         uint32_t lastTemperature{};
         uint32_t VREFINT_DATA{};
+        IDisplay &display;
+        FastStateMachine &machine;
+        Timer batteryTimer;
 };
