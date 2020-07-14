@@ -376,7 +376,6 @@ int main ()
                 buzzer.run ();
                 button.run ();
                 history.run ();
-                menu.run ();
                 power.run ();
 #ifdef WITH_USB
                 cli.run ();

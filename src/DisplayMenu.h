@@ -41,19 +41,12 @@ public:
 
         void onEvent (menu::Event p);
 
-        void onShortPress ();
-        void onLongPress ();
-        void run ();
-
 private:
         void prepareMenuForOption (Option o);
 
         cfg::Config &config;
         IDisplay &display;
         FastStateMachine &machine;
-        Option option = Option::stop_watch;
         Rtc &rtc;
         History &history;
-        Timer timeDisplay;
-        int settingState{}; // Some menu options require turning stopwatch into a state. Like when setting the time.
 };
