@@ -59,7 +59,7 @@ void Led7SegmentDisplay::setDigit (uint8_t position, uint8_t digit)
         }
 }
 
-/*****************************************************************************/
+/****************************************************************************/
 
 void Led7SegmentDisplay::outputDigit (uint8_t position)
 {
@@ -127,11 +127,12 @@ void Led7SegmentDisplay::setTime (uint32_t time, Resolution res)
 void Led7SegmentDisplay::setText (const char *s)
 {
         std::string_view txt (s);
+        setDots (0);
 
         uint8_t i = 0;
         for (size_t j = 0; j < txt.size (); ++j) {
                 char c = txt.at (j);
-                setDigit (i, c);
+                setDigit (i, c); // Sets also dots.
 
                 if (j + 1 < txt.size () && txt.at (j + 1) != '.') {
                         ++i;

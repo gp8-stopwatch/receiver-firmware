@@ -128,7 +128,6 @@ bool FastStateMachine::isInternalTrigger (Event event) const
 void FastStateMachine::waitForBeam_entryAction ()
 {
         if (ir->isActive () && !ir->isBeamPresent ()) {
-                display->setDots (0);
                 display->setText (" noI.R. ");
         }
 }

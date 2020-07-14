@@ -83,8 +83,7 @@ void History::printHistory ()
         bool newLine{};
         int cnt = 0;
         for (int i = MAX_RESULTS_NUM - 1; i >= 0; --i) {
-                Entry en = *reinterpret_cast<Entry const *> (historyStorage->read (nullptr, sizeof (Entry), 0, i));
-                fixEntry (en);
+                Entry en = getEntry (i);
 
                 if (en.result != std::numeric_limits<uint32_t>::max ()) {
                         ++cnt;
@@ -103,13 +102,22 @@ void History::printHistory ()
 
 /*****************************************************************************/
 
+History::Entry History::getEntry (size_t index) const
+{
+        index %= MAX_RESULTS_NUM;
+        Entry en = *reinterpret_cast<Entry const *> (historyStorage->read (nullptr, sizeof (Entry), 0, index));
+        fixEntry (en);
+        return en;
+}
+
+/*****************************************************************************/
+
 void History::printLast ()
 {
         std::optional<Entry> last{};
 
         for (int i = MAX_RESULTS_NUM - 1; i >= 0; --i) {
-                Entry en = *reinterpret_cast<Entry const *> (historyStorage->read (nullptr, sizeof (Entry), 0, i));
-                fixEntry (en);
+                Entry en = getEntry (i);
 
                 if (en.result != std::numeric_limits<uint32_t>::max ()) {
                         last = en;

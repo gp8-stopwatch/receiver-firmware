@@ -31,6 +31,8 @@ public:
         };
 
         Result getHiScore () const { return hiScore; }
+        History::Entry getEntry (size_t index) const;
+
         void printHistory ();
         void printLast ();
 

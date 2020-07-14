@@ -156,6 +156,67 @@ std::pair<RTC_DateTypeDef, Time> Rtc::getDate () const
 
 void Rtc::backupRegisterWrite (uint32_t backupRegister, uint32_t data) { HAL_RTCEx_BKUPWrite (&rtcHandle, backupRegister, data); }
 
-/*---------------------------------------------------------------------------*/
+/****************************************************************************/
 
 uint32_t Rtc::backupRegisterRead (uint32_t backupRegister) const { return HAL_RTCEx_BKUPRead (&rtcHandle, backupRegister); }
+
+/****************************************************************************/
+
+void Rtc::timeAdd (Set set)
+{
+        RTC_TimeTypeDef sTime;
+        HAL_RTC_GetTime (&rtcHandle, &sTime, RTC_FORMAT_BIN);
+
+        if (set == Set::hour) {
+                ++sTime.Hours;
+                sTime.Hours %= 24;
+        }
+
+        if (set == Set::minute) {
+                ++sTime.Minutes;
+                sTime.Minutes %= 60;
+        }
+
+        if (set == Set::second) {
+                ++sTime.Seconds;
+                sTime.Seconds %= 60;
+        }
+
+        sTime.TimeFormat = RTC_HOURFORMAT_24;
+        sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+        sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+
+        if (HAL_RTC_SetTime (&rtcHandle, &sTime, RTC_FORMAT_BIN) != HAL_OK) {
+                Error_Handler ();
+        }
+}
+
+/****************************************************************************/
+
+void Rtc::dateAdd (Set set)
+{
+        RTC_DateTypeDef sDate;
+        HAL_RTC_GetDate (&rtcHandle, &sDate, RTC_FORMAT_BIN);
+
+        if (set == Set::year) {
+                ++sDate.Year;
+
+                if (sDate.Year < 20 || sDate.Year > 50) {
+                        sDate.Year = 20;
+                }
+        }
+
+        if (set == Set::month) {
+                ++sDate.Month;
+                sDate.Month %= 12;
+        }
+
+        if (set == Set::day) {
+                ++sDate.Date;
+                sDate.Date %= 31;
+        }
+
+        if (HAL_RTC_SetDate (&rtcHandle, &sDate, RTC_FORMAT_BIN) != HAL_OK) {
+                Error_Handler ();
+        }
+}

@@ -7,3 +7,6 @@
 [submodule "deps/simple-cli"]
 	path = deps/simple-cli
 	url = git@github.com:iwasz/simple-cli.git
+[submodule "deps/libstate"]
+	path = deps/libstate
+	url = git@github.com:iwasz/libstate.git

@@ -43,6 +43,11 @@ public:
         void backupRegisterWrite (uint32_t backupRegister, uint32_t data);
         uint32_t backupRegisterRead (uint32_t backupRegister) const;
 
+        enum class Set { none, hour, minute, second, year, month, day };
+
+        void timeAdd (Set set);
+        void dateAdd (Set set);
+
 private:
         void RTC_CalendarConfig ();
 

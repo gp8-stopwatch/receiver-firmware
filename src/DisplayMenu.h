@@ -8,14 +8,22 @@
 
 #pragma once
 #include "Config.h"
+#include "Container.h"
 #include "FastStateMachine.h"
+#include "History.h"
 #include "IDisplay.h"
+#include "Machine.h"
 #include "Rtc.h"
+
+namespace menu {
+enum class Event { shortPress, longPress, timePassed };
+}
 
 class DisplayMenu {
 public:
         enum class Option {
                 stop_watch, // Normal stopwatch operation i.e. time is displayed. The main screen.
+                result,     // Cycle through all the 64 results
                 flip,       // Whether display is flipped horizontally or not.
                 ir_on,      // Whether IR sensor i active or not.
                 buzzer_on,
@@ -23,10 +31,15 @@ public:
                 stopMode,
                 time,
                 date,
-                last_option
+                last_option // Guard.
         };
 
-        DisplayMenu (cfg::Config &c, IDisplay &d, FastStateMachine &m, Rtc &rtc) : config{c}, display{d}, machine{m}, rtc{rtc} {}
+        DisplayMenu (cfg::Config &c, IDisplay &d, FastStateMachine &m, Rtc &rtc, History &h)
+            : config{c}, display{d}, machine{m}, rtc{rtc}, history (h)
+        {
+        }
+
+        void onEvent (menu::Event p);
 
         void onShortPress ();
         void onLongPress ();
@@ -40,6 +53,7 @@ private:
         FastStateMachine &machine;
         Option option = Option::stop_watch;
         Rtc &rtc;
+        History &history;
         Timer timeDisplay;
         int settingState{}; // Some menu options require turning stopwatch into a state. Like when setting the time.
 };

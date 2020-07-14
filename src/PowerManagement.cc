@@ -160,18 +160,16 @@ void PowerManagement::run ()
                 // Show message, go to sleep (if we are not beeing charged)
                 if (getBatteryVoltage () < LOW_VOLTAGE_MV && !chargeInProgress) {
                         display.setText ("lowbat");
-                        display.setDots (0);
                         machine.run (Event::pause);
                         HAL_Delay (1000);
-                        // sleep ();
+                        sleep ();
                 }
 
                 if (getBatteryVoltage () < LOW_VOLTAGE_CRITICAL_MV) {
                         display.setText (" dead ");
-                        display.setDots (0);
                         machine.run (Event::pause);
                         HAL_Delay (1000);
-                        // sleep ();
+                        sleep ();
                 }
         }
 

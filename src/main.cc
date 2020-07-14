@@ -353,9 +353,11 @@ int main ()
         /*| Menu                                                                    |*/
         /*+-------------------------------------------------------------------------+*/
 
-        DisplayMenu menu (config, display, *fStateMachine, rtc);
+        DisplayMenu menu (config, display, *fStateMachine, rtc, history);
 
         Timer displayTimer;
+        Timer menuTimer;
+
         int refreshRate = 9; // Something different than 10 so the screen is a little bit out of sync. This way the last digit changes.
 
         // Refresh stopwatch state to reflect the config.
@@ -368,27 +370,29 @@ int main ()
         };
 
         refreshSettings ();
+        menu.onEvent (menu::Event::timePassed); // Initial state.
 
         while (true) {
                 buzzer.run ();
                 button.run ();
                 history.run ();
-                cli.run ();
                 menu.run ();
                 power.run ();
-
+#ifdef WITH_USB
+                cli.run ();
+#endif
                 if (displayTimer.isExpired ()) {
                         fStateMachine->run (Event::timePassed);
                         displayTimer.start (refreshRate);
                 }
 
                 if (button.getPressClear ()) {
-                        menu.onShortPress ();
+                        menu.onEvent (menu::Event::shortPress);
                         buzzer.beep (20, 0, 1);
                 }
 
                 if (button.getLongPressClear ()) {
-                        menu.onLongPress ();
+                        menu.onEvent (menu::Event::longPress);
                         buzzer.beep (20, 20, 2);
                 }
 
@@ -396,6 +400,11 @@ int main ()
                         cfg::changed () = false;
                         refreshSettings ();
                         getConfigFlashEepromStorage ().store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
+                }
+
+                if (menuTimer.isExpired ()) {
+                        menuTimer.start (250);
+                        menu.onEvent (menu::Event::timePassed);
                 }
 
                 if (showGreeting) {
