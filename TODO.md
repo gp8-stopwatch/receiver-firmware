@@ -80,11 +80,11 @@
   * [x] Test
   * [ ] Document
 * [x] USB CDC. There are huge problems.
-* [ ] RTC
+* [x] RTC
   * [x] Write time and date to the output
   * [x] Rtc date and time is persisted when power is turned off
   * [x] test with low quiescent LDO.
-  * [ ] Display 
+  * [x] Display 
  * [x] battery level sensing.
    * [x] There's something wrong with the LEDs
  * [x] loop measurements 
@@ -108,7 +108,7 @@
 * [ ] Sometimes when the `reset` command is issued the display is not cleared (stop watch stops, but the last result is persisted on the screen).
 * [x] Long press in tne "results/counter" mode crashes the firmware. Fix and do the reset then.
 * [x] ~~Clear command makes the next trigger event to be skipped / missed.~~ It does not. It stops the CPU for some period of time (few miliseconds) and thus `startTimeout` in the `FastStateMachine` measures more than 5000ms. My signal gen was set to 5010ms and this little difference (of only 10ms) was too small.
-* [ ] USB - can't output more than 2048B at once. In case of overflow the rest of text is clipped.
+* [x] USB - can't output more than 2048B at once. In case of overflow the rest of text is clipped.
 * [ ] When history is short (16B per page) results are working somewhat oddly:
 * [ ] after 10 mins there's something wrong going on with the time display. No leading 1 or something. Reported by Pyxis.
 

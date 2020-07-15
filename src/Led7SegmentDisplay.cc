@@ -84,7 +84,7 @@ void Led7SegmentDisplay::outputDigit (uint8_t position)
 
 void Led7SegmentDisplay::setTime (uint32_t time, Resolution res)
 {
-        constexpr std::array<int8_t, 9> FACTORS{10, 10, 10, 10, 10, 10, 6, 10, 1};
+        constexpr std::array<int8_t, 9> FACTORS{10, 10, 10, 10, 10, 10, 6, 10, 10};
 
         unsigned int cntTmp = time / prescaler;
 

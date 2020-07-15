@@ -12,43 +12,6 @@
 
 /*****************************************************************************/
 
-void Rtc::RTC_CalendarConfig ()
-{
-        RTC_DateTypeDef sdatestructure;
-        RTC_TimeTypeDef stimestructure;
-
-        /*##-1- Configure the Date #################################################*/
-        /* Set Date: Tuesday February 18th 2016 */
-        sdatestructure.Year = 0x16;
-        sdatestructure.Month = RTC_MONTH_FEBRUARY;
-        sdatestructure.Date = 0x18;
-        sdatestructure.WeekDay = RTC_WEEKDAY_TUESDAY;
-
-        if (HAL_RTC_SetDate (&rtcHandle, &sdatestructure, RTC_FORMAT_BCD) != HAL_OK) {
-                /* Initialization Error */
-                Error_Handler ();
-        }
-
-        /*##-2- Configure the Time #################################################*/
-        /* Set Time: 02:00:00 */
-        stimestructure.Hours = 0x02;
-        stimestructure.Minutes = 0x00;
-        stimestructure.Seconds = 0x00;
-        stimestructure.TimeFormat = RTC_HOURFORMAT12_AM;
-        stimestructure.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-        stimestructure.StoreOperation = RTC_STOREOPERATION_RESET;
-
-        if (HAL_RTC_SetTime (&rtcHandle, &stimestructure, RTC_FORMAT_BCD) != HAL_OK) {
-                /* Initialization Error */
-                Error_Handler ();
-        }
-
-        /*##-3- Writes a data in a RTC Backup data Register1 #######################*/
-        HAL_RTCEx_BKUPWrite (&rtcHandle, RTC_BKP_DR1, 0x32F2);
-}
-
-/*****************************************************************************/
-
 Rtc::Rtc ()
 {
         __HAL_RCC_PWR_CLK_ENABLE ();
@@ -92,23 +55,6 @@ Rtc::Rtc ()
 
         if (HAL_RTC_Init (&rtcHandle) != HAL_OK) {
                 Error_Handler ();
-        }
-
-        auto bkpReg = HAL_RTCEx_BKUPRead (&rtcHandle, RTC_BKP_DR1);
-
-        if (bkpReg != 0x32F2) {
-                /* Configure RTC Calendar */
-                RTC_CalendarConfig ();
-        }
-        else {
-                /* Check if the Power On Reset flag is set */
-                if (__HAL_RCC_GET_FLAG (RCC_FLAG_PORRST) != RESET) {
-                        debug->println ("Power on reset");
-                }
-                /* Check if Pin Reset flag is set */
-                if (__HAL_RCC_GET_FLAG (RCC_FLAG_PINRST) != RESET) {
-                        debug->println ("Pin (external) reset");
-                }
         }
 
         __HAL_RCC_CLEAR_RESET_FLAGS ();
