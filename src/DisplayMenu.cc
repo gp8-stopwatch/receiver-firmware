@@ -17,6 +17,7 @@ void DisplayMenu::onEvent (menu::Event p)
         static auto longPress = [] { return [] (menu::Event p) { return p == menu::Event::longPress; }; };
         static auto shortPress = [] { return [] (menu::Event p) { return p == menu::Event::shortPress; }; };
         static auto timePassed = [] { return [] (menu::Event p) { return p == menu::Event::timePassed; }; };
+        static auto refreshMenu = [] { return [] (menu::Event p) { return p == menu::Event::refreshMenu; }; };
         static int currentResult{};
 
         auto tryDisplayResult = [&] {
@@ -142,6 +143,7 @@ void DisplayMenu::onEvent (menu::Event p)
 
                 // IR sensor on/off
                 state ("IR_ON"_ST, entry ([&] { display.setText ((config.irSensorOn) ? ("2.I.r.on ") : ("2.I.r.off")); }), exit ([] {}),
+                       transition ("IR_ON"_ST, refreshMenu ()),
                        transition ("IR_ON"_ST, longPress (),
                                    [&] (auto /*a*/) {
                                            config.irSensorOn = !config.irSensorOn;
@@ -151,6 +153,7 @@ void DisplayMenu::onEvent (menu::Event p)
 
                 // Buzzer on/off
                 state ("BUZZER"_ST, entry ([&] { display.setText ((config.buzzerOn) ? ("3.Sn.on ") : ("3.Sn.off")); }), exit ([] {}),
+                       transition ("BUZZER"_ST, refreshMenu ()),
                        transition ("BUZZER"_ST, longPress (),
                                    [&] (auto /*a*/) {
                                            config.buzzerOn = !config.buzzerOn;
@@ -162,26 +165,26 @@ void DisplayMenu::onEvent (menu::Event p)
                 state ("RESOLUTION"_ST, entry ([&] {
                                switch (config.resolution) {
                                case Resolution::ms_10:
-                                       display.setText ("4.ms.10 ");
+                                       display.setText ("4.10ms ");
                                        break;
 
                                case Resolution::ms_1:
-                                       display.setText ("4.ms.1  ");
+                                       display.setText ("4.1ms  ");
                                        break;
 
                                case Resolution::us_100:
-                                       display.setText ("4.us.100");
+                                       display.setText ("4.100us");
                                        break;
 
                                case Resolution::us_10:
-                                       display.setText ("4.us.10 ");
+                                       display.setText ("4.10us ");
                                        break;
 
                                default:
                                        break;
                                }
                        }),
-                       exit ([] {}),
+                       exit ([] {}), transition ("RESOLUTION"_ST, refreshMenu ()),
                        transition ("RESOLUTION"_ST, longPress (),
                                    [&] (auto /*a*/) {
                                            config.resolution = Resolution ((int (config.resolution) - 1) % RESOLUTION_NUMBER_OF_OPTIONS);
@@ -191,6 +194,7 @@ void DisplayMenu::onEvent (menu::Event p)
 
                 // Stop mode loop/stop. Loop is for trainig, stop is for competition.
                 state ("STOP_MODE"_ST, entry ([&] { display.setText ((config.stopMode) ? ("5.Stop ") : ("5.Loop ")); }), exit ([] {}),
+                       transition ("STOP_MODE"_ST, refreshMenu ()),
                        transition ("STOP_MODE"_ST, longPress (),
                                    [&] (auto /*a*/) {
                                            config.stopMode = StopMode (!bool (config.stopMode));

@@ -10,3 +10,6 @@
 [submodule "deps/libstate"]
 	path = deps/libstate
 	url = git@github.com:iwasz/libstate.git
+[submodule "deps/Catch2"]
+	path = deps/Catch2
+	url = git@github.com:catchorg/Catch2.git

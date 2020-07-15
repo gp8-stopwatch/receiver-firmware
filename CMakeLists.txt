@@ -109,10 +109,15 @@ IF (DEFINED DEVICE)
 ELSE()
     INCLUDE_DIRECTORIES("src/test")
 
+    SET (CATCH2_INCLUDE "deps/Catch2/single_include/catch2")
+    INCLUDE_DIRECTORIES("${CATCH2_INCLUDE}")
+
+    ADD_DEFINITIONS (-DUNIT_TEST=1)
+
     # TEST is beeing built
     ADD_EXECUTABLE(test
         "src/test/00CatchInit.cc"
-        "src/test/01UsbWrite.cc"
+        "src/test/02Itoa.cc"
     )
 
 ENDIF ()

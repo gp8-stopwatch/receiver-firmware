@@ -255,6 +255,12 @@ int main ()
         PowerManagement power{display, *fStateMachine};
 
         /*+-------------------------------------------------------------------------+*/
+        /*| Menu                                                                    |*/
+        /*+-------------------------------------------------------------------------+*/
+
+        DisplayMenu menu (config, display, *fStateMachine, rtc, history);
+
+        /*+-------------------------------------------------------------------------+*/
         /*| USB                                                                     |*/
         /*+-------------------------------------------------------------------------+*/
 
@@ -272,64 +278,107 @@ int main ()
 
         usbOnConnected ([] { showGreeting = true; });
 
-        auto cli = cl::cli<String> (cl::cmd (String ("result"), [&history] { history.printHistory (); }),
-                                    cl::cmd (String ("last"), [&history] { history.printLast (); }),
-                                    cl::cmd (String ("date"),
-                                             [&rtc] {
-                                                     auto r = rtc.getDate ();
-                                                     printDate (r.first, r.second);
-                                                     usbWrite ("\r\n\r\n");
-                                             }),
+        auto refreshAll = [&menu] {
+                menu.onEvent (menu::Event::refreshMenu);
+                cfg::changed () = true;
+        };
 
-                                    cl::cmd (String ("store64"),
-                                             [&history] {
-                                                     for (int i = 0; i < 64; ++i) {
-                                                             history.store (i);
-                                                     }
-                                             }),
-                                    cl::cmd (String ("store32"),
-                                             [&history] {
-                                                     for (int i = 0; i < 32; ++i) {
-                                                             history.store (i);
-                                                     }
-                                             }),
-                                    cl::cmd (String ("store16"),
-                                             [&history] {
-                                                     for (int i = 0; i < 16; ++i) {
-                                                             history.store (i);
-                                                     }
-                                             }),
-                                    cl::cmd (String ("store1"), [&] { history.store (666); }),
+        auto cli = cl::cli<String> (
+                cl::cmd (String ("result"), [&history] { history.printHistory (); }),
+                cl::cmd (String ("last"), [&history] { history.printLast (); }),
+                cl::cmd (String ("date"),
+                         [&rtc] {
+                                 auto r = rtc.getDate ();
+                                 printDate (r.first, r.second);
+                                 usbWrite ("\r\n\r\n");
+                         }),
 
-                                    cl::cmd (String ("iscounting"),
-                                             [&fStateMachine] {
-                                                     if (fStateMachine->isCounting ()) {
-                                                             usbWrite ("1\r\n\r\n");
-                                                     }
-                                                     else {
-                                                             usbWrite ("0\r\n\r\n");
-                                                     }
-                                             }),
-                                    cl::cmd (String ("reset"), [&fStateMachine] { fStateMachine->run (Event::reset); }),
+                cl::cmd (String ("iscounting"), [&fStateMachine] { usbWrite ((fStateMachine->isCounting ()) ? ("1\r\n\r\n") : ("0\r\n\r\n")); }),
+                cl::cmd (String ("reset"), [&fStateMachine] { fStateMachine->run (Event::reset); }),
 
-                                    cl::cmd (String ("clear"),
-                                             [&history] {
-                                                     history.clearHiScore ();
-                                                     history.clearResults ();
-                                             }),
-                                    cl::cmd (String ("factory"), [] { getConfigFlashEepromStorage ().clear (); }),
-                                    cl::cmd (String ("help"), [] { usbWrite ("battery, clear, last, result, reset\r\n\r\n"); }),
-                                    cl::cmd (String ("battery"),
-                                             [&power] {
-                                                     std::array<char, 11> buf{};
-                                                     itoa ((unsigned int)(power.getBatteryVoltage ()), buf.data ());
-                                                     usbWrite (buf.cbegin ());
-                                                     usbWrite ("mV, ");
+                cl::cmd (String ("clear"),
+                         [&history] {
+                                 history.clearHiScore ();
+                                 history.clearResults ();
+                         }),
+                cl::cmd (String ("factory"), [] { getConfigFlashEepromStorage ().clear (); }),
+                cl::cmd (String ("help"), [] { usbWrite ("battery, clear, last, result, reset, date, factory\r\n\r\n"); }),
+                cl::cmd (String ("battery"),
+                         [&power] {
+                                 std::array<char, 11> buf{};
+                                 itoa ((unsigned int)(power.getBatteryVoltage ()), buf.data ());
+                                 usbWrite (buf.cbegin ());
+                                 usbWrite ("mV, ");
 
-                                                     itoa ((unsigned int)(power.getBatteryPercent ()), buf.data ());
-                                                     usbWrite (buf.cbegin ());
-                                                     usbWrite ("%\r\n\r\n");
-                                             })
+                                 itoa ((unsigned int)(power.getBatteryPercent ()), buf.data ());
+                                 usbWrite (buf.cbegin ());
+                                 usbWrite ("%\r\n\r\n");
+                         }),
+
+                cl::cmd (String ("getFlip"), [] { usbWrite ((getConfig ().orientationFlip) ? ("1\r\n\r\n") : ("0\r\n\r\n")); }),
+                cl::cmd (String ("setFlip"),
+                         [&] (String const &arg) {
+                                 getConfig ().orientationFlip = bool (std::atoi (arg.c_str ()));
+                                 refreshAll ();
+                         }),
+
+                cl::cmd (String ("getIr"), [] { usbWrite ((getConfig ().irSensorOn) ? ("1\r\n\r\n") : ("0\r\n\r\n")); }),
+                cl::cmd (String ("setIr"),
+                         [&] (String const &arg) {
+                                 getConfig ().irSensorOn = bool (std::atoi (arg.c_str ()));
+                                 refreshAll ();
+                         }),
+
+                cl::cmd (String ("getSn"), [] { usbWrite ((getConfig ().buzzerOn) ? ("1\r\n\r\n") : ("0\r\n\r\n")); }),
+                cl::cmd (String ("setSn"),
+                         [&] (String const &arg) {
+                                 getConfig ().buzzerOn = bool (std::atoi (arg.c_str ()));
+                                 refreshAll ();
+                         }),
+
+                cl::cmd (String ("getRes"),
+                         [] {
+                                 switch (getConfig ().resolution) {
+                                 case Resolution::ms_10:
+                                         usbWrite ("10ms\r\n\r\n");
+                                         break;
+
+                                 case Resolution::ms_1:
+                                         usbWrite ("1ms\r\n\r\n");
+                                         break;
+
+                                 case Resolution::us_100:
+                                         usbWrite ("100us\r\n\r\n");
+                                         break;
+
+                                 case Resolution::us_10:
+                                         usbWrite ("10us\r\n\r\n");
+                                         break;
+
+                                 default:
+                                         break;
+                                 }
+                         }),
+                cl::cmd (String ("setRes"),
+                         [&] (String const &arg) {
+                                 if (arg == "10ms") {
+                                         getConfig ().resolution = Resolution::ms_10;
+                                 }
+                                 else if (arg == "1ms") {
+                                         getConfig ().resolution = Resolution::ms_1;
+                                 }
+                                 else if (arg == "100us") {
+                                         getConfig ().resolution = Resolution::us_100;
+                                 }
+                                 else if (arg == "10us") {
+                                         getConfig ().resolution = Resolution::us_10;
+                                 }
+                                 else {
+                                         usbWrite ("Valid options : 10ms, 1ms, 100us, 10us\r\n\r\n");
+                                 }
+
+                                 refreshAll ();
+                         })
 
         );
 
@@ -348,12 +397,6 @@ int main ()
         /* OK, only *now* it is OK for the USB interrupts to fire */
         __enable_irq ();
 #endif
-
-        /*+-------------------------------------------------------------------------+*/
-        /*| Menu                                                                    |*/
-        /*+-------------------------------------------------------------------------+*/
-
-        DisplayMenu menu (config, display, *fStateMachine, rtc, history);
 
         Timer displayTimer;
         Timer menuTimer;

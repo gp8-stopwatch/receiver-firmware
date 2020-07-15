@@ -16,7 +16,7 @@
 #include "Rtc.h"
 
 namespace menu {
-enum class Event { shortPress, longPress, timePassed };
+enum class Event { shortPress, longPress, timePassed, refreshMenu };
 }
 
 class DisplayMenu {
