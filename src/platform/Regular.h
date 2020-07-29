@@ -7,14 +7,21 @@
  ****************************************************************************/
 
 #pragma once
-#include "Config.h"
-#ifdef WITH_FLASH
-#include <storage/FlashEepromStorage.h>
-#endif
+#define DEBUG_UART UART1
+#define DEBUG_PORT GPIOA
+#define DEBUG_PINS (GPIO_PIN_9 | GPIO_PIN_10)
+#define DEBUG_ALTERNATE GPIO_AF1_USART1
 
-extern cfg::Config &getConfig ();
+#define CAN_PORT_1 GPIOB
+#define CAN_PIN_1 GPIO_PIN_8
+#define CAN_PORT_2 GPIOB
+#define CAN_PIN_2 GPIO_PIN_9
+#define CAN_ALTERNATE GPIO_AF4_CAN
 
-#ifdef WITH_FLASH
-using ConfigFlashEepromStorage = FlashEepromStorage<2048, 2>;
-extern ConfigFlashEepromStorage &getConfigFlashEepromStorage ();
-#endif
+#define IR_PORT GPIOA
+#define IR_PINS GPIO_PIN_8
+#define BUTTON_AND_IR_IRQn EXTI4_15_IRQn
+
+#define TEST_TRIGGER_PORT GPIOB
+#define TEST_TRIGGER_PINS GPIO_PIN_3
+#define TEST_TRIGGER_IRQn EXTI2_3_IRQn

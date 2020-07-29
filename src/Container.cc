@@ -14,9 +14,11 @@ cfg::Config &getConfig ()
         return c;
 }
 
-ConfigFlashEepromStorage getConfigFlashEepromStorage ()
+#ifdef WITH_FLASH
+ConfigFlashEepromStorage &getConfigFlashEepromStorage ()
 {
         static ConfigFlashEepromStorage o (2, 1, 0x08020000 - 4 * 2048);
         o.init ();
         return o;
 }
+#endif

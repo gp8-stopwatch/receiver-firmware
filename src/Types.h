@@ -15,6 +15,12 @@
 #include <cstdint>
 #include <etl/cstring.h>
 
+#if defined(PLATFORM_MICRO)
+#include "platform/Micro.h"
+#elif defined(PLATFORM_REGULAR)
+#include "platform/Regular.h"
+#endif
+
 using String = etl::string<16>;
 using Result = uint32_t; /// Results are in 10µs units. Maybe someday I'll use std::chrono
 

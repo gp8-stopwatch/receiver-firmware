@@ -19,56 +19,101 @@ INCLUDE_DIRECTORIES("deps/libstate/src")
 SET (LIB_MICRO_ROOT "deps/libmicro")
 INCLUDE_DIRECTORIES ("${LIB_MICRO_ROOT}/src")
 
-ADD_DEFINITIONS (-DWITH_SOUND=1)
-ADD_DEFINITIONS (-DWITH_DISPLAY=1)
-# ADD_DEFINITIONS (-DCOMMON_ANODE=1)
-ADD_DEFINITIONS (-DCOMMON_CATHODE=1)
-ADD_DEFINITIONS (-DWITH_USB=1)
-ADD_DEFINITIONS (-DWITH_FLASH=1)
-ADD_DEFINITIONS (-DWITH_CAN=1)
-# ADD_DEFINITIONS (-DTEST_TRIGGER_MOD_2=1)
-ADD_DEFINITIONS (-DACCEPT_CAN_BUS_STOP=1)
-ADD_DEFINITIONS (-DFLASH_QUEUE_SIZE=4)
-ADD_DEFINITIONS (-DWITH_MENU=1)
+# Regular receiver with all the features
+# set(WITH_SOUND ON CACHE BOOL "Compile buzzer support")
+# set(WITH_DISPLAY ON CACHE BOOL "Compile 7 segment LED display support")
+# set(WITH_COMMON_ANODE OFF CACHE BOOL "ON means common anode 7 segments, OFF means common cathode")
+# set(WITH_USB ON CACHE BOOL "USB serial smulation support")
+# set(WITH_FLASH ON CACHE BOOL "Store settings and results to flash")
+# set(WITH_CAN ON CACHE BOOL "Complie CAN bus support")
+# set(WITH_TEST_TRIGGER_MOD_2 OFF CACHE BOOL "When ON test trigger is deaf every second time. This is for testing synchornisation between 2 receivers.")
+# set(WITH_ACCEPT_CAN_BUS_STOP ON CACHE BOOL "For testing")
+# set(FLASH_QUEUE_SIZE 4 CACHE STRING "Results are stored into protected queue from an ISR. This is the size of this queue.")
+# set(WITH_RTC ON CACHE BOOL "Complie RTC support")
+# set(WITH_POWER_MANAGER ON CACHE BOOL "Complie power sensing support")
+#ADD_DEFINITIONS (-DPLATFORM_REGULAR)
 
+# Micro receiver
+set(WITH_SOUND OFF CACHE BOOL "Compile buzzer support")
+set(WITH_DISPLAY OFF CACHE BOOL "Compile 7 segment LED display support")
+set(WITH_COMMON_ANODE OFF CACHE BOOL "ON means common anode 7 segments, OFF means common cathode")
+set(WITH_USB OFF CACHE BOOL "USB serial smulation support")
+set(WITH_FLASH OFF CACHE BOOL "Store settings and results to flash")
+set(WITH_CAN ON CACHE BOOL "Complie CAN bus support")
+set(WITH_TEST_TRIGGER_MOD_2 OFF CACHE BOOL "When ON test trigger is deaf every second time. This is for testing synchornisation between 2 receivers.")
+set(WITH_ACCEPT_CAN_BUS_STOP ON CACHE BOOL "For testing")
+set(FLASH_QUEUE_SIZE 4 CACHE STRING "Results are stored into protected queue from an ISR. This is the size of this queue.")
+set(WITH_RTC OFF CACHE BOOL "Complie RTC support")
+set(WITH_POWER_MANAGER OFF CACHE BOOL "Complie power sensing support")
+ADD_DEFINITIONS (-DPLATFORM_MICRO)
+
+IF (WITH_SOUND)
+    ADD_DEFINITIONS (-DWITH_SOUND=1)
+ENDIF()
+
+IF (WITH_DISPLAY)
+    ADD_DEFINITIONS (-DWITH_DISPLAY=1)
+ENDIF()
+
+IF (WITH_COMMON_ANODE)
+    ADD_DEFINITIONS (-DCOMMON_ANODE=1)
+ELSE ()
+    ADD_DEFINITIONS (-DCOMMON_CATHODE=1)
+ENDIF ()
+
+IF (WITH_USB)
+    ADD_DEFINITIONS (-DWITH_USB=1)
+ENDIF ()
+
+IF (WITH_FLASH)
+    ADD_DEFINITIONS (-DWITH_FLASH=1)
+ENDIF ()
+
+IF (WITH_CAN)
+    ADD_DEFINITIONS (-DWITH_CAN=1)
+ENDIF ()
+
+IF (WITH_TEST_TRIGGER_MOD_2)
+    ADD_DEFINITIONS (-DTEST_TRIGGER_MOD_2=1)
+ENDIF ()
+
+IF (WITH_ACCEPT_CAN_BUS_STOP)
+    ADD_DEFINITIONS (-DACCEPT_CAN_BUS_STOP=1)
+ENDIF ()
+
+ADD_DEFINITIONS (-DFLASH_QUEUE_SIZE=${FLASH_QUEUE_SIZE})
+
+IF (WITH_DISPLAY)
+    ADD_DEFINITIONS (-DWITH_MENU=1)
+ENDIF ()
+
+IF (WITH_RTC)
+    ADD_DEFINITIONS (-DWITH_RTC=1)
+ENDIF ()
+
+IF (WITH_POWER_MANAGER)
+    ADD_DEFINITIONS (-DWITH_POWER_MANAGER=1)
+ENDIF ()
 
 # DEVICE is defined in the toolchain file, so if it's present, we assume that the firmware is beeing built.
 IF (DEFINED DEVICE)
-    ADD_EXECUTABLE(${CMAKE_PROJECT_NAME}.elf
+    SET(SOURCES
         "src/main.cc"
         "src/Button.cc"
-        "src/Buzzer.cc"
         "src/FastStateMachine.cc"
-        "src/History.cc"
         "src/InfraRedBeamModulated.cc"
         "src/StopWatch.cc"
-        "src/Led7SegmentDisplay.cc"
-        "src/CanProtocol.cc"
-        "src/DisplayMenu.cc"
-        "src/Rtc.cc"
-        "src/PowerManagement.cc"
         "src/Config.cc"
         "src/Container.cc"
-        
-        "src/usb/usbd_cdc.c"
-        "src/usb/usbd_composite.c"
-        "src/usb/usbd_conf.c"
-        "src/usb/usbd_core.c"
-        "src/usb/usbd_ctlreq.c"
-        "src/usb/usbd_desc.c"
-        "src/usb/usbd_ioreq.c"
-        "src/usb/UsbHelpers.cc"
+        "src/DisplayMenu.cc"
 
         "${LIB_MICRO_ROOT}/src/ErrorHandler.c"
         "${LIB_MICRO_ROOT}/src/TimerF.cc"
-        "${LIB_MICRO_ROOT}/src/HardwareTimer.cc"
         "${LIB_MICRO_ROOT}/src/Debug.cc"
         "${LIB_MICRO_ROOT}/src/GpioF.cc"
         "${LIB_MICRO_ROOT}/src/GpioF0.cc"
         "${LIB_MICRO_ROOT}/src/UsartF.cc"
         "${LIB_MICRO_ROOT}/src/UsartF0.cc"
-        "${LIB_MICRO_ROOT}/src/CanF.cc"
-        "${LIB_MICRO_ROOT}/src/CanFrame.cc"
 
         "${STARTUP_CODE}"
         "src/stm32f0xx_it.c"
@@ -98,6 +143,60 @@ IF (DEFINED DEVICE)
         "deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_usart.c"
         "deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_usb.c"
     )
+
+    IF (WITH_DISPLAY)
+        LIST (APPEND SOURCES 
+        "${LIB_MICRO_ROOT}/src/HardwareTimer.cc"
+        "src/Led7SegmentDisplay.cc"
+        )
+    ENDIF ()
+
+    IF (WITH_USB)
+        LIST (APPEND SOURCES
+        "src/usb/usbd_cdc.c"
+        "src/usb/usbd_composite.c"
+        "src/usb/usbd_conf.c"
+        "src/usb/usbd_core.c"
+        "src/usb/usbd_ctlreq.c"
+        "src/usb/usbd_desc.c"
+        "src/usb/usbd_ioreq.c"
+        "src/usb/UsbHelpers.cc"
+        )        
+    ENDIF ()
+
+    IF (WITH_CAN)
+        LIST (APPEND SOURCES
+        "${LIB_MICRO_ROOT}/src/CanF.cc"
+        "${LIB_MICRO_ROOT}/src/CanFrame.cc"
+        "src/CanProtocol.cc"
+        )
+    ENDIF ()
+
+    IF (WITH_RTC)
+        LIST (APPEND SOURCES
+        "src/Rtc.cc"
+        )
+    ENDIF ()
+
+    IF (WITH_SOUND)
+        LIST (APPEND SOURCES
+        "src/Buzzer.cc"
+        )
+    ENDIF ()
+
+    IF (WITH_SOUND)
+        LIST (APPEND SOURCES
+        "src/History.cc"
+        )
+    ENDIF ()
+
+    IF (WITH_POWER_MANAGER)
+        LIST (APPEND SOURCES
+        "src/PowerManagement.cc"
+        )
+    ENDIF ()
+
+    ADD_EXECUTABLE(${CMAKE_PROJECT_NAME}.elf ${SOURCES})
 
     FIND_PROGRAM (OPENOCD openocd)
     ADD_CUSTOM_TARGET("upload" DEPENDS ${CMAKE_PROJECT_NAME}.elf COMMAND ${OPENOCD} -f /home/iwasz/local/share/openocd/scripts/interface/stlink.cfg -f /home/iwasz/local/share/openocd/scripts/target/stm32f0x.cfg -c 'program ${CMAKE_PROJECT_NAME}.elf verify reset exit')

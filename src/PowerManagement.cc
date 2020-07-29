@@ -206,8 +206,10 @@ void PowerManagement::sleep ()
         __HAL_RCC_GPIOA_CLK_ENABLE ();
         __HAL_RCC_GPIOB_CLK_ENABLE ();
         __HAL_RCC_GPIOC_CLK_ENABLE ();
+#if !defined(STM32F042x6)
         __HAL_RCC_GPIOD_CLK_ENABLE ();
         __HAL_RCC_GPIOE_CLK_ENABLE ();
+#endif
         __HAL_RCC_GPIOF_CLK_ENABLE ();
 
         GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
@@ -218,15 +220,19 @@ void PowerManagement::sleep ()
         HAL_GPIO_Init (GPIOA, &GPIO_InitStructure);
         HAL_GPIO_Init (GPIOB, &GPIO_InitStructure);
         HAL_GPIO_Init (GPIOC, &GPIO_InitStructure);
+#if !defined(STM32F042x6)
         HAL_GPIO_Init (GPIOD, &GPIO_InitStructure);
         HAL_GPIO_Init (GPIOE, &GPIO_InitStructure);
+#endif
         HAL_GPIO_Init (GPIOF, &GPIO_InitStructure);
 
         __HAL_RCC_GPIOA_CLK_DISABLE ();
         __HAL_RCC_GPIOB_CLK_DISABLE ();
         __HAL_RCC_GPIOC_CLK_DISABLE ();
+#if !defined(STM32F042x6)
         __HAL_RCC_GPIOD_CLK_DISABLE ();
         __HAL_RCC_GPIOE_CLK_DISABLE ();
+#endif
         __HAL_RCC_GPIOF_CLK_DISABLE ();
 
         /* Enable PWR clock */

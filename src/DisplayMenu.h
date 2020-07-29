@@ -34,12 +34,11 @@ public:
                 last_option // Guard.
         };
 
-        DisplayMenu (cfg::Config &c, IDisplay &d, FastStateMachine &m, Rtc &rtc, History &h)
-            : config{c}, display{d}, machine{m}, rtc{rtc}, history (h)
-        {
-        }
+        DisplayMenu (cfg::Config &c, IDisplay &d, FastStateMachine &m) : config{c}, display{d}, machine{m} {}
 
         void onEvent (menu::Event p);
+        void setHistory (History *h) { this->history = h; }
+        void setRtc (Rtc *r) { this->rtc = r; }
 
 private:
         void prepareMenuForOption (Option o);
@@ -47,6 +46,6 @@ private:
         cfg::Config &config;
         IDisplay &display;
         FastStateMachine &machine;
-        Rtc &rtc;
-        History &history;
+        Rtc *rtc{};
+        History *history{};
 };

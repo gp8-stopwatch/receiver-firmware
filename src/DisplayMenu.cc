@@ -22,7 +22,7 @@ void DisplayMenu::onEvent (menu::Event p)
 
         auto tryDisplayResult = [&] {
                 currentResult %= History::MAX_RESULTS_NUM;
-                auto en = history.getEntry (currentResult);
+                auto en = history->getEntry (currentResult);
 
                 if (en.result != std::numeric_limits<uint32_t>::max ()) {
                         display.setTime (en.result, getConfig ().resolution);
@@ -43,7 +43,7 @@ void DisplayMenu::onEvent (menu::Event p)
 
         // If true then it blinks
         auto displayTime = [&] (Rtc::Set s) {
-                auto d = rtc.getDate ();
+                auto d = rtc->getDate ();
                 auto &t = d.second;
                 static uint8_t b{};
                 ++b;
@@ -79,7 +79,7 @@ void DisplayMenu::onEvent (menu::Event p)
 
         // s tells what blinks
         auto displayDate = [&] (Rtc::Set s) {
-                auto d = rtc.getDate ();
+                auto d = rtc->getDate ();
                 auto &r = d.first;
                 static uint8_t b{};
                 ++b;
@@ -210,17 +210,17 @@ void DisplayMenu::onEvent (menu::Event p)
 
                 state ("SET_HOUR"_ST, entry ([] {}), exit ([] {}), //
                        transition ("SET_HOUR"_ST, timePassed (), [&] (auto /*a*/) { displayTime (Rtc::Set::hour); }),
-                       transition ("SET_HOUR"_ST, shortPress (), [&] (auto /*a*/) { rtc.timeAdd (Rtc::Set::hour); }),
+                       transition ("SET_HOUR"_ST, shortPress (), [&] (auto /*a*/) { rtc->timeAdd (Rtc::Set::hour); }),
                        transition ("SET_MINUTES"_ST, longPress (), [&] (auto /*a*/) {})),
 
                 state ("SET_MINUTES"_ST, entry ([] {}), exit ([] {}), //
                        transition ("SET_MINUTES"_ST, timePassed (), [&] (auto /*a*/) { displayTime (Rtc::Set::minute); }),
-                       transition ("SET_MINUTES"_ST, shortPress (), [&] (auto /*a*/) { rtc.timeAdd (Rtc::Set::minute); }),
+                       transition ("SET_MINUTES"_ST, shortPress (), [&] (auto /*a*/) { rtc->timeAdd (Rtc::Set::minute); }),
                        transition ("SET_SECONDS"_ST, longPress (), [&] (auto /*a*/) {})),
 
                 state ("SET_SECONDS"_ST, entry ([] {}), exit ([] {}), //
                        transition ("SET_SECONDS"_ST, timePassed (), [&] (auto /*a*/) { displayTime (Rtc::Set::second); }),
-                       transition ("SET_SECONDS"_ST, shortPress (), [&] (auto /*a*/) { rtc.timeAdd (Rtc::Set::second); }),
+                       transition ("SET_SECONDS"_ST, shortPress (), [&] (auto /*a*/) { rtc->timeAdd (Rtc::Set::second); }),
                        transition ("TIME"_ST, longPress (), [&] (auto /*a*/) {})),
 
                 // Date viewing and setting
@@ -231,17 +231,17 @@ void DisplayMenu::onEvent (menu::Event p)
 
                 state ("SET_YEAR"_ST, entry ([] {}), exit ([] {}), //
                        transition ("SET_YEAR"_ST, timePassed (), [&] (auto /*a*/) { displayDate (Rtc::Set::year); }),
-                       transition ("SET_YEAR"_ST, shortPress (), [&] (auto /*a*/) { rtc.dateAdd (Rtc::Set::year); }),
+                       transition ("SET_YEAR"_ST, shortPress (), [&] (auto /*a*/) { rtc->dateAdd (Rtc::Set::year); }),
                        transition ("SET_MONTH"_ST, longPress (), [&] (auto /*a*/) {})),
 
                 state ("SET_MONTH"_ST, entry ([] {}), exit ([] {}), //
                        transition ("SET_MONTH"_ST, timePassed (), [&] (auto /*a*/) { displayDate (Rtc::Set::month); }),
-                       transition ("SET_MONTH"_ST, shortPress (), [&] (auto /*a*/) { rtc.dateAdd (Rtc::Set::month); }),
+                       transition ("SET_MONTH"_ST, shortPress (), [&] (auto /*a*/) { rtc->dateAdd (Rtc::Set::month); }),
                        transition ("SET_DAY"_ST, longPress (), [&] (auto /*a*/) {})),
 
                 state ("SET_DAY"_ST, entry ([] {}), exit ([] {}), //
                        transition ("SET_DAY"_ST, timePassed (), [&] (auto /*a*/) { displayDate (Rtc::Set::day); }),
-                       transition ("SET_DAY"_ST, shortPress (), [&] (auto /*a*/) { rtc.dateAdd (Rtc::Set::day); }),
+                       transition ("SET_DAY"_ST, shortPress (), [&] (auto /*a*/) { rtc->dateAdd (Rtc::Set::day); }),
                        transition ("DATE"_ST, longPress (), [&] (auto /*a*/) {})));
 
         m.run (p);

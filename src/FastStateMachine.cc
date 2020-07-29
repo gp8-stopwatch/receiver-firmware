@@ -21,7 +21,7 @@
 
 void FastStateMachine::run (Event event)
 {
-        auto canTime = protocol->getLastRemoteStopTime ();
+        auto canTime = (protocol != nullptr) ? (protocol->getLastRemoteStopTime ()) : (0UL);
 
         // Global transitions (the same for every state)
         if (event == Event::pause) {
@@ -142,11 +142,16 @@ void FastStateMachine::running_entryAction (bool canEvent)
 {
         stopWatch->reset (canEvent);
         stopWatch->start ();
+
+#ifdef WITH_SOUND
         buzzer->beep (100, 0, 1);
+#endif
         startTimeout.start (BEAM_INTERRUPTION_EVENT);
 
-        if (!canEvent) {
+        if (!canEvent && protocol != nullptr) {
+#ifdef WITH_CAN
                 protocol->sendStart ();
+#endif
         }
 }
 
@@ -158,15 +163,21 @@ void FastStateMachine::stop_entryAction (bool canEvent, std::optional<uint32_t> 
         startTimeout.start (BEAM_INTERRUPTION_EVENT);
         uint32_t result = (time) ? (*time) : (stopWatch->getTime ());
 
-        if (!canEvent) {
+        if (!canEvent && protocol != nullptr) {
+#ifdef WITH_CAN
                 protocol->sendStop (result);
+#endif
         }
 
         display->setTime (result, getConfig ().resolution);
 
         if (history != nullptr) {
+#ifdef WITH_SOUND
                 buzzer->beep (70, 50, 3);
+#endif
+#ifdef WITH_FLASH
                 history->store (result);
+#endif
         }
 }
 
@@ -177,21 +188,29 @@ void FastStateMachine::loop_entryAction (bool canEvent, std::optional<uint32_t> 
         stopWatch->stop ();
         uint32_t result = (time) ? (*time) : (stopWatch->getTime ());
 
-        if (!canEvent) {
+        if (!canEvent && protocol != nullptr) {
+#ifdef WITH_CAN
                 protocol->sendLoopStart (result);
+#endif
         }
 
         stopWatch->reset (canEvent);
         stopWatch->start ();
+#ifdef WITH_SOUND
         buzzer->beep (100, 0, 1);
+#endif
         startTimeout.start (BEAM_INTERRUPTION_EVENT);
         loopDisplayTimeout.start (LOOP_DISPLAY_TIMEOUT);
 
         display->setTime (result, getConfig ().resolution);
 
         if (history != nullptr) {
+#ifdef WITH_SOUND
                 buzzer->beep (70, 50, 2);
+#endif
+#ifdef WITH_FLASH
                 history->store (result);
+#endif
         }
 }
 

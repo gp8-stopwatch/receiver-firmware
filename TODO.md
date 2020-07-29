@@ -23,7 +23,7 @@
 # Hardware
 * [x] Boot pin easy accessible (for DFU).
 * [x] Crystal oscillator footprint suitable for modern TCXOs, not this THT crap.
-* [ ] ~~Reduce holes for CAN socket supports (thise 2 plastic one sticking out)~~ The case is holding the socket in place. Too much effort.
+* [x] ~~Reduce holes for CAN socket supports (thise 2 plastic one sticking out)~~ The case is holding the socket in place. Too much effort.
 * [x] Ldo for etc should be 3v3 not 1v8. Voltage difference would be smaller.
 * [x] Przetestować RTC z tym małym LDO.
 * [x] Battery protection in software (for overdischarge)
@@ -31,18 +31,20 @@
   * [x] Measure what all elements except the µC and LEDs are drawing, and whether we should optimize this, or leave alone.
   * [x] When powered on, simply go to sleep, calculate current, maybe modify HW so it draws less quiescent current.
   * [x] Same for the transmitter
+* [ ] Battery protection in hardware. While software protection works, a peripheral powered from +BATT can be attached to the CANbus port thus draving a current. I this peripheral doesn't have its protection, then the battery can be over-discharged.
 * [x] If the transmitter had an uc, we could use the charging led to indicate that it is running, and there would be no changes to the casing necessary.
 * [x] ~~Charging led to uc,~~ charger outputs as well. This way we could sense when charger plugged in.
 * [x] Check common cathode configuration
 * [x] Check µC - charger connection.
 * [ ] Field tests of the trigger 
   * [x] Rough range tests shows that there's no noticeable change.
+  * [ ] Problems when exposed to the direct sunlight.
+  * [ ] Poprawić działanie we wnętrzach (incadescent lights & cameras) ????
+  * [ ] Jeszcze osłabić sygnał IR.
 * [x] 56kHz transmitter.
 * [x] Test points.
 * [x] ~~Fix the distance between the holes on 18650 battery holder. **Not until new arrive**.~~ Besides : the holder is supported by case's back wall.
 * [x] Route the receiver PCB
-* [ ] Poprawić działanie we wnętrzach (incadescent lights & cameras) ????
-* [ ] Jeszcze osłabić sygnał IR.
 * [x] USB 2.0 port can source only 500mA while, I am charging at 660mA. Maybe I should lower the consumption?
 * [x] Route the transmitter (mcu branch)
 * [x] Identify what causes spurious trigger release when power line noise is present. Is it the test trigger, or the IR trigger. Observe what happens using an oscilloscope. Turning a solder iron or hotair on/off causes this to happen (It was a long cable connecting the signal generator with the transmitter. It was the transmitter which caused this).

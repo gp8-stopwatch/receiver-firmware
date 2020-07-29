@@ -47,3 +47,38 @@ struct IDisplay {
 
         virtual void setResolution (Resolution res) = 0;
 };
+
+/**
+ * For devices without display, to simplify code.
+ */
+struct FakeDisplay : public IDisplay {
+        void setDigit (uint8_t number, uint8_t setDigit) override {}
+
+        uint8_t getDots () const override { return 0; }
+        void setDots (uint8_t bitmask) override {}
+        void setDot (uint8_t number, bool on) override {}
+
+        uint8_t getIcons () const override { return 0; }
+        void setIcons (uint8_t bitmask) override {}
+
+        void setTime (uint32_t /* a */, Resolution res) override {}
+        void setText (const char * /* a */) override {}
+
+        /**
+         * @brief batteryLevel 0 : blinking frame, 1 : frame, 2 : frame & 1 bar, 3 : frame & 2 bars
+         * @param level
+         */
+        void setBatteryLevel (uint8_t level) override {}
+        void setBacklight (bool b) override {}
+        bool getBacklight () const override { return false; }
+
+        void setBrightness (uint8_t b) override {}
+        uint8_t getBrightness () const override { return 0; }
+
+        void refresh () override {}
+
+        void clear () override {}
+        void setFlip (bool b) override {}
+
+        void setResolution (Resolution res) override {}
+};

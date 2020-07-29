@@ -106,4 +106,6 @@ void SysTick_Handler (void)
         /* USER CODE END SysTick_IRQn 1 */
 }
 
+#ifdef WITH_USB
 void USB_IRQHandler (void) { HAL_PCD_IRQHandler (&hpcd); }
+#endif

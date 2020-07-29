@@ -14,6 +14,7 @@
 #include "Container.h"
 #include "Debug.h"
 #include "DisplayMenu.h"
+#include "ErrorHandler.h"
 #include "FastStateMachine.h"
 #include "Gpio.h"
 #include "HardwareTimer.h"
@@ -60,13 +61,24 @@ void *cliPointer{};
 bool showGreeting{};
 } // namespace
 
-void readConfigFromFlash () { getConfig () = *reinterpret_cast<cfg::Config const *> (getConfigFlashEepromStorage ().read (nullptr, 2, 0, 0)); }
+void readConfigFromFlash ()
+{
+#ifdef WITH_FLASH
+        getConfig () = *reinterpret_cast<cfg::Config const *> (getConfigFlashEepromStorage ().read (nullptr, 2, 0, 0));
+#endif
+}
 
 /*****************************************************************************/
-void fff () {}
 
 int main ()
 {
+        __HAL_RCC_SYSCFG_CLK_ENABLE ();
+        __HAL_RCC_PWR_CLK_ENABLE ();
+
+#ifdef PLATFORM_MICRO
+        __HAL_REMAP_PIN_ENABLE (HAL_REMAP_PA11_PA12);
+#endif
+
         HAL_Init ();
         SystemClock_Config ();
 
@@ -74,6 +86,7 @@ int main ()
         /*| Screen                                                                  |*/
         /*+-------------------------------------------------------------------------+*/
 
+#ifdef WITH_DISPLAY
         Gpio d1 (GPIOB, GPIO_PIN_11);
         Gpio d2 (GPIOB, GPIO_PIN_12);
         Gpio d3 (GPIOB, GPIO_PIN_13);
@@ -118,8 +131,9 @@ int main ()
         HAL_NVIC_SetPriority (TIM15_IRQn, DISPLAY_TIMER_PRIORITY, 0);
         HAL_NVIC_EnableIRQ (TIM15_IRQn);
 
-#ifdef WITH_DISPLAY
         tim15.setOnUpdate ([&display] { display.refresh (); });
+#else
+        FakeDisplay display;
 #endif
 
         /*+-------------------------------------------------------------------------+*/
@@ -128,10 +142,12 @@ int main ()
 
         const uint32_t *MICRO_CONTROLLER_UID = new (reinterpret_cast<void *> (0x1FFFF7AC)) uint32_t;
         cfg::Config &config = getConfig ();
+#ifdef WITH_FLASH
         readConfigFromFlash ();
+#endif
 
-        Gpio debugUartGpios (GPIOA, GPIO_PIN_9 | GPIO_PIN_10, GPIO_MODE_AF_OD, GPIO_PULLUP, GPIO_SPEED_FREQ_HIGH, GPIO_AF1_USART1);
-        Usart debugUart (USART1, 115200);
+        Gpio debugUartGpios (DEBUG_PORT, DEBUG_PINS, GPIO_MODE_AF_OD, GPIO_PULLUP, GPIO_SPEED_FREQ_HIGH, DEBUG_ALTERNATE);
+        Usart debugUart (DEBUG_UART, 115200);
 
         Debug debug (&debugUart);
         Debug::singleton () = &debug;
@@ -142,7 +158,8 @@ int main ()
         /*+-------------------------------------------------------------------------+*/
 
 #ifdef WITH_CAN
-        Gpio canGpios (GPIOB, GPIO_PIN_8 | GPIO_PIN_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH, GPIO_AF4_CAN);
+        Gpio canGpio1 (CAN_PORT_1, CAN_PIN_1, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH, CAN_ALTERNATE);
+        Gpio canGpio2 (CAN_PORT_2, CAN_PIN_2, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH, CAN_ALTERNATE);
 
         // 24 - 125kbps
         Can can (nullptr, 24, CAN_SJW_3TQ, CAN_BS1_12TQ, CAN_BS2_3TQ);
@@ -160,7 +177,9 @@ int main ()
         /*| RTC                                                                     |*/
         /*+-------------------------------------------------------------------------+*/
 
+#ifdef WITH_RTC
         Rtc rtc;
+#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| History saved in the flash                                              |*/
@@ -180,12 +199,14 @@ int main ()
         /*| Backlight, beeper                                                       |*/
         /*+-------------------------------------------------------------------------+*/
 
+#ifdef WITH_SOUND
         Gpio buzzerPin (GPIOB, GPIO_PIN_14);
         Buzzer buzzer (buzzerPin);
 
         if (config.buzzerOn) {
                 buzzer.beep (20, 0, 1);
         }
+#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| StopWatch, machine and IR                                               |*/
@@ -197,7 +218,7 @@ int main ()
 
         /*--------------------------------------------------------------------------*/
 
-        Gpio irTriggerPin (GPIOA, GPIO_PIN_8, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
+        Gpio irTriggerPin (IR_PORT, IR_PINS, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
         InfraRedBeamExti beam{(irTriggerPin.get ()) ? (IrBeam::absent) : (IrBeam::present)};
         irTriggerPin.setOnToggle ([&beam, &irTriggerPin] { beam.onExti ((irTriggerPin.get ()) ? (IrBeam::absent) : (IrBeam::present)); });
         beam.onTrigger = [fStateMachine] {
@@ -214,14 +235,14 @@ int main ()
         /*--------------------------------------------------------------------------*/
 
         Gpio buttonPin (GPIOB, GPIO_PIN_15, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
-        HAL_NVIC_SetPriority (EXTI4_15_IRQn, BUTTON_AND_IR_EXTI_PRIORITY, 0);
-        HAL_NVIC_EnableIRQ (EXTI4_15_IRQn);
+        HAL_NVIC_SetPriority (BUTTON_AND_IR_IRQn, BUTTON_AND_IR_EXTI_PRIORITY, 0);
+        HAL_NVIC_EnableIRQ (BUTTON_AND_IR_IRQn);
         Button button (buttonPin);
 
         // Test trigger
-        Gpio testTriggerPin (GPIOB, GPIO_PIN_3, GPIO_MODE_IT_RISING, GPIO_PULLDOWN);
-        HAL_NVIC_SetPriority (EXTI2_3_IRQn, TEST_TRIGGER_EXTI_PRIORITY, 0);
-        HAL_NVIC_EnableIRQ (EXTI2_3_IRQn);
+        Gpio testTriggerPin (TEST_TRIGGER_PORT, TEST_TRIGGER_PINS, GPIO_MODE_IT_RISING, GPIO_PULLDOWN);
+        HAL_NVIC_SetPriority (TEST_TRIGGER_IRQn, TEST_TRIGGER_EXTI_PRIORITY, 0);
+        HAL_NVIC_EnableIRQ (TEST_TRIGGER_IRQn);
         testTriggerPin.setOnToggle ([fStateMachine] {
 #ifdef TEST_TRIGGER_MOD_2
                 static int i{};
@@ -240,10 +261,15 @@ int main ()
 #endif
         fStateMachine->setIr (&beam);
         fStateMachine->setDisplay (&display);
+
+#ifdef WITH_SOUND
         fStateMachine->setBuzzer (&buzzer);
+#endif
+
 #ifdef WITH_FLASH
         fStateMachine->setHistory (&history);
 #endif
+
 #ifdef WITH_CAN
         fStateMachine->setCanProtocol (&protocol);
 #endif
@@ -252,13 +278,23 @@ int main ()
         /*| Battery, light sensor, others                                            |*/
         /*+-------------------------------------------------------------------------+*/
 
+#ifdef WITH_POWER_MANAGER
         PowerManagement power{display, *fStateMachine};
+#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| Menu                                                                    |*/
         /*+-------------------------------------------------------------------------+*/
 
-        DisplayMenu menu (config, display, *fStateMachine, rtc, history);
+        DisplayMenu menu (config, display, *fStateMachine);
+
+#ifdef WITH_FLASH
+        menu.setHistory (&history);
+#endif
+
+#ifdef WITH_RTC
+        menu.setRtc (&rtc);
+#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| USB                                                                     |*/
@@ -407,7 +443,9 @@ int main ()
         auto refreshSettings = [&] {
                 display.setFlip (config.orientationFlip);
                 beam.setActive (config.irSensorOn);
+#ifdef WITH_SOUND
                 buzzer.setActive (config.buzzerOn);
+#endif
                 stopWatch->setResolution (config.resolution);
                 display.setResolution (config.resolution);
         };
@@ -416,10 +454,20 @@ int main ()
         menu.onEvent (menu::Event::timePassed); // Initial state.
 
         while (true) {
+#ifdef WITH_SOUND
                 buzzer.run ();
+#endif
+
                 button.run ();
+
+#ifdef WITH_FLASH
                 history.run ();
+#endif
+
+#ifdef WITH_POWER_MANAGER
                 power.run ();
+#endif
+
 #ifdef WITH_USB
                 cli.run ();
 #endif
@@ -430,18 +478,24 @@ int main ()
 
                 if (button.getPressClear ()) {
                         menu.onEvent (menu::Event::shortPress);
+#ifdef WITH_SOUND
                         buzzer.beep (20, 0, 1);
+#endif
                 }
 
                 if (button.getLongPressClear ()) {
                         menu.onEvent (menu::Event::longPress);
+#ifdef WITH_SOUND
                         buzzer.beep (20, 20, 2);
+#endif
                 }
 
                 if (cfg::changed ()) {
                         cfg::changed () = false;
                         refreshSettings ();
+#ifdef WITH_FLASH
                         getConfigFlashEepromStorage ().store (reinterpret_cast<uint8_t *> (&config), sizeof (config), 0);
+#endif
                 }
 
                 if (menuTimer.isExpired ()) {
@@ -460,6 +514,7 @@ int main ()
 
 /*****************************************************************************/
 
+#ifdef PLATFORM_REGULAR
 void SystemClock_Config ()
 {
         RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -486,8 +541,7 @@ void SystemClock_Config ()
         if (HAL_RCC_OscConfig (&RCC_OscInitStruct) != HAL_OK) {
                 Error_Handler ();
         }
-        /** Initializes the CPU, AHB and APB busses clocks
-         */
+
         RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1;
         RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
         RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
@@ -505,6 +559,40 @@ void SystemClock_Config ()
                 Error_Handler ();
         }
 }
+#endif
+
+#ifdef PLATFORM_MICRO
+void SystemClock_Config ()
+{
+        RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+        RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+        /** Initializes the CPU, AHB and APB busses clocks.
+         */
+        RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI14 | RCC_OSCILLATORTYPE_HSE;
+        RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+        RCC_OscInitStruct.HSI14State = RCC_HSI14_ON;
+        RCC_OscInitStruct.HSI14CalibrationValue = 16;
+        RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+        RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+        RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL5;
+        RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV2;
+
+        if (HAL_RCC_OscConfig (&RCC_OscInitStruct) != HAL_OK) {
+                Error_Handler ();
+        }
+        /** Initializes the CPU, AHB and APB busses clocks.
+         */
+        RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1;
+        RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+        RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+        RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+
+        if (HAL_RCC_ClockConfig (&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
+                Error_Handler ();
+        }
+}
+#endif
 
 /*****************************************************************************/
 
@@ -545,4 +633,9 @@ void operator delete (void *p) {}
 void operator delete (void *p, unsigned int) {}
 #endif
 
+#ifndef WITH_USB
+extern "C" void usbWrite (const char * /* str */) {}
+#endif
+
+extern "C" void __gxx_personality_v0 () {}
 // extern "C" void _init () {}
