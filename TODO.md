@@ -62,10 +62,10 @@
   * [ ] Brightness (1/2/3/auto). Auto as default.
   * [ ] 1 or 2 participants
   * [x] Loop mode / normal
-  * [ ] Date / time setting
-  * [ ] Time display
+  * [x] Date / time setting
+  * [x] Time display
 * [ ] USB menu should include all what on-display provides plus:
-  * [ ] Results (via command)
+  * [x] Results (via command)
   * [ ] Results as they go.
 
 # Possible features
@@ -103,8 +103,9 @@
  * [x] buzzer volume or if buzzer at all.
  * [x] Screen dims itself to 0 sometimes.
  * [x] Dots indicating the resolution of the time display.
- * [x] CAN_LATENCY_CORRECTION must be assesed again becasue I've changed how the START is sent (4B additionally).
- 
+ * [x] CAN_LATENCY_CORRECTION must be assesed again because I've changed how the START is sent (4B additionally).
+ * [ ] Run mode (loop/stop) should be independent of CAN bus trigger message. The receiver should always work according to the current mode, not the message type that triggered it. That said, there should only be one start message as it once was. This is because 
+
 # Bugs
 * [x] So it happened that it couldnt save results history when the page overflowed from 1 back to 0 (after 128 measurements). Probably it didn't cleared the flash.
 * [ ] Sometimes when the `reset` command is issued the display is not cleared (stop watch stops, but the last result is persisted on the screen).
@@ -112,7 +113,7 @@
 * [x] ~~Clear command makes the next trigger event to be skipped / missed.~~ It does not. It stops the CPU for some period of time (few miliseconds) and thus `startTimeout` in the `FastStateMachine` measures more than 5000ms. My signal gen was set to 5010ms and this little difference (of only 10ms) was too small.
 * [x] USB - can't output more than 2048B at once. In case of overflow the rest of text is clipped.
 * [ ] When history is short (16B per page) results are working somewhat oddly:
-* [ ] after 10 mins there's something wrong going on with the time display. No leading 1 or something. Reported by Pyxis.
+* [x] after 10 mins there's something wrong going on with the time display. No leading 1 or something. Reported by Pyxis.
 
 ```
 00:05,00998
@@ -151,7 +152,7 @@ Hi 00:00,00000
 * [x] Opcja /restart : Wyslanie tej komendy powoduje zatrzymanie liczenia czasu jesli bylo wlaczone, ustawia wyswietlacz na 0:00 i czeka na przeciecie wiazki i pomiar
   * [ ] Błąd - czasem nie czyści.
 * [x] Pipczenie - jesli mozesz zobic na start 1 pip a na pomiar w trybie zawodow 3xpip. Pomiar w tyrybie /trening 2x pip
-* [ ] Wyniki
+* [x] Wyniki
     
 # Infrastructure
 * [x] Clean the code (prepare for new repo that is)
@@ -200,3 +201,4 @@ Solved. The problem was due to lack of USBD_CDC_ReceivePacket calls. So it seems
 # Refactoring
 * [ ] USB - change `__disable_irq ()` to NVIC-disable USB.
 * [x] Config object should be globally available. 
+* [ ] Eliminate ifdef galore somehow.
