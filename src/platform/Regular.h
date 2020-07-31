@@ -7,7 +7,7 @@
  ****************************************************************************/
 
 #pragma once
-#define DEBUG_UART UART1
+#define DEBUG_UART USART1
 #define DEBUG_PORT GPIOA
 #define DEBUG_PINS (GPIO_PIN_9 | GPIO_PIN_10)
 #define DEBUG_ALTERNATE GPIO_AF1_USART1

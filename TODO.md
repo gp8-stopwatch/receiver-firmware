@@ -51,6 +51,11 @@
   * [x] Fix. Problem does not occur when the test trigger is disconnected.
   * [x] ~~Consider disabling the test trigger in production IF this is caused by it.~~ Not neccessary.
 * [x] Schotky diode from +BATT to one of the 6P6C socket pins. This would be for powering some smaller peripherals. Why haven't I thought about this earlier!
+* Certification / reliability / safety
+  * [ ] Input protection
+  * [ ] Battery over-discharge preotection
+  * [ ] Othewr means of battery protection (over-charge, over-current)
+  * [ ] Emi - I can see lots of noise in the CAN bus, and test-trigger can be easily fired by transients.
 
 # Case
 * [ ] Make sure the battery holder is well supported by case's back wall. It has to be fixed in place. This way we can ignore the screws that would normally fix the holder to the PCB.
@@ -202,3 +207,4 @@ Solved. The problem was due to lack of USBD_CDC_ReceivePacket calls. So it seems
 * [ ] USB - change `__disable_irq ()` to NVIC-disable USB.
 * [x] Config object should be globally available. 
 * [ ] Eliminate ifdef galore somehow.
+* [ ] Rename CANbus start event to "trigger" event.

@@ -13,9 +13,18 @@
 
 void print (int i)
 {
-        char buf[11];
-        itoa (i, buf);
-        usbWrite (buf);
+        std::array<char, 12> buf{};
+        itoa (i, buf.data ());
+        usbWrite (buf.data ());
+}
+
+/*****************************************************************************/
+
+void print (unsigned int i)
+{
+        std::array<char, 12> buf{};
+        itoa (i, buf.data ());
+        usbWrite (buf.data ());
 }
 
 /****************************************************************************/

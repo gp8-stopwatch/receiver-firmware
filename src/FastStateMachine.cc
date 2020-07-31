@@ -9,7 +9,6 @@
 #include "FastStateMachine.h"
 #include "Button.h"
 #include "Buzzer.h"
-#include "CanProtocol.h"
 #include "Container.h"
 #include "Debug.h"
 #include "History.h"
@@ -21,7 +20,8 @@
 
 void FastStateMachine::run (Event event)
 {
-        auto canTime = (protocol != nullptr) ? (protocol->getLastRemoteStopTime ()) : (0UL);
+        // Temp variable for storing information if the trigger was interanal or external.
+        bool canEvent{};
 
         // Global transitions (the same for every state)
         if (event == Event::pause) {
@@ -36,51 +36,47 @@ void FastStateMachine::run (Event event)
                 if (ir->isActive () && !ir->isBeamPresent ()) {
                         state = State::WAIT_FOR_BEAM;
                 }
-                // Czanbus events are handled in every state
-                else if (event == Event::canBusStart) {
-                        state = GP8_RUNNING;
-                        running_entryAction (true);
-                }
-                else if (event == Event::canBusLoopStart) {
-                        state = LOOP_RUNNING;
-                        loop_entryAction (true, canTime);
-                }
-                else if (event == Event::canBusStop) {
-                        state = GP8_STOP;
-                        stop_entryAction (true, canTime);
+
+                // Event possible only if WITH_CAN_TRIGGER is set
+                if (event == Event::noIr) {
+                        state = State::WAIT_FOR_BEAM;
+                        canEvent = true;
                 }
         }
 
         // Entry actions and transitions distinct for every state.
         switch (state) {
         case WAIT_FOR_BEAM:
-                waitForBeam_entryAction ();
+                waitForBeam_entryAction (canEvent);
 
-                if (ir->isBeamPresent () || !ir->isActive ()) {
+                // Event possible only if WITH_CAN_TRIGGER is set
+                if (ir->isBeamPresent () /* || !ir->isActive () */            // 1. Check if local IR is OK
+                    || event == Event::irPresent /* TODO isRemoteIrPresent */ // 2. Check if all peripherals are have IR.
+                ) {
                         state = GP8_READY;
                 }
 
                 break;
 
-        case GP8_READY:
+        case GP8_READY: {
                 ready_entryAction ();
 
-                if (isInternalTrigger (event)) {
+                if (isInternalTrigger (event) || (canEvent = isExternalTrigger (event))) {
                         state = GP8_RUNNING;
-                        running_entryAction (false);
+                        running_entryAction (canEvent);
                 }
-                break;
+        } break;
 
         case GP8_RUNNING:
-                if (isInternalTrigger (event) && startTimeout.isExpired ()) {
+                if (isInternalTriggerAndStartTimeout (event) || (canEvent = isExternalTrigger (event))) {
 
                         if (getConfig ().stopMode == StopMode::stop) {
                                 state = GP8_STOP;
-                                stop_entryAction (false, {});
+                                stop_entryAction (canEvent);
                         }
                         else {
                                 state = LOOP_RUNNING;
-                                loop_entryAction (false, {});
+                                loop_entryAction (canEvent);
                         }
 
                         break;
@@ -90,16 +86,16 @@ void FastStateMachine::run (Event event)
                 break;
 
         case GP8_STOP:
-                if (isInternalTrigger (event) && startTimeout.isExpired ()) {
+                if (isInternalTriggerAndStartTimeout (event) || (canEvent = isExternalTrigger (event))) {
                         state = GP8_RUNNING;
-                        running_entryAction (false);
+                        running_entryAction (canEvent);
                 }
 
                 break;
 
         case LOOP_RUNNING:
-                if (isInternalTrigger (event) && startTimeout.isExpired ()) {
-                        loop_entryAction (false, {});
+                if (isInternalTriggerAndStartTimeout (event) || (canEvent = isExternalTrigger (event))) {
+                        loop_entryAction (canEvent);
                 }
 
                 if (loopDisplayTimeout.isExpired ()) {
@@ -111,6 +107,7 @@ void FastStateMachine::run (Event event)
         case State::PAUSED:
                 pause_entryAction ();
                 break;
+
         default:
                 break;
         }
@@ -125,16 +122,46 @@ bool FastStateMachine::isInternalTrigger (Event event) const
 
 /*****************************************************************************/
 
-void FastStateMachine::waitForBeam_entryAction ()
+bool FastStateMachine::isInternalTriggerAndStartTimeout (Event event) const { return isInternalTrigger (event) && startTimeout.isExpired (); }
+
+/*****************************************************************************/
+
+bool FastStateMachine::isExternalTrigger (Event event) const
+{
+#ifdef WITH_CAN_TRIGGER
+        return event == Event::canBusStart;
+#else
+        return false;
+#endif
+}
+
+/*****************************************************************************/
+
+void FastStateMachine::waitForBeam_entryAction (bool canEvent)
 {
         if (ir->isActive () && !ir->isBeamPresent ()) {
                 display->setText (" noI.R. ");
+
+#ifdef WITH_CAN
+                // if (protocol != nullptr && !canEvent) {
+                //         // protocol->sendNoIr (); // TODO send only once
+                // }
+#endif
         }
 }
 
 /*****************************************************************************/
 
-void FastStateMachine::ready_entryAction (bool loop) { display->setTime (0, getConfig ().resolution); }
+void FastStateMachine::ready_entryAction ()
+{
+        display->setTime (0, getConfig ().resolution);
+
+#ifdef WITH_CAN
+        // if (protocol != nullptr) {
+        //         protocol->sendIrPresent ();
+        // }
+#endif
+}
 
 /*****************************************************************************/
 
@@ -150,22 +177,23 @@ void FastStateMachine::running_entryAction (bool canEvent)
 
         if (!canEvent && protocol != nullptr) {
 #ifdef WITH_CAN
-                protocol->sendStart ();
+                protocol->sendStart (0);
 #endif
         }
 }
 
 /*****************************************************************************/
 
-void FastStateMachine::stop_entryAction (bool canEvent, std::optional<uint32_t> time)
+void FastStateMachine::stop_entryAction (bool canEvent)
 {
         stopWatch->stop ();
         startTimeout.start (BEAM_INTERRUPTION_EVENT);
-        uint32_t result = (time) ? (*time) : (stopWatch->getTime ());
+        uint32_t canTime = (protocol != nullptr) ? (protocol->getLastRemoteStopTime ()) : (0UL);
+        uint32_t result = (canEvent) ? (canTime) : (stopWatch->getTime ());
 
         if (!canEvent && protocol != nullptr) {
 #ifdef WITH_CAN
-                protocol->sendStop (result);
+                protocol->sendStart (result);
 #endif
         }
 
@@ -183,14 +211,15 @@ void FastStateMachine::stop_entryAction (bool canEvent, std::optional<uint32_t> 
 
 /*****************************************************************************/
 
-void FastStateMachine::loop_entryAction (bool canEvent, std::optional<uint32_t> time)
+void FastStateMachine::loop_entryAction (bool canEvent)
 {
         stopWatch->stop ();
-        uint32_t result = (time) ? (*time) : (stopWatch->getTime ());
+        uint32_t canTime = (protocol != nullptr) ? (protocol->getLastRemoteStopTime ()) : (0UL);
+        uint32_t result = (canEvent) ? (canTime) : (stopWatch->getTime ());
 
         if (!canEvent && protocol != nullptr) {
 #ifdef WITH_CAN
-                protocol->sendLoopStart (result);
+                protocol->sendStart (result);
 #endif
         }
 

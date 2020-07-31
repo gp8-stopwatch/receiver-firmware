@@ -7,6 +7,7 @@
  ****************************************************************************/
 
 #pragma once
+#include "CanProtocol.h"
 #include "Timer.h"
 #include "Types.h"
 #include <optional>
@@ -19,7 +20,6 @@ class History;
 class Button;
 struct ICircullarQueueStorage;
 struct IRandomAccessStorage;
-class CanProtocol;
 
 /**
  * Events for the state machine
@@ -29,12 +29,17 @@ enum class Event {
         irTrigger,   /// IR beam interrupted
         testTrigger, /// Test GPIO state changed
         canBusStart,
-        canBusLoopStart,
-        canBusStop,
+        // canBusLoopStart,
+        // canBusStop,
         pause,
         reset, // Use for resume after pause
+        noIr,
+        irPresent
 };
 
+/**
+ * Main algorithm.
+ */
 class FastStateMachine {
 public:
         enum State { WAIT_FOR_BEAM, GP8_READY, GP8_RUNNING, GP8_STOP, LOOP_RUNNING, PAUSED };
@@ -57,14 +62,16 @@ public:
         void setCanProtocol (CanProtocol *cp) { protocol = cp; }
 
 private:
-        void waitForBeam_entryAction ();
-        void ready_entryAction (bool loop = false);
+        void waitForBeam_entryAction (bool canEvent);
+        void ready_entryAction ();
         void running_entryAction (bool canEvent);
-        void stop_entryAction (bool canEvent, std::optional<uint32_t> time);
-        void loop_entryAction (bool canEvent, std::optional<uint32_t> time);
+        void stop_entryAction (bool canEvent);
+        void loop_entryAction (bool canEvent);
         void pause_entryAction ();
 
         bool isInternalTrigger (Event event) const;
+        bool isInternalTriggerAndStartTimeout (Event event) const;
+        bool isExternalTrigger (Event event) const;
 
         /*--------------------------------------------------------------------------*/
 
@@ -80,4 +87,18 @@ private:
         CanProtocol *protocol{};
 
         bool loop = true; // Temporary - use Config::stopMode instead.
+};
+
+/**
+ *
+ */
+class FastStateMachineProtocolCallback : public IProtocolCallback {
+public:
+        FastStateMachineProtocolCallback (FastStateMachine &fs) : fastStateMachine{fs} {}
+        void onStart () override { fastStateMachine.run (Event::canBusStart); }
+        void onNoIr () override { fastStateMachine.run (Event::noIr); }
+        void onIrPresent () override { fastStateMachine.run (Event::irPresent); }
+
+private:
+        FastStateMachine &fastStateMachine;
 };

@@ -25,6 +25,7 @@
 #include "Rtc.h"
 #include "StopWatch.h"
 #include "Timer.h"
+#include "Types.h"
 #include "Usart.h"
 #include "usb/UsbHelpers.h"
 #include "usbd_cdc.h"
@@ -167,7 +168,7 @@ int main ()
         HAL_NVIC_SetPriority (CEC_CAN_IRQn, CAN_BUS_PRIORITY, 0);
         HAL_NVIC_EnableIRQ (CEC_CAN_IRQn);
 
-        CanProtocol protocol (can, *MICRO_CONTROLLER_UID);
+        CanProtocol protocol (can, *MICRO_CONTROLLER_UID, myDeviceType);
         can.setCanCallback (&protocol);
         can.setFilterAndMask (0x00000000, 0x00000000, true);
         can.interrupts (true, false);
@@ -220,6 +221,8 @@ int main ()
 
         Gpio irTriggerPin (IR_PORT, IR_PINS, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
         InfraRedBeamExti beam{(irTriggerPin.get ()) ? (IrBeam::absent) : (IrBeam::present)};
+
+        protocol.setBeam (&beam);
         irTriggerPin.setOnToggle ([&beam, &irTriggerPin] { beam.onExti ((irTriggerPin.get ()) ? (IrBeam::absent) : (IrBeam::present)); });
         beam.onTrigger = [fStateMachine] {
 #ifdef TEST_TRIGGER_MOD_2
@@ -255,9 +258,11 @@ int main ()
         });
 
 #ifdef WITH_CAN
-        protocol.setOnStart ([fStateMachine] { fStateMachine->run (Event::canBusStart); });
-        protocol.setOnLoopStart ([fStateMachine] { fStateMachine->run (Event::canBusLoopStart); });
-        protocol.setOnStop ([fStateMachine] { fStateMachine->run (Event::canBusStop); });
+        // protocol.setOnStart ([fStateMachine] { fStateMachine->run (Event::canBusStart); });
+        // protocol.setOnLoopStart ([fStateMachine] { fStateMachine->run (Event::canBusLoopStart); });
+        // protocol.setOnStop ([fStateMachine] { fStateMachine->run (Event::canBusStop); });
+        FastStateMachineProtocolCallback callback{*fStateMachine};
+        protocol.setCallback (&callback);
 #endif
         fStateMachine->setIr (&beam);
         fStateMachine->setDisplay (&display);
@@ -414,9 +419,52 @@ int main ()
                                  }
 
                                  refreshAll ();
-                         })
+                         }),
+                cl::cmd (String ("periph"), [&protocol] {
+                        protocol.sendInfoRequest ();
+                        HAL_Delay (RESPONSE_WAIT_TIME_MS);
+                        auto &resp = protocol.getInfoRespDataCollection ();
 
-        );
+                        usbWrite ("Connected peripherals :\r\n");
+                        usbWrite ("type uid ir_state\r\n");
+
+                        for (auto &periph : resp) {
+                                switch (periph.deviceType) {
+                                case DeviceType::receiver:
+                                        usbWrite ("receiver ");
+                                        break;
+
+                                case DeviceType::ir_sensor:
+                                        usbWrite ("ir_sensor ");
+                                        break;
+
+                                default:
+                                        usbWrite ("unknown ");
+                                        break;
+                                }
+
+                                print ((unsigned)periph.uid);
+                                print (" ");
+
+                                switch (periph.beamState) {
+                                case BeamState::yes:
+                                        usbWrite ("yes");
+                                        break;
+
+                                case BeamState::no:
+                                        usbWrite ("no");
+                                        break;
+
+                                case BeamState::blind:
+                                        usbWrite ("blind");
+                                        break;
+                                }
+
+                                print ("\r\n");
+                        }
+
+                        print ("\r\n");
+                }));
 
         using CliType = decltype (cli);
         cliPointer = &cli;

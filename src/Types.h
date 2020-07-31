@@ -33,6 +33,7 @@ static const char *VERSION = "1.0.4";
 
 constexpr int LOW_VOLTAGE_MV = 3000;
 constexpr int LOW_VOLTAGE_CRITICAL_MV = 2900;
+constexpr int RESPONSE_WAIT_TIME_MS = 100;
 
 /**
  * Values are chosen so after loading from empty flash (0xff everywhere), everyting would
@@ -42,6 +43,19 @@ enum OperationMode {
         LOOP = 0,  // First interruption of IR starts the timer, and every consecutive one resets it, but does not stop it.
         NORMAL = 1 // First break in IR barrier turns the stopwatch ON, second OFF and so on
 };
+
+enum class DeviceType : uint8_t {
+        receiver,  // Normal receiver with display
+        ir_sensor, // Micro reciver wthout the display, battery nor any buttons.
+};
+
+#ifdef PLATFORM_REGULAR
+const DeviceType myDeviceType = DeviceType::receiver;
+#endif
+
+#ifdef PLATFORM_MICRO
+const DeviceType myDeviceType = DeviceType::sensor;
+#endif
 
 static constexpr int RESOLUTION_NUMBER_OF_OPTIONS = 4;
 enum Resolution { us_10 = 0, us_100 = 1, ms_1 = 2, ms_10 = 3 };
