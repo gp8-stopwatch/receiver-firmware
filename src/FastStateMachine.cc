@@ -46,19 +46,42 @@ void FastStateMachine::run (Event event)
 
         // Entry actions and transitions distinct for every state.
         switch (state) {
-        case WAIT_FOR_BEAM:
-                waitForBeam_entryAction (canEvent);
+        case WAIT_FOR_BEAM: {
+                // The entry action
+                auto remoteBeamState = isRemoteBeamStateOk ();
 
-                // Event possible only if WITH_CAN_TRIGGER is set
-                if (ir->isBeamPresent () /* || !ir->isActive () */            // 1. Check if local IR is OK
-                    || event == Event::irPresent /* TODO isRemoteIrPresent */ // 2. Check if all peripherals are have IR.
-                ) {
+                // Query was sent, we are waiting for the response
+                if (remoteBeamState == RemoteBeamState::wait) {
+                        break;
+                }
+
+                // waitForBeam_entryAction (canEvent);
+                if (ir->isActive () && !ir->isBeamPresent ()) {
+                        display->setText ("nobeam");
+
+#ifdef WITH_CAN
+                        if (protocol != nullptr && !canEvent && !noIrRequestSent) {
+                                protocol->sendNoIr ();
+                                noIrRequestSent = true;
+                        }
+#endif
+                }
+                else if (remoteBeamState == RemoteBeamState::someNotOk) {
+                        display->setText ("noext. ");
+                }
+                else if (remoteBeamState == RemoteBeamState::noResponse) {
+                        display->setText ("blind ");
+                }
+
+                // The transition
+                if (ir->isBeamPresent () || remoteBeamState == RemoteBeamState::allOk) {
                         state = GP8_READY;
                 }
 
-                break;
+        } break;
 
         case GP8_READY: {
+                noIrRequestSent = false;
                 ready_entryAction ();
 
                 if (isInternalTrigger (event) || (canEvent = isExternalTrigger (event))) {
@@ -137,31 +160,54 @@ bool FastStateMachine::isExternalTrigger (Event event) const
 
 /*****************************************************************************/
 
-void FastStateMachine::waitForBeam_entryAction (bool canEvent)
+FastStateMachine::RemoteBeamState FastStateMachine::isRemoteBeamStateOk () const
 {
-        if (ir->isActive () && !ir->isBeamPresent ()) {
-                display->setText (" noI.R. ");
-
-#ifdef WITH_CAN
-                // if (protocol != nullptr && !canEvent) {
-                //         // protocol->sendNoIr (); // TODO send only once
-                // }
-#endif
+        if (!reqRespTimer.isExpired ()) {
+                return RemoteBeamState::wait;
         }
+
+        if (infoRequestSent) {
+                RemoteBeamState ret = RemoteBeamState::allOk;
+                auto &resp = protocol->getInfoRespDataCollection ();
+
+                for (auto &periph : resp) {
+                        if (periph.beamState == BeamState::no) {
+                                ret = RemoteBeamState::someNotOk;
+                        }
+                }
+
+                if (resp.empty ()) {
+                        ret = RemoteBeamState::noResponse;
+                }
+
+                infoRequestSent = false;
+                return ret;
+        }
+
+        protocol->sendInfoRequest ();
+        reqRespTimer.start (RESPONSE_WAIT_TIME_MS);
+        infoRequestSent = true;
+        return RemoteBeamState::wait;
 }
 
 /*****************************************************************************/
 
-void FastStateMachine::ready_entryAction ()
+void FastStateMachine::waitForBeam_entryAction (bool canEvent)
 {
-        display->setTime (0, getConfig ().resolution);
+        //         if (ir->isActive () && !ir->isBeamPresent ()) {
+        //                 display->setText (" noI.R. ");
 
-#ifdef WITH_CAN
-        // if (protocol != nullptr) {
-        //         protocol->sendIrPresent ();
-        // }
-#endif
+        // #ifdef WITH_CAN
+        //                 // if (protocol != nullptr && !canEvent) {
+        //                 //         // protocol->sendNoIr (); // TODO send only once
+        //                 // }
+        // #endif
+        //         }
 }
+
+/*****************************************************************************/
+
+void FastStateMachine::ready_entryAction () { display->setTime (0, getConfig ().resolution); }
 
 /*****************************************************************************/
 

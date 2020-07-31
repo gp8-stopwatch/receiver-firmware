@@ -41,6 +41,7 @@ enum class Event {
 class FastStateMachine {
 public:
         enum State { WAIT_FOR_BEAM, GP8_READY, GP8_RUNNING, GP8_STOP, LOOP_RUNNING, PAUSED };
+        enum RemoteBeamState { wait, allOk, someNotOk, noResponse };
 
         static FastStateMachine *singleton ()
         {
@@ -70,6 +71,7 @@ private:
         bool isInternalTrigger (Event event) const;
         bool isInternalTriggerAndStartTimeout (Event event) const;
         bool isExternalTrigger (Event event) const;
+        RemoteBeamState isRemoteBeamStateOk () const;
 
         /*--------------------------------------------------------------------------*/
 
@@ -84,7 +86,9 @@ private:
         Button *button{};
         CanProtocol *protocol{};
 
-        bool loop = true; // Temporary - use Config::stopMode instead.
+        mutable Timer reqRespTimer;
+        mutable bool infoRequestSent{};
+        bool noIrRequestSent{};
 };
 
 /**

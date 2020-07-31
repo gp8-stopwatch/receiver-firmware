@@ -426,7 +426,7 @@ int main ()
                         auto &resp = protocol.getInfoRespDataCollection ();
 
                         usbWrite ("Connected peripherals :\r\n");
-                        usbWrite ("type uid ir_state\r\n");
+                        usbWrite ("type uid beam_state\r\n");
 
                         for (auto &periph : resp) {
                                 switch (periph.deviceType) {
