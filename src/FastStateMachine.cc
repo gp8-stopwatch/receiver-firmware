@@ -129,7 +129,7 @@ bool FastStateMachine::isInternalTriggerAndStartTimeout (Event event) const { re
 bool FastStateMachine::isExternalTrigger (Event event) const
 {
 #ifdef WITH_CAN_TRIGGER
-        return event == Event::canBusStart;
+        return event == Event::canBusTrigger;
 #else
         return false;
 #endif
@@ -177,7 +177,7 @@ void FastStateMachine::running_entryAction (bool canEvent)
 
         if (!canEvent && protocol != nullptr) {
 #ifdef WITH_CAN
-                protocol->sendStart (0);
+                protocol->sendTrigger (0);
 #endif
         }
 }
@@ -193,7 +193,7 @@ void FastStateMachine::stop_entryAction (bool canEvent)
 
         if (!canEvent && protocol != nullptr) {
 #ifdef WITH_CAN
-                protocol->sendStart (result);
+                protocol->sendTrigger (result);
 #endif
         }
 
@@ -219,7 +219,7 @@ void FastStateMachine::loop_entryAction (bool canEvent)
 
         if (!canEvent && protocol != nullptr) {
 #ifdef WITH_CAN
-                protocol->sendStart (result);
+                protocol->sendTrigger (result);
 #endif
         }
 

@@ -26,11 +26,8 @@ struct IProtocolCallback {
         IProtocolCallback &operator= (IProtocolCallback &&) = default;
         virtual ~IProtocolCallback () = default;
 
-        virtual void onStart () = 0;
-        // virtual void onLoopStart()= 0;
-        // virtual void onStop()= 0;
+        virtual void onTrigger () = 0;
         virtual void onNoIr () = 0;
-        virtual void onIrPresent () = 0;
 };
 
 /*****************************************************************************/
@@ -51,16 +48,12 @@ using InfoRespDataCollection = etl::vector<InfoRespData, 16>;
 
 class CanProtocol : public ICanCallback {
 public:
-        // using Callback = std::function<void (void)>;
-        enum class Messages : uint8_t { START, LOOP_START, STOP, NO_IR, IR_PRESENT, INFO_REQ, INFO_RESP };
+        enum class Messages : uint8_t { TRIGGER, NO_IR, INFO_REQ, INFO_RESP };
 
         CanProtocol (Can &can, uint32_t u, DeviceType dt) : can (can), uid (u & 0x1FFFFFFF), deviceType{dt} {}
 
-        void sendStart (uint32_t time);
-        // void sendLoopStart (uint32_t time);
-        // void sendStop (uint32_t time);
+        void sendTrigger (uint32_t time);
         void sendNoIr () { can.send (CanFrame{uid, true, 1, uint8_t (Messages::NO_IR)}, 0); }
-        void sendIrPresent () { can.send (CanFrame{uid, true, 1, uint8_t (Messages::IR_PRESENT)}, 0); }
 
         void sendInfoRequest ()
         {
@@ -68,9 +61,6 @@ public:
                 can.send (CanFrame{uid, true, 1, uint8_t (Messages::INFO_REQ)}, 0);
         }
 
-        // void setOnStart (Callback const &callback) { onStart = callback; }
-        // void setOnLoopStart (Callback const &callback) { onLoopStart = callback; }
-        // void setOnStop (Callback const &callback) { onStop = callback; }
         void setCallback (IProtocolCallback *cb) { callback = cb; }
 
         /// This is a little hack to get rid of passing the time in the event, which would be difficult, since an event is an enum.

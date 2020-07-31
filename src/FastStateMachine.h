@@ -28,9 +28,7 @@ enum class Event {
         timePassed,  /// Every 10ms / 1ms / 100µs
         irTrigger,   /// IR beam interrupted
         testTrigger, /// Test GPIO state changed
-        canBusStart,
-        // canBusLoopStart,
-        // canBusStop,
+        canBusTrigger,
         pause,
         reset, // Use for resume after pause
         noIr,
@@ -90,14 +88,13 @@ private:
 };
 
 /**
- *
+ * Glue code
  */
 class FastStateMachineProtocolCallback : public IProtocolCallback {
 public:
         FastStateMachineProtocolCallback (FastStateMachine &fs) : fastStateMachine{fs} {}
-        void onStart () override { fastStateMachine.run (Event::canBusStart); }
+        void onTrigger () override { fastStateMachine.run (Event::canBusTrigger); }
         void onNoIr () override { fastStateMachine.run (Event::noIr); }
-        void onIrPresent () override { fastStateMachine.run (Event::irPresent); }
 
 private:
         FastStateMachine &fastStateMachine;

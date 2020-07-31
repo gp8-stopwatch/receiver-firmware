@@ -207,4 +207,4 @@ Solved. The problem was due to lack of USBD_CDC_ReceivePacket calls. So it seems
 * [ ] USB - change `__disable_irq ()` to NVIC-disable USB.
 * [x] Config object should be globally available. 
 * [ ] Eliminate ifdef galore somehow.
-* [ ] Rename CANbus start event to "trigger" event.
+* [x] Rename CANbus start event to "trigger" event.
