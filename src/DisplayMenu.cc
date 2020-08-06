@@ -136,7 +136,7 @@ void DisplayMenu::onEvent (menu::Event p)
                 state ("FLIP"_ST, entry ([&] { display.setText ("1.FLIP "); }), exit ([] {}),
                        transition ("FLIP"_ST, longPress (),
                                    [&] (auto /*a*/) {
-                                           config.orientationFlip = !config.orientationFlip;
+                                           config.displayRightSideUp = !config.displayRightSideUp;
                                            cfg::changed () = true;
                                    }),
                        transition ("IR_ON"_ST, shortPress ())),

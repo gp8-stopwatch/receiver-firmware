@@ -14,6 +14,8 @@ namespace cfg {
 
 /**
  * System wide configuration. Available to the user and stored in the flash.
+ * All default settings have to have 0b1 binary value, because cleared flash
+ * is all 0xff.
  */
 struct Config {
 
@@ -25,7 +27,7 @@ struct Config {
                 stopMode = StopMode::restart;
                 // size_t beamInterruptionEventMs{5000}; // Blind period after IR trigger
 
-                orientationFlip = true;
+                displayRightSideUp = true;
                 irSensorOn = true;
                 buzzerOn = true;
         }
@@ -36,7 +38,7 @@ struct Config {
         StopMode stopMode : 1;
         // size_t beamInterruptionEventMs{5000}; // Blind period after IR trigger
 
-        bool orientationFlip : 1;
+        bool displayRightSideUp : 1;
         bool irSensorOn : 1;
         bool buzzerOn : 1;
 

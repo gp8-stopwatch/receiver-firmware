@@ -57,7 +57,7 @@ void FastStateMachine::run (Event event)
 
                 // waitForBeam_entryAction (canEvent);
                 if (ir->isActive () && !ir->isBeamPresent ()) {
-                        display->setText ("nobeam");
+                        display->setText ("noi.r.  ");
 
 #ifdef WITH_CAN
                         if (protocol != nullptr && !canEvent && !noIrRequestSent) {
@@ -67,7 +67,7 @@ void FastStateMachine::run (Event event)
 #endif
                 }
                 else if (remoteBeamState == RemoteBeamState::someNotOk) {
-                        display->setText ("noext. ");
+                        display->setText ("nobeam");
                 }
                 else if (remoteBeamState == RemoteBeamState::noResponse) {
                         display->setText ("blind ");

@@ -356,10 +356,10 @@ int main ()
                                  usbWrite ("%\r\n\r\n");
                          }),
 
-                cl::cmd (String ("getFlip"), [] { usbWrite ((getConfig ().orientationFlip) ? ("1\r\n\r\n") : ("0\r\n\r\n")); }),
+                cl::cmd (String ("getFlip"), [] { usbWrite ((getConfig ().displayRightSideUp) ? ("0\r\n\r\n") : ("1\r\n\r\n")); }),
                 cl::cmd (String ("setFlip"),
                          [&] (String const &arg) {
-                                 getConfig ().orientationFlip = bool (std::atoi (arg.c_str ()));
+                                 getConfig ().displayRightSideUp = bool (std::atoi (arg.c_str ()));
                                  refreshAll ();
                          }),
 
@@ -489,7 +489,7 @@ int main ()
 
         // Refresh stopwatch state to reflect the config.
         auto refreshSettings = [&] {
-                display.setFlip (config.orientationFlip);
+                display.setFlip (!config.displayRightSideUp);
                 beam.setActive (config.irSensorOn);
 #ifdef WITH_SOUND
                 buzzer.setActive (config.buzzerOn);

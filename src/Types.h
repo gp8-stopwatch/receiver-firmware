@@ -54,7 +54,7 @@ const DeviceType myDeviceType = DeviceType::receiver;
 #endif
 
 #ifdef PLATFORM_MICRO
-const DeviceType myDeviceType = DeviceType::sensor;
+const DeviceType myDeviceType = DeviceType::ir_sensor;
 #endif
 
 static constexpr int RESOLUTION_NUMBER_OF_OPTIONS = 4;
