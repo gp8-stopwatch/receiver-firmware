@@ -21,7 +21,7 @@ extern "C" void CEC_CAN_IRQHandler ()
         CAN_HandleTypeDef *hcan = &Can::can->canHandle;
         CAN_TypeDef *ican = hcan->Instance;
         CanFrame frame;
-        Debug *d = Debug::singleton ();
+        // Debug *d = Debug::singleton ();
 
         /* Check End of reception flag for FIFO0 */
         if ((__HAL_CAN_GET_IT_SOURCE (hcan, CAN_IT_FMP0)) && (__HAL_CAN_MSG_PENDING (hcan, CAN_FIFO0) != 0)) {
@@ -57,12 +57,12 @@ extern "C" void CEC_CAN_IRQHandler ()
         if (__HAL_CAN_GET_IT_SOURCE (hcan, CAN_IT_TME)) {
                 if ((__HAL_CAN_TRANSMIT_STATUS (hcan, CAN_TXMAILBOX_0)) || (__HAL_CAN_TRANSMIT_STATUS (hcan, CAN_TXMAILBOX_1))
                     || (__HAL_CAN_TRANSMIT_STATUS (hcan, CAN_TXMAILBOX_2))) {
-                        d->print ("TME\n");
+                        // d->print ("TME\n");
                 }
         }
 
         if ((__HAL_CAN_GET_IT_SOURCE (hcan, CAN_IT_FMP1)) && (__HAL_CAN_MSG_PENDING (hcan, CAN_FIFO1) != 0)) {
-                d->print ("FMP1\n");
+                // d->print ("FMP1\n");
         }
 
         uint32_t errorCode = HAL_CAN_ERROR_NONE;
@@ -74,7 +74,7 @@ extern "C" void CEC_CAN_IRQHandler ()
          * This bit is cleared by software.
          */
         if (ican->MSR & CAN_MSR_ERRI) {
-                d->print ("ERRI\n");
+                // d->print ("ERRI\n");
 
                 if (ican->ESR & CAN_ESR_EWGF) {
                         errorCode |= HAL_CAN_ERROR_EWG;
@@ -128,7 +128,7 @@ extern "C" void CEC_CAN_IRQHandler ()
 
         /* Call the Error call Back in case of Errors */
         if (errorCode != HAL_CAN_ERROR_NONE) {
-#if 1
+#if 0
                 d->print ("Error : ");
                 d->print (errorCode);
                 d->print (" : ");
@@ -180,19 +180,19 @@ extern "C" void CEC_CAN_IRQHandler ()
         }
 
         if (hcan->Instance->RF0R & 0b10000) {
-                d->print ("OVR\n");
+                // d->print ("OVR\n");
         }
 
         if (hcan->Instance->RF0R & 0b1000) {
-                d->print ("FULL\n");
+                // d->print ("FULL\n");
         }
 
         if (ican->MSR & CAN_MSR_SLAKI && ican->IER & CAN_IER_SLKIE) {
-                d->print ("SLAK\n");
+                // d->print ("SLAK\n");
         }
 
         if (ican->MSR & CAN_MSR_WKUI && ican->IER & CAN_IER_WKUIE) {
-                d->print ("WKUI\n");
+                // d->print ("WKUI\n");
         }
 }
 
@@ -201,10 +201,10 @@ extern "C" void CEC_CAN_IRQHandler ()
 Can::Can (ICanCallback *callback, uint32_t prescaler, uint32_t sjw, uint32_t bs1, uint32_t bs2) : callback (callback)
 {
         can = this;
-        memset (&canHandle.Init, 0, sizeof (canHandle.Init));
-        canHandle.Lock = HAL_UNLOCKED;
-        canHandle.State = HAL_CAN_STATE_RESET;
-        canHandle.ErrorCode = 0;
+        // memset (&canHandle.Init, 0, sizeof (canHandle.Init));
+        // canHandle.Lock = HAL_UNLOCKED;
+        // canHandle.State = HAL_CAN_STATE_RESET;
+        // canHandle.ErrorCode = 0;
         canHandle.Instance = CAN;
         clkEnable ();
         reset ();

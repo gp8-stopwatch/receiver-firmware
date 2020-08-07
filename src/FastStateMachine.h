@@ -61,7 +61,6 @@ public:
         void setCanProtocol (CanProtocol *cp) { protocol = cp; }
 
 private:
-        void waitForBeam_entryAction (bool canEvent);
         void ready_entryAction ();
         void running_entryAction (bool canEvent);
         void stop_entryAction (bool canEvent);

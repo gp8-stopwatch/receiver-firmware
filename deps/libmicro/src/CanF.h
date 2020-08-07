@@ -59,7 +59,7 @@ private:
 private:
         friend void CEC_CAN_IRQHandler ();
 
-        CAN_HandleTypeDef canHandle;
+        CAN_HandleTypeDef canHandle{};
         ICanCallback *callback;
         static Can *can;
 };

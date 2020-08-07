@@ -37,7 +37,7 @@ void FastStateMachine::run (Event event)
                         state = State::WAIT_FOR_BEAM;
                 }
 
-                // Event possible only if WITH_CAN_TRIGGER is set
+                // Event possible only if WITH_CHECK_SENSOR_STATUS is set
                 if (event == Event::noIr) {
                         state = State::WAIT_FOR_BEAM;
                         canEvent = true;
@@ -47,6 +47,7 @@ void FastStateMachine::run (Event event)
         // Entry actions and transitions distinct for every state.
         switch (state) {
         case WAIT_FOR_BEAM: {
+#ifdef WITH_CHECK_SENSOR_STATUS
                 // The entry action
                 auto remoteBeamState = isRemoteBeamStateOk ();
 
@@ -54,8 +55,10 @@ void FastStateMachine::run (Event event)
                 if (remoteBeamState == RemoteBeamState::wait) {
                         break;
                 }
+#else
+                auto remoteBeamState = RemoteBeamState::noResponse;
+#endif
 
-                // waitForBeam_entryAction (canEvent);
                 if (ir->isActive () && !ir->isBeamPresent ()) {
                         display->setText ("noi.r.  ");
 
@@ -66,12 +69,14 @@ void FastStateMachine::run (Event event)
                         }
 #endif
                 }
+#ifdef WITH_CHECK_SENSOR_STATUS
                 else if (remoteBeamState == RemoteBeamState::someNotOk) {
                         display->setText ("nobeam");
                 }
                 else if (remoteBeamState == RemoteBeamState::noResponse) {
                         display->setText ("blind ");
                 }
+#endif
 
                 // The transition
                 if (ir->isBeamPresent () || remoteBeamState == RemoteBeamState::allOk) {
@@ -149,14 +154,7 @@ bool FastStateMachine::isInternalTriggerAndStartTimeout (Event event) const { re
 
 /*****************************************************************************/
 
-bool FastStateMachine::isExternalTrigger (Event event) const
-{
-#ifdef WITH_CAN_TRIGGER
-        return event == Event::canBusTrigger;
-#else
-        return false;
-#endif
-}
+bool FastStateMachine::isExternalTrigger (Event event) const { return event == Event::canBusTrigger; }
 
 /*****************************************************************************/
 
@@ -188,21 +186,6 @@ FastStateMachine::RemoteBeamState FastStateMachine::isRemoteBeamStateOk () const
         reqRespTimer.start (RESPONSE_WAIT_TIME_MS);
         infoRequestSent = true;
         return RemoteBeamState::wait;
-}
-
-/*****************************************************************************/
-
-void FastStateMachine::waitForBeam_entryAction (bool canEvent)
-{
-        //         if (ir->isActive () && !ir->isBeamPresent ()) {
-        //                 display->setText (" noI.R. ");
-
-        // #ifdef WITH_CAN
-        //                 // if (protocol != nullptr && !canEvent) {
-        //                 //         // protocol->sendNoIr (); // TODO send only once
-        //                 // }
-        // #endif
-        //         }
 }
 
 /*****************************************************************************/
