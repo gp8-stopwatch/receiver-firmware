@@ -9,8 +9,6 @@
 #ifndef HALSTM32F0_H
 #define HALSTM32F0_H
 
-#include <Legacy/stm32_hal_legacy.h>
-#include <Legacy/stm32f0xx_hal_can_legacy.h>
 #include <stm32f0xx_hal.h>
 #include <stm32f0xx_hal_flash_ex.h>
 

@@ -10,11 +10,11 @@
 #include "CanFrame.h"
 #include "Hal.h"
 #include "ICanCallback.h"
-#include "Legacy/stm32_hal_legacy.h"
-#include "Legacy/stm32f0xx_hal_can_legacy.h"
+#include "stm32f0xx_hal_can.h"
 #include <cstdint>
 
 extern "C" void CEC_CAN_IRQHandler ();
+extern "C" void HAL_CAN_RxFifo0MsgPendingCallback (CAN_HandleTypeDef *);
 
 class Can {
 public:
@@ -22,10 +22,10 @@ public:
              uint32_t bs2 = CAN_BS2_3TQ);
 
         /// Synchronous and blocking
-        bool send (CanFrame const &buff, uint32_t timeoutMs = 1000);
+        bool send (CanFrame const &buff);
 
         /// Synchronous and blocking
-        CanFrame read (uint32_t timeoutMs = 1000);
+        // CanFrame read (uint32_t timeoutMs = 1000);
         void setFilterAndMask (uint32_t filter, uint32_t mask, bool extended);
 
         /// Asyncronous, callback called from ISR.
@@ -56,8 +56,10 @@ private:
         void clkEnable () { clkEnable (&canHandle); }
         void clkDisable () { clkDisable (&canHandle); }
 
-private:
+        /*--------------------------------------------------------------------------*/
+
         friend void CEC_CAN_IRQHandler ();
+        friend void HAL_CAN_RxFifo0MsgPendingCallback (CAN_HandleTypeDef *);
 
         CAN_HandleTypeDef canHandle{};
         ICanCallback *callback;

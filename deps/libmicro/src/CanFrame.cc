@@ -7,14 +7,16 @@
  ****************************************************************************/
 
 #include "CanFrame.h"
+#include <algorithm>
 #include <cstring>
 
-CanFrame::CanFrame () : id (0), extended (false), dlc (0) { memset (data, 0, sizeof (data)); }
+CanFrame::CanFrame () : id (0), extended (false) {}
 
 CanFrame::CanFrame (uint32_t id, bool extended, uint8_t dlc, uint8_t data0, uint8_t data1, uint8_t data2, uint8_t data3, uint8_t data4,
                     uint8_t data5, uint8_t data6, uint8_t data7)
-    : id (id), extended (extended), dlc (dlc)
+    : id (id), extended (extended)
 {
+        data.resize (8);
         data[0] = data0;
         data[1] = data1;
         data[2] = data2;
@@ -23,32 +25,32 @@ CanFrame::CanFrame (uint32_t id, bool extended, uint8_t dlc, uint8_t data0, uint
         data[5] = data5;
         data[6] = data6;
         data[7] = data7;
+        data.resize (dlc);
 }
 
 /*****************************************************************************/
 #ifndef UNIT_TEST
 
-CanFrame::CanFrame (CanRxMsgTypeDef const &frame)
+CanFrame::CanFrame (CAN_RxHeaderTypeDef const &header, uint8_t const *data)
 {
-        if (frame.IDE == CAN_ID_EXT) {
-                id = frame.ExtId;
+        if (header.IDE == CAN_ID_EXT) {
+                id = header.ExtId;
                 extended = true;
         }
         else {
-                id = frame.StdId;
+                id = header.StdId;
                 extended = true;
         }
 
-        dlc = frame.DLC;
-        memset (data, 0, 8);
-        memcpy (data, frame.Data, frame.DLC);
+        this->data.resize (header.DLC);
+        std::copy_n (data, header.DLC, this->data.begin ());
 }
 
 /*****************************************************************************/
 
-CanTxMsgTypeDef CanFrame::toNative () const
+CAN_TxHeaderTypeDef CanFrame::toNative () const
 {
-        CanTxMsgTypeDef native;
+        CAN_TxHeaderTypeDef native{};
 
         if (extended) {
                 native.StdId = 0x00;
@@ -62,9 +64,7 @@ CanTxMsgTypeDef CanFrame::toNative () const
         }
 
         native.RTR = CAN_RTR_DATA;
-        native.DLC = dlc;
-        memset (native.Data, 0, 8);
-        memcpy (native.Data, data, dlc);
+        native.DLC = data.size ();
         return native;
 }
 

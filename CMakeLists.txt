@@ -20,7 +20,7 @@ SET (LIB_MICRO_ROOT "deps/libmicro")
 INCLUDE_DIRECTORIES ("${LIB_MICRO_ROOT}/src")
 
 # Regular receiver with all the features
-set(WITH_SOUND ON CACHE BOOL "Compile buzzer support")
+# set(WITH_SOUND ON CACHE BOOL "Compile buzzer support")
 # set(WITH_DISPLAY ON CACHE BOOL "Compile 7 segment LED display support")
 # set(WITH_MENU ON CACHE BOOL "Menu support. Disabling it considerably reduces binary size in debug mode.")
 # set(WITH_COMMON_ANODE OFF CACHE BOOL "ON means common anode 7 segments, OFF means common cathode")
@@ -124,7 +124,8 @@ IF (DEFINED DEVICE)
         "deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc.c"
         "deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc_ex.c"
         "deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.c"
-        "deps/STM32F0xx_HAL_Driver/Src/Legacy/stm32f0xx_hal_can.c"
+        # "deps/STM32F0xx_HAL_Driver/Src/Legacy/stm32f0xx_hal_can.c"
+        "deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_can.c"
         "deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_cortex.c"
         "deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dma.c"
         "deps/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash.c"

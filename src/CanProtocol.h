@@ -53,12 +53,12 @@ public:
         CanProtocol (Can &can, uint32_t u, DeviceType dt) : can (can), uid (u & 0x1FFFFFFF), deviceType{dt} {}
 
         void sendTrigger (uint32_t time);
-        void sendNoIr () { can.send (CanFrame{uid, true, 1, uint8_t (Messages::NO_IR)}, CAN_SEND_TIMEOUT); }
+        void sendNoIr () { can.send (CanFrame{uid, true, 1, uint8_t (Messages::NO_IR)}); }
 
         void sendInfoRequest ()
         {
                 lastInfoResponseData.clear ();
-                can.send (CanFrame{uid, true, 1, uint8_t (Messages::INFO_REQ)}, CAN_SEND_TIMEOUT);
+                can.send (CanFrame{uid, true, 1, uint8_t (Messages::INFO_REQ)});
         }
 
         void setCallback (IProtocolCallback *cb) { callback = cb; }

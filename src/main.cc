@@ -164,7 +164,7 @@ int main ()
 
         // 24 - 125kbps
         Can can (nullptr, 24, CAN_SJW_3TQ, CAN_BS1_12TQ, CAN_BS2_3TQ);
-        can.setAutomaticRetransmission (false);
+        // can.setAutomaticRetransmission (false);
         HAL_NVIC_SetPriority (CEC_CAN_IRQn, CAN_BUS_PRIORITY, 0);
         HAL_NVIC_EnableIRQ (CEC_CAN_IRQn);
 

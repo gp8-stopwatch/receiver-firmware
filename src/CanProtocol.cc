@@ -17,16 +17,18 @@
 void CanProtocol::onCanNewFrame (CanFrame const &frame)
 {
         // TODO set filters and masks to avoid this situation
-        if (frame.id == uid) {
+        if (frame.getId () == uid) {
                 return;
         }
 
-        if (frame.dlc >= 1 && callback != nullptr) {
-                auto messageId = frame.data[0];
+        if (frame.getDlc () >= 1 && callback != nullptr) {
+                auto messageId = frame.getData ().at (0);
 
                 if (Messages (messageId) == Messages::TRIGGER) {
-                        uint8_t ii[4] = {frame.data[1], frame.data[2], frame.data[3], frame.data[4]};
-                        remoteStopTime = *reinterpret_cast<uint32_t *> (ii);
+                        std::array<uint8_t, 4> ii{frame.getData ().at (1), frame.getData ().at (2), frame.getData ().at (3),
+                                                  frame.getData ().at (4)};
+
+                        remoteStopTime = *reinterpret_cast<uint32_t *> (ii.data ());
                         callback->onTrigger ();
                 }
 #ifdef WITH_CHECK_SENSOR_STATUS
@@ -45,14 +47,14 @@ void CanProtocol::onCanNewFrame (CanFrame const &frame)
                                 state = (beam->isBeamPresent ()) ? (BeamState::yes) : (BeamState::no);
                         }
 
-                        if (!can.send (CanFrame{uid, true, 3, uint8_t (Messages::INFO_RESP), uint8_t (deviceType), uint8_t (state)},
-                                       CAN_SEND_TIMEOUT)) {
-                                Error_Handler (); // TODO remove
+                        if (!can.send (CanFrame{uid, true, 3, uint8_t (Messages::INFO_RESP), uint8_t (deviceType), uint8_t (state)})) {
+                                // Error_Handler (); // TODO remove
                         }
                 }
                 else if (Messages (messageId) == Messages::INFO_RESP) {
                         if (!lastInfoResponseData.full ()) {
-                                lastInfoResponseData.emplace_back (frame.id, DeviceType (frame.data[1]), BeamState (frame.data[2]));
+                                lastInfoResponseData.emplace_back (frame.getId (), DeviceType (frame.getData ().at (1)),
+                                                                   BeamState (frame.getData ().at (2)));
                         }
                 }
         }
@@ -67,5 +69,5 @@ void CanProtocol::onCanError (uint32_t e) {}
 void CanProtocol::sendTrigger (uint32_t time)
 {
         auto *p = reinterpret_cast<uint8_t *> (&time);
-        can.send (CanFrame{uid, true, 5, uint8_t (Messages::TRIGGER), *p, *(p + 1), *(p + 2), *(p + 3)}, CAN_SEND_TIMEOUT);
+        can.send (CanFrame{uid, true, 5, uint8_t (Messages::TRIGGER), *p, *(p + 1), *(p + 2), *(p + 3)});
 }
