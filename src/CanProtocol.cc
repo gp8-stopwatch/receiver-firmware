@@ -47,7 +47,7 @@ void CanProtocol::onCanNewFrame (CanFrame const &frame)
 
                         if (!can.send (CanFrame{uid, true, 3, uint8_t (Messages::INFO_RESP), uint8_t (deviceType), uint8_t (state)},
                                        CAN_SEND_TIMEOUT)) {
-                                Error_Handler (); // TODO remove
+                                // Error_Handler (); // TODO remove
                         }
                 }
                 else if (Messages (messageId) == Messages::INFO_RESP) {
