@@ -34,6 +34,7 @@
 #include <cstdbool>
 #include <cstring>
 #include <etl/cstring.h>
+#include <limits>
 #include <new>
 #include <stm32f0xx_hal.h>
 
@@ -203,7 +204,7 @@ int main ()
         Gpio buzzerPin (GPIOB, GPIO_PIN_14);
         Buzzer buzzer (buzzerPin);
 
-        if (config.buzzerOn) {
+        if (config.isBuzzerOn ()) {
                 buzzer.beep (20, 0, 1);
         }
 #endif
@@ -355,30 +356,30 @@ int main ()
                                  usbWrite ("%\r\n\r\n");
                          }),
 
-                cl::cmd (String ("getFlip"), [] { usbWrite ((getConfig ().displayRightSideUp) ? ("0\r\n\r\n") : ("1\r\n\r\n")); }),
+                cl::cmd (String ("getFlip"), [] { usbWrite ((getConfig ().isDisplayRightSideUp ()) ? ("0\r\n\r\n") : ("1\r\n\r\n")); }),
                 cl::cmd (String ("setFlip"),
                          [&] (String const &arg) {
-                                 getConfig ().displayRightSideUp = bool (std::atoi (arg.c_str ()));
+                                 getConfig ().setDisplayRightSideUp (bool (std::atoi (arg.c_str ())));
                                  refreshAll ();
                          }),
 
-                cl::cmd (String ("getIr"), [] { usbWrite ((getConfig ().irSensorOn) ? ("1\r\n\r\n") : ("0\r\n\r\n")); }),
+                cl::cmd (String ("getIr"), [] { usbWrite ((getConfig ().isIrSensorOn ()) ? ("1\r\n\r\n") : ("0\r\n\r\n")); }),
                 cl::cmd (String ("setIr"),
                          [&] (String const &arg) {
-                                 getConfig ().irSensorOn = bool (std::atoi (arg.c_str ()));
+                                 getConfig ().setIrSensorOn (bool (std::atoi (arg.c_str ())));
                                  refreshAll ();
                          }),
 
-                cl::cmd (String ("getSn"), [] { usbWrite ((getConfig ().buzzerOn) ? ("1\r\n\r\n") : ("0\r\n\r\n")); }),
+                cl::cmd (String ("getSn"), [] { usbWrite ((getConfig ().isBuzzerOn ()) ? ("1\r\n\r\n") : ("0\r\n\r\n")); }),
                 cl::cmd (String ("setSn"),
                          [&] (String const &arg) {
-                                 getConfig ().buzzerOn = bool (std::atoi (arg.c_str ()));
+                                 getConfig ().setBuzzerOn (bool (std::atoi (arg.c_str ())));
                                  refreshAll ();
                          }),
 
                 cl::cmd (String ("getRes"),
                          [] {
-                                 switch (getConfig ().resolution) {
+                                 switch (getConfig ().getResolution ()) {
                                  case Resolution::ms_10:
                                          usbWrite ("10ms\r\n\r\n");
                                          break;
@@ -402,16 +403,16 @@ int main ()
                 cl::cmd (String ("setRes"),
                          [&] (String const &arg) {
                                  if (arg == "10ms") {
-                                         getConfig ().resolution = Resolution::ms_10;
+                                         getConfig ().setResolution (Resolution::ms_10);
                                  }
                                  else if (arg == "1ms") {
-                                         getConfig ().resolution = Resolution::ms_1;
+                                         getConfig ().setResolution (Resolution::ms_1);
                                  }
                                  else if (arg == "100us") {
-                                         getConfig ().resolution = Resolution::us_100;
+                                         getConfig ().setResolution (Resolution::us_100);
                                  }
                                  else if (arg == "10us") {
-                                         getConfig ().resolution = Resolution::us_10;
+                                         getConfig ().setResolution (Resolution::us_10);
                                  }
                                  else {
                                          usbWrite ("Valid options : 10ms, 1ms, 100us, 10us\r\n\r\n");
@@ -419,51 +420,72 @@ int main ()
 
                                  refreshAll ();
                          }),
-                cl::cmd (String ("periph"), [&protocol] {
-                        protocol.sendInfoRequest ();
-                        HAL_Delay (RESPONSE_WAIT_TIME_MS);
-                        auto &resp = protocol.getInfoRespDataCollection ();
+                cl::cmd (String ("periph"),
+                         [&protocol] {
+                                 protocol.sendInfoRequest ();
+                                 HAL_Delay (RESPONSE_WAIT_TIME_MS);
+                                 auto &resp = protocol.getInfoRespDataCollection ();
 
-                        usbWrite ("Connected peripherals :\r\n");
-                        usbWrite ("type uid beam_state\r\n");
+                                 usbWrite ("Connected peripherals :\r\n");
+                                 usbWrite ("type uid beam_state\r\n");
 
-                        for (auto &periph : resp) {
-                                switch (periph.deviceType) {
-                                case DeviceType::receiver:
-                                        usbWrite ("receiver ");
-                                        break;
+                                 for (auto &periph : resp) {
+                                         switch (periph.deviceType) {
+                                         case DeviceType::receiver:
+                                                 usbWrite ("receiver ");
+                                                 break;
 
-                                case DeviceType::ir_sensor:
-                                        usbWrite ("ir_sensor ");
-                                        break;
+                                         case DeviceType::ir_sensor:
+                                                 usbWrite ("ir_sensor ");
+                                                 break;
 
-                                default:
-                                        usbWrite ("unknown ");
-                                        break;
-                                }
+                                         default:
+                                                 usbWrite ("unknown ");
+                                                 break;
+                                         }
 
-                                print ((unsigned)periph.uid);
-                                print (" ");
+                                         print ((unsigned)periph.uid);
+                                         print (" ");
 
-                                switch (periph.beamState) {
-                                case BeamState::yes:
-                                        usbWrite ("yes");
-                                        break;
+                                         switch (periph.beamState) {
+                                         case BeamState::yes:
+                                                 usbWrite ("yes");
+                                                 break;
 
-                                case BeamState::no:
-                                        usbWrite ("no");
-                                        break;
+                                         case BeamState::no:
+                                                 usbWrite ("no");
+                                                 break;
 
-                                case BeamState::blind:
-                                        usbWrite ("blind");
-                                        break;
-                                }
+                                         case BeamState::blind:
+                                                 usbWrite ("blind");
+                                                 break;
+                                         }
 
-                                print ("\r\n");
-                        }
+                                         print ("\r\n");
+                                 }
 
-                        print ("\r\n");
-                }));
+                                 print ("\r\n");
+                         }),
+
+                cl::cmd (String ("getBlind"),
+                         [&] (String const &arg) {
+                                 print ((unsigned)getConfig ().getBlindTime ());
+                                 usbWrite ("\r\n\r\n");
+                         }),
+                cl::cmd (String ("setBlind"),
+                         [&] (String const &arg) {
+                                 int i = std::atoi (arg.c_str ());
+
+                                 if (i < 0 || i > std::numeric_limits<uint16_t>::max () - 1) {
+                                         usbWrite ("Correct values are [0, 65534]\r\n\r\n");
+                                         return;
+                                 }
+
+                                 getConfig ().setBlindTime (i);
+                                 refreshAll ();
+                         })
+
+        );
 
         using CliType = decltype (cli);
         cliPointer = &cli;
@@ -488,13 +510,13 @@ int main ()
 
         // Refresh stopwatch state to reflect the config.
         auto refreshSettings = [&] {
-                display.setFlip (!config.displayRightSideUp);
-                beam.setActive (config.irSensorOn);
+                display.setFlip (!config.isDisplayRightSideUp ());
+                beam.setActive (config.isIrSensorOn ());
 #ifdef WITH_SOUND
-                buzzer.setActive (config.buzzerOn);
+                buzzer.setActive (config.isBuzzerOn ());
 #endif
-                stopWatch->setResolution (config.resolution);
-                display.setResolution (config.resolution);
+                stopWatch->setResolution (config.getResolution ());
+                display.setResolution (config.getResolution ());
         };
 
         refreshSettings ();

@@ -98,7 +98,7 @@ void FastStateMachine::run (Event event)
         case GP8_RUNNING:
                 if (isInternalTriggerAndStartTimeout (event) || (canEvent = isExternalTrigger (event))) {
 
-                        if (getConfig ().stopMode == StopMode::stop) {
+                        if (getConfig ().getStopMode () == StopMode::stop) {
                                 state = GP8_STOP;
                                 stop_entryAction (canEvent);
                         }
@@ -110,7 +110,7 @@ void FastStateMachine::run (Event event)
                         break;
                 }
 
-                display->setTime (stopWatch->getTime (), getConfig ().resolution); // Refresh the screen (shows the time is running)
+                display->setTime (stopWatch->getTime (), getConfig ().getResolution ()); // Refresh the screen (shows the time is running)
                 break;
 
         case GP8_STOP:
@@ -127,7 +127,8 @@ void FastStateMachine::run (Event event)
                 }
 
                 if (loopDisplayTimeout.isExpired ()) {
-                        display->setTime (stopWatch->getTime (), getConfig ().resolution); // Refresh the screen (shows the time is running)
+                        display->setTime (stopWatch->getTime (),
+                                          getConfig ().getResolution ()); // Refresh the screen (shows the time is running)
                 }
 
                 break;
@@ -190,7 +191,7 @@ FastStateMachine::RemoteBeamState FastStateMachine::isRemoteBeamStateOk () const
 
 /*****************************************************************************/
 
-void FastStateMachine::ready_entryAction () { display->setTime (0, getConfig ().resolution); }
+void FastStateMachine::ready_entryAction () { display->setTime (0, getConfig ().getResolution ()); }
 
 /*****************************************************************************/
 
@@ -202,7 +203,7 @@ void FastStateMachine::running_entryAction (bool canEvent)
 #ifdef WITH_SOUND
         buzzer->beep (100, 0, 1);
 #endif
-        startTimeout.start (BEAM_INTERRUPTION_EVENT);
+        startTimeout.start (getConfig ().getBlindTime ());
 
         if (!canEvent && protocol != nullptr) {
 #ifdef WITH_CAN
@@ -216,7 +217,7 @@ void FastStateMachine::running_entryAction (bool canEvent)
 void FastStateMachine::stop_entryAction (bool canEvent)
 {
         stopWatch->stop ();
-        startTimeout.start (BEAM_INTERRUPTION_EVENT);
+        startTimeout.start (getConfig ().getBlindTime ());
         uint32_t canTime = (protocol != nullptr) ? (protocol->getLastRemoteStopTime ()) : (0UL);
         uint32_t result = (canEvent) ? (canTime) : (stopWatch->getTime ());
 
@@ -226,7 +227,7 @@ void FastStateMachine::stop_entryAction (bool canEvent)
 #endif
         }
 
-        display->setTime (result, getConfig ().resolution);
+        display->setTime (result, getConfig ().getResolution ());
 
         if (history != nullptr) {
 #ifdef WITH_SOUND
@@ -257,10 +258,10 @@ void FastStateMachine::loop_entryAction (bool canEvent)
 #ifdef WITH_SOUND
         buzzer->beep (100, 0, 1);
 #endif
-        startTimeout.start (BEAM_INTERRUPTION_EVENT);
+        startTimeout.start (getConfig ().getBlindTime ());
         loopDisplayTimeout.start (LOOP_DISPLAY_TIMEOUT);
 
-        display->setTime (result, getConfig ().resolution);
+        display->setTime (result, getConfig ().getResolution ());
 
         if (history != nullptr) {
 #ifdef WITH_SOUND

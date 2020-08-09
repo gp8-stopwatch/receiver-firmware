@@ -119,6 +119,7 @@
 * [x] USB - can't output more than 2048B at once. In case of overflow the rest of text is clipped.
 * [ ] When history is short (16B per page) results are working somewhat oddly:
 * [x] after 10 mins there's something wrong going on with the time display. No leading 1 or something. Reported by Pyxis.
+* [ ] When the terminator is flipped to OFF and nothing is connected, CAN initialization fails, and the program hangs (in Error_Handler).
 
 ```
 00:05,00998

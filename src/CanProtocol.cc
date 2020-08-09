@@ -50,11 +50,13 @@ void CanProtocol::onCanNewFrame (CanFrame const &frame)
                                 // Error_Handler (); // TODO remove
                         }
                 }
+#ifdef WITH_CHECK_SENSOR_STATUS
                 else if (Messages (messageId) == Messages::INFO_RESP) {
                         if (!lastInfoResponseData.full ()) {
                                 lastInfoResponseData.emplace_back (frame.id, DeviceType (frame.data[1]), BeamState (frame.data[2]));
                         }
                 }
+#endif
         }
 }
 

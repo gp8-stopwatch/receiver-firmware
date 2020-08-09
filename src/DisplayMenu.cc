@@ -25,7 +25,7 @@ void DisplayMenu::onEvent (menu::Event p)
                 auto en = history->getEntry (currentResult);
 
                 if (en.result != std::numeric_limits<uint32_t>::max ()) {
-                        display.setTime (en.result, getConfig ().resolution);
+                        display.setTime (en.result, getConfig ().getResolution ());
                 }
                 else { // Last
                         if (currentResult == 0) {
@@ -136,34 +136,34 @@ void DisplayMenu::onEvent (menu::Event p)
                 state ("FLIP"_ST, entry ([&] { display.setText ("1.FLIP "); }), exit ([] {}),
                        transition ("FLIP"_ST, longPress (),
                                    [&] (auto /*a*/) {
-                                           config.displayRightSideUp = !config.displayRightSideUp;
+                                           config.setDisplayRightSideUp (!config.isDisplayRightSideUp ());
                                            cfg::changed () = true;
                                    }),
                        transition ("IR_ON"_ST, shortPress ())),
 
                 // IR sensor on/off
-                state ("IR_ON"_ST, entry ([&] { display.setText ((config.irSensorOn) ? ("2.I.r.on ") : ("2.I.r.off")); }), exit ([] {}),
+                state ("IR_ON"_ST, entry ([&] { display.setText ((config.isIrSensorOn ()) ? ("2.I.r.on ") : ("2.I.r.off")); }), exit ([] {}),
                        transition ("IR_ON"_ST, refreshMenu ()),
                        transition ("IR_ON"_ST, longPress (),
                                    [&] (auto /*a*/) {
-                                           config.irSensorOn = !config.irSensorOn;
+                                           config.setIrSensorOn (!config.isIrSensorOn ());
                                            cfg::changed () = true;
                                    }),
                        transition ("BUZZER"_ST, shortPress ())),
 
                 // Buzzer on/off
-                state ("BUZZER"_ST, entry ([&] { display.setText ((config.buzzerOn) ? ("3.Sn.on ") : ("3.Sn.off")); }), exit ([] {}),
+                state ("BUZZER"_ST, entry ([&] { display.setText ((config.isBuzzerOn ()) ? ("3.Sn.on ") : ("3.Sn.off")); }), exit ([] {}),
                        transition ("BUZZER"_ST, refreshMenu ()),
                        transition ("BUZZER"_ST, longPress (),
                                    [&] (auto /*a*/) {
-                                           config.buzzerOn = !config.buzzerOn;
+                                           config.setBuzzerOn (!config.isBuzzerOn ());
                                            cfg::changed () = true;
                                    }),
                        transition ("RESOLUTION"_ST, shortPress ())),
 
                 // Resolution
                 state ("RESOLUTION"_ST, entry ([&] {
-                               switch (config.resolution) {
+                               switch (config.getResolution ()) {
                                case Resolution::ms_10:
                                        display.setText ("4.10ms ");
                                        break;
@@ -187,17 +187,18 @@ void DisplayMenu::onEvent (menu::Event p)
                        exit ([] {}), transition ("RESOLUTION"_ST, refreshMenu ()),
                        transition ("RESOLUTION"_ST, longPress (),
                                    [&] (auto /*a*/) {
-                                           config.resolution = Resolution ((int (config.resolution) - 1) % RESOLUTION_NUMBER_OF_OPTIONS);
+                                           config.setResolution (
+                                                   Resolution ((int (config.getResolution ()) - 1) % RESOLUTION_NUMBER_OF_OPTIONS));
                                            cfg::changed () = true;
                                    }),
                        transition ("STOP_MODE"_ST, shortPress ())),
 
                 // Stop mode loop/stop. Loop is for trainig, stop is for competition.
-                state ("STOP_MODE"_ST, entry ([&] { display.setText ((config.stopMode) ? ("5.Stop ") : ("5.Loop ")); }), exit ([] {}),
+                state ("STOP_MODE"_ST, entry ([&] { display.setText ((config.getStopMode ()) ? ("5.Stop ") : ("5.Loop ")); }), exit ([] {}),
                        transition ("STOP_MODE"_ST, refreshMenu ()),
                        transition ("STOP_MODE"_ST, longPress (),
                                    [&] (auto /*a*/) {
-                                           config.stopMode = StopMode (!bool (config.stopMode));
+                                           config.setStopMode (StopMode (!bool (config.getStopMode ())));
                                            cfg::changed () = true;
                                    }),
                        transition ("TIME"_ST, shortPress ())),

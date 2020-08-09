@@ -64,9 +64,9 @@ enum Brightness { level1 = 0, level2 = 1, level3 = 2, level4 = 3, level5 = 4, le
 enum ParticipantsNumber { one = 1, two = 0 };
 enum StopMode { stop = 1, restart = 0 }; // Loop
 
-static constexpr int BEAM_INTERRUPTION_EVENT = 5000;
+static constexpr int DEFAULT_BLIND_TIME_MS = 5000;
 static constexpr int NO_IR_DETECTED_MS = 5000;
-static constexpr int LOOP_DISPLAY_TIMEOUT = BEAM_INTERRUPTION_EVENT - 1000;
+static constexpr int LOOP_DISPLAY_TIMEOUT = DEFAULT_BLIND_TIME_MS - 1000;
 
 const etl::function_fv<__disable_irq> lock{};
 const etl::function_fv<__enable_irq> unlock{};

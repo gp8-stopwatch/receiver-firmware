@@ -121,12 +121,7 @@ public:
         bool isBeamInterrupted () const override { return false; }
 
         bool isActive () const override { return active; }
-        void setActive (bool b) override
-        {
-                active = b;
-                // lastState = IrBeam::absent;
-                // lastStateChange.start (BEAM_INTERRUPTION_EVENT);
-        }
+        void setActive (bool b) override { active = b; }
 
         // TODO do not use dynamic allocation.
         std::function<void ()> onTrigger;
