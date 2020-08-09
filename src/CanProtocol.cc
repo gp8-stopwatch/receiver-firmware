@@ -8,6 +8,7 @@
 
 #include "CanProtocol.h"
 #include "CanFrame.h"
+#include "Container.h"
 #include "Debug.h"
 #include "ErrorHandler.h"
 #include <gsl/gsl>
@@ -36,6 +37,8 @@ void CanProtocol::onCanNewFrame (CanFrame const &frame)
 #endif
                 else if (Messages (messageId) == Messages::INFO_REQ) {
                         Expects (beam);
+                        uint16_t tmp = uint16_t (frame.data[1]) | uint16_t (frame.data[2]) << 8;
+                        getConfig ().setBlindTime (tmp);
                         BeamState state;
 
                         if (!beam->isActive ()) {
@@ -70,4 +73,13 @@ void CanProtocol::sendTrigger (uint32_t time)
 {
         auto *p = reinterpret_cast<uint8_t *> (&time);
         can.send (CanFrame{uid, true, 5, uint8_t (Messages::TRIGGER), *p, *(p + 1), *(p + 2), *(p + 3)}, CAN_SEND_TIMEOUT);
+}
+
+/*****************************************************************************/
+
+void CanProtocol::sendInfoRequest ()
+{
+        lastInfoResponseData.clear ();
+        uint16_t tmp = getConfig ().getBlindTime ();
+        can.send (CanFrame{uid, true, 3, uint8_t (Messages::INFO_REQ), uint8_t (tmp & 0xff), uint8_t (tmp >> 8)}, CAN_SEND_TIMEOUT);
 }

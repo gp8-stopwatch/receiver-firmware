@@ -55,12 +55,7 @@ public:
         void sendTrigger (uint32_t time);
         void sendNoIr () { can.send (CanFrame{uid, true, 1, uint8_t (Messages::NO_IR)}, CAN_SEND_TIMEOUT); }
 
-        void sendInfoRequest ()
-        {
-                lastInfoResponseData.clear ();
-                can.send (CanFrame{uid, true, 1, uint8_t (Messages::INFO_REQ)}, CAN_SEND_TIMEOUT);
-        }
-
+        void sendInfoRequest ();
         void setCallback (IProtocolCallback *cb) { callback = cb; }
 
         /// This is a little hack to get rid of passing the time in the event, which would be difficult, since an event is an enum.
