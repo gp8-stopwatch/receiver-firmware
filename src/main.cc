@@ -258,9 +258,6 @@ int main ()
         });
 
 #ifdef WITH_CAN
-        // protocol.setOnStart ([fStateMachine] { fStateMachine->run (Event::canBusStart); });
-        // protocol.setOnLoopStart ([fStateMachine] { fStateMachine->run (Event::canBusLoopStart); });
-        // protocol.setOnStop ([fStateMachine] { fStateMachine->run (Event::canBusStop); });
         FastStateMachineProtocolCallback callback{*fStateMachine};
         protocol.setCallback (&callback);
 #endif
@@ -343,7 +340,11 @@ int main ()
                                  history.clearResults ();
                          }),
                 cl::cmd (String ("factory"), [] { getConfigFlashEepromStorage ().clear (); }),
-                cl::cmd (String ("help"), [] { usbWrite ("battery, clear, last, result, reset, date, factory\r\n\r\n"); }),
+                cl::cmd (String ("help"),
+                         [] {
+                                 usbWrite ("result, last, date, reset, clear, factory, help, battery, getFlip, setFlip, getIr, setIr, getSn, "
+                                           "setSn, getRes, setRes, periph, getBlind, setBlind\r\n\r\n");
+                         }),
                 cl::cmd (String ("battery"),
                          [&power] {
                                  std::array<char, 11> buf{};
