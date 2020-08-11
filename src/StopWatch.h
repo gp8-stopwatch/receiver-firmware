@@ -36,7 +36,7 @@ public:
         StopWatch ();
 
         void setResolution (Resolution res) { resolution = res; }
-        void reset (bool canStart) { time = (canStart) ? CAN_LATENCY_CORRECTION : 0; }
+        void reset (bool canStart) { time = (canStart) ? (CAN_LATENCY_CORRECTION) : (0); }
 
         /**
          * Starts the timer immediatelly.

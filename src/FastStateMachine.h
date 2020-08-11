@@ -12,7 +12,7 @@
 #include "Types.h"
 #include <optional>
 
-class IInfraRedBeam;
+struct IInfraRedBeam;
 class StopWatch;
 struct IDisplay;
 class Buzzer;

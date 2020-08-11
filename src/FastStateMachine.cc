@@ -79,7 +79,7 @@ void FastStateMachine::run (Event event)
 #endif
 
                 // The transition
-                if (ir->isBeamPresent () || remoteBeamState == RemoteBeamState::allOk) {
+                if ((ir->isActive () && ir->isBeamPresent ()) || remoteBeamState == RemoteBeamState::allOk) {
                         state = GP8_READY;
                 }
 
@@ -246,6 +246,8 @@ void FastStateMachine::loop_entryAction (bool canEvent)
         stopWatch->stop ();
         uint32_t canTime = (protocol != nullptr) ? (protocol->getLastRemoteStopTime ()) : (0UL);
         uint32_t result = (canEvent) ? (canTime) : (stopWatch->getTime ());
+        stopWatch->reset (canEvent);
+        stopWatch->start ();
 
         if (!canEvent && protocol != nullptr) {
 #ifdef WITH_CAN
@@ -253,8 +255,6 @@ void FastStateMachine::loop_entryAction (bool canEvent)
 #endif
         }
 
-        stopWatch->reset (canEvent);
-        stopWatch->start ();
 #ifdef WITH_SOUND
         buzzer->beep (100, 0, 1);
 #endif
