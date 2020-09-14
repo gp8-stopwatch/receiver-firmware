@@ -26,10 +26,11 @@ using Result = uint32_t; /// Results are in 10µs units. Maybe someday I'll use 
 
 constexpr size_t DISPLAY_TIMER_PRIORITY = 2;
 constexpr size_t CAN_BUS_PRIORITY = 1;
-constexpr size_t BUTTON_AND_IR_EXTI_PRIORITY = 1;
+constexpr size_t BUTTON_EXTI_PRIORITY = 1;
+constexpr size_t IR_EXTI_PRIORITY = 1;
 constexpr size_t TEST_TRIGGER_EXTI_PRIORITY = 1;
 
-static const char *VERSION = "1.0.4";
+inline const char *VERSION = "1.0.4";
 
 constexpr int LOW_VOLTAGE_MV = 3000;
 constexpr int LOW_VOLTAGE_CRITICAL_MV = 2900;

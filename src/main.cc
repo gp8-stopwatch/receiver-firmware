@@ -78,6 +78,7 @@ int main ()
         __HAL_RCC_PWR_CLK_ENABLE ();
 
 #ifdef PLATFORM_MICRO
+        // ensure the kit is correct if this does not work.
         __HAL_REMAP_PIN_ENABLE (HAL_REMAP_PA11_PA12);
 #endif
 
@@ -219,7 +220,10 @@ int main ()
 
         /*--------------------------------------------------------------------------*/
 
+        // IR on means the state is LOW. Beam interruption means transition from LOW to HI i.e. rising.
         Gpio irTriggerPin (IR_PORT, IR_PINS, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
+        HAL_NVIC_SetPriority (IR_IRQn, IR_EXTI_PRIORITY, 0);
+        HAL_NVIC_EnableIRQ (IR_IRQn);
         InfraRedBeamExti beam{(irTriggerPin.get ()) ? (IrBeam::absent) : (IrBeam::present)};
 
         protocol.setBeam (&beam);
@@ -237,10 +241,12 @@ int main ()
 
         /*--------------------------------------------------------------------------*/
 
+#ifdef WITH_BUTTON
         Gpio buttonPin (GPIOB, GPIO_PIN_15, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
-        HAL_NVIC_SetPriority (BUTTON_AND_IR_IRQn, BUTTON_AND_IR_EXTI_PRIORITY, 0);
-        HAL_NVIC_EnableIRQ (BUTTON_AND_IR_IRQn);
+        HAL_NVIC_SetPriority (BUTTON_IRQn, BUTTON_EXTI_PRIORITY, 0);
+        HAL_NVIC_EnableIRQ (BUTTON_IRQn);
         Button button (buttonPin);
+#endif
 
         // Test trigger
         Gpio testTriggerPin (TEST_TRIGGER_PORT, TEST_TRIGGER_PINS, GPIO_MODE_IT_RISING, GPIO_PULLDOWN);
@@ -528,7 +534,9 @@ int main ()
                 buzzer.run ();
 #endif
 
+#ifdef WITH_BUTON
                 button.run ();
+#endif
 
 #ifdef WITH_FLASH
                 history.run ();
@@ -546,6 +554,7 @@ int main ()
                         displayTimer.start (refreshRate);
                 }
 
+#ifdef WITH_BUTON
                 if (button.getPressClear ()) {
                         menu.onEvent (menu::Event::shortPress);
 #ifdef WITH_SOUND
@@ -559,6 +568,7 @@ int main ()
                         buzzer.beep (20, 20, 2);
 #endif
                 }
+#endif // WITH_BUTTON
 
                 if (cfg::changed ()) {
                         cfg::changed () = false;

@@ -39,3 +39,8 @@ Maximum error between the devices should not exceed 2*20ppm (worst case).
   
 # Serial connection 
 See docs.iwasz.com
+
+# NVIC pins
+IR PA8
+Button PB15
+Test trigger PB3

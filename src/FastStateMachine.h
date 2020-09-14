@@ -57,7 +57,6 @@ public:
         void setDisplay (IDisplay *d) { this->display = d; }
         void setBuzzer (Buzzer *b) { this->buzzer = b; }
         void setHistory (History *h) { this->history = h; }
-        void setButton (Button *b) { this->button = b; }
         void setCanProtocol (CanProtocol *cp) { protocol = cp; }
 
 private:
@@ -82,7 +81,6 @@ private:
         IDisplay *display{};
         Buzzer *buzzer{};
         History *history{};
-        Button *button{};
         CanProtocol *protocol{};
 
         mutable Timer reqRespTimer;

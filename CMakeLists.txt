@@ -32,6 +32,7 @@ set(FLASH_QUEUE_SIZE 4 CACHE STRING "Results are stored into protected queue fro
 set(WITH_RTC ON CACHE BOOL "Complie RTC support")
 set(WITH_POWER_MANAGER ON CACHE BOOL "Complie power sensing support")
 set(WITH_CHECK_SENSOR_STATUS ON CACHE BOOL "If on, the device checks for external sensors and queries their state")
+set(WITH_BUTTON ON CACHE BOOL "Compile button support")
 ADD_DEFINITIONS (-DPLATFORM_REGULAR)
 
 # Micro receiver
@@ -47,6 +48,7 @@ ADD_DEFINITIONS (-DPLATFORM_REGULAR)
 # set(WITH_RTC OFF CACHE BOOL "Complie RTC support")
 # set(WITH_POWER_MANAGER OFF CACHE BOOL "Complie power sensing support")
 # set(WITH_CHECK_SENSOR_STATUS OFF CACHE BOOL "If on, the device checks for external sensors and queries their state")
+# set(WITH_BUTTON OFF CACHE BOOL "Compile button support")
 # ADD_DEFINITIONS (-DPLATFORM_MICRO)
 
 IF (WITH_SOUND)
@@ -95,6 +97,10 @@ ENDIF ()
 
 IF (WITH_CHECK_SENSOR_STATUS)
     ADD_DEFINITIONS (-DWITH_CHECK_SENSOR_STATUS=1)
+ENDIF ()
+
+IF (WITH_BUTTON)
+    ADD_DEFINITIONS (-DWITH_BUTTON=1)
 ENDIF ()
 
 # DEVICE is defined in the toolchain file, so if it's present, we assume that the firmware is beeing built.

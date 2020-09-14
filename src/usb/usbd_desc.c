@@ -44,8 +44,8 @@ static uint8_t *USBD_LangIDStrDescriptor (USBD_SpeedTypeDef speed, uint16_t *len
 static uint8_t *USBD_ManufacturerStrDescriptor (USBD_SpeedTypeDef speed, uint16_t *length);
 static uint8_t *USBD_ProductStrDescriptor (USBD_SpeedTypeDef speed, uint16_t *length);
 static uint8_t *USBD_SerialStrDescriptor (USBD_SpeedTypeDef speed, uint16_t *length);
-static uint8_t *USBD_ConfigStrDescriptor (USBD_SpeedTypeDef speed, uint16_t *length);
-static uint8_t *USBD_InterfaceStrDescriptor (USBD_SpeedTypeDef speed, uint16_t *length);
+// static uint8_t *USBD_ConfigStrDescriptor (USBD_SpeedTypeDef speed, uint16_t *length);
+// static uint8_t *USBD_InterfaceStrDescriptor (USBD_SpeedTypeDef speed, uint16_t *length);
 static void IntToUnicode (uint32_t value, uint8_t *pbuf, uint8_t len);
 
 /* Private variables ---------------------------------------------------------*/

@@ -96,6 +96,7 @@ Links:
 * https://electronics.stackexchange.com/questions/70891/strange-and-contradictory-agc-characteristics-in-datasheet
 * http://www.vishay.com/ir-receiver-modules/
 * http://www.vishay.com/ir-receiver-modules/presence-sensor/
+* https://www.researchgate.net/publication/300910559_IR_Barrier_Data_Integration_for_Obstacle_Detection
 
 
 # Environment
