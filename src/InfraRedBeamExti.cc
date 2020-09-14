@@ -23,15 +23,6 @@ void InfraRedBeamExti::onExti (IrBeam state)
                 return;
         }
 
-        // Clear noise status after NOISE_CLEAR_TIMEOUT_MS or more ms (but it can be restored later during this call).
-        if (beamNoiseTimer.isExpired ()) {
-                noiseEventCounter = 0;
-
-                if (lastState == IrBeam::noise) {
-                        lastState = IrBeam::absent;
-                }
-        }
-
         if (state == IrBeam::absent) {
 
                 if (beamPresentTimer.elapsed () < MIN_TIME_BETWEEN_EVENTS_MS) {
@@ -41,6 +32,11 @@ void InfraRedBeamExti::onExti (IrBeam state)
                         // We simply ingnore spurious noise events if they don't occur too frequently.
                         if (++noiseEventCounter > NOISE_EVENTS_CRITICAL) {
                                 lastState = IrBeam::noise;
+
+                                // HAL_NVIC_DisableIRQ (IR_IRQn);
+                                HAL_NVIC_SetPriority (TIM15_IRQn, IR_EXTI_PRIORITY, 0);    // Priorities are inverted
+                                HAL_NVIC_SetPriority (IR_IRQn, DISPLAY_TIMER_PRIORITY, 0); // Priorities are inverted
+
                                 fStateMachine->run (Event::irNoise);
                         }
                 }
@@ -58,6 +54,24 @@ void InfraRedBeamExti::onExti (IrBeam state)
                 else {
                         beamPresentTimer.start (0);
                         lastState = IrBeam::present;
+                }
+        }
+}
+
+/*****************************************************************************/
+
+void InfraRedBeamExti::run ()
+{
+        // Clear noise status after NOISE_CLEAR_TIMEOUT_MS or more ms (but it can be restored later during this call).
+        if (beamNoiseTimer.isExpired ()) {
+                noiseEventCounter = 0;
+
+                if (lastState == IrBeam::noise) {
+                        // HAL_NVIC_EnableIRQ (IR_IRQn);
+                        HAL_NVIC_SetPriority (TIM15_IRQn, DISPLAY_TIMER_PRIORITY, 0);
+                        HAL_NVIC_SetPriority (IR_IRQn, IR_EXTI_PRIORITY, 0);
+
+                        lastState = IrBeam::absent;
                 }
         }
 }

@@ -537,6 +537,10 @@ int main ()
                 power.run ();
 #endif
 
+                // #ifdef WITH_IR
+                beam.run ();
+                // #endif
+
 #ifdef WITH_USB
                 cli.run ();
 #endif

@@ -58,6 +58,7 @@ public:
         void setActive (bool b) override { active = b; }
 
         void setFastStateMachine (FastStateMachine *f) { fStateMachine = f; }
+        void run ();
 
 private:
         inline void sendTriggerEvent ();
