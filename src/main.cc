@@ -19,7 +19,7 @@
 #include "Gpio.h"
 #include "HardwareTimer.h"
 #include "History.h"
-#include "InfraRedBeamModulated.h"
+#include "InfraRedBeamExti.h"
 #include "Led7SegmentDisplay.h"
 #include "PowerManagement.h"
 #include "Rtc.h"
@@ -228,16 +228,7 @@ int main ()
 
         protocol.setBeam (&beam);
         irTriggerPin.setOnToggle ([&beam, &irTriggerPin] { beam.onExti ((irTriggerPin.get ()) ? (IrBeam::absent) : (IrBeam::present)); });
-        beam.onTrigger = [fStateMachine] {
-#ifdef TEST_TRIGGER_MOD_2
-                static int i{};
-                if (++i % 2 == 0) {
-                        fStateMachine->run (Event::irTrigger);
-                }
-#else
-                fStateMachine->run (Event::irTrigger);
-#endif
-        };
+        beam.setFastStateMachine (fStateMachine);
 
         /*--------------------------------------------------------------------------*/
 

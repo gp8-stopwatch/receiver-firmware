@@ -32,7 +32,8 @@ enum class Event {
         pause,
         reset, // Use for resume after pause
         noIr,
-        irPresent
+        irPresent,
+        irNoise
 };
 
 /**

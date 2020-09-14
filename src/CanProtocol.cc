@@ -45,7 +45,8 @@ void CanProtocol::onCanNewFrame (CanFrame const &frame)
                                 state = BeamState::blind;
                         }
                         else {
-                                state = (beam->isBeamPresent ()) ? (BeamState::yes) : (BeamState::no);
+                                // TODO detect noise
+                                state = (beam->getBeamState () == IrBeam::present) ? (BeamState::yes) : (BeamState::no);
                         }
 
                         if (!can.send (CanFrame{uid, true, 3, uint8_t (Messages::INFO_RESP), uint8_t (deviceType), uint8_t (state)},

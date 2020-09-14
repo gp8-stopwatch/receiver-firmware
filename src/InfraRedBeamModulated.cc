@@ -6,9 +6,10 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
+#include "InfraRedBeamModulated.h"
 #include "Debug.h"
 #include "ErrorHandler.h"
-#include "InfraRedBeamModulated.h"
+#include "FastStateMachine.h"
 
 /*****************************************************************************/
 

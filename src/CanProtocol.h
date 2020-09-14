@@ -9,7 +9,7 @@
 #pragma once
 #include "Can.h"
 #include "ICanCallback.h"
-#include "InfraRedBeamModulated.h"
+#include "InfraRedBeamExti.h"
 #include "Types.h"
 #include <cstdint>
 #include <etl/vector.h>

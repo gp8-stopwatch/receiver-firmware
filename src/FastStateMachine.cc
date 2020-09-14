@@ -13,7 +13,7 @@
 #include "Debug.h"
 #include "History.h"
 #include "IDisplay.h"
-#include "InfraRedBeamModulated.h"
+#include "InfraRedBeamExti.h"
 #include "StopWatch.h"
 
 /*****************************************************************************/
@@ -33,7 +33,7 @@ void FastStateMachine::run (Event event)
 
         // Global except for the PAUSED state
         if (state != PAUSED) {
-                if (ir->isActive () && !ir->isBeamPresent ()) {
+                if (ir->isActive () && ir->getBeamState () != IrBeam::present) {
                         state = State::WAIT_FOR_BEAM;
                 }
 
@@ -41,6 +41,11 @@ void FastStateMachine::run (Event event)
                 if (event == Event::noIr) {
                         state = State::WAIT_FOR_BEAM;
                         canEvent = true;
+                }
+
+                if (event == Event::irNoise) {
+                        state = State::WAIT_FOR_BEAM;
+                        canEvent = false;
                 }
         }
 
@@ -59,7 +64,17 @@ void FastStateMachine::run (Event event)
                 auto remoteBeamState = RemoteBeamState::noResponse;
 #endif
 
-                if (ir->isActive () && !ir->isBeamPresent ()) {
+                if (ir->isActive () && ir->getBeamState () == IrBeam::noise) {
+                        display->setText ("noise ");
+
+                        // #ifdef WITH_CAN
+                        //                         if (protocol != nullptr && !canEvent && !noIrRequestSent) {
+                        //                                 protocol->sendNoIr ();
+                        //                                 noIrRequestSent = true;
+                        //                         }
+                        // #endif
+                }
+                else if (ir->isActive () && ir->getBeamState () == IrBeam::absent) {
                         display->setText ("noi.r.  ");
 
 #ifdef WITH_CAN
@@ -79,7 +94,7 @@ void FastStateMachine::run (Event event)
 #endif
 
                 // The transition
-                if ((ir->isActive () && ir->isBeamPresent ()) || remoteBeamState == RemoteBeamState::allOk) {
+                if ((ir->isActive () && ir->getBeamState () == IrBeam::present) || remoteBeamState == RemoteBeamState::allOk) {
                         state = GP8_READY;
                 }
 
@@ -146,7 +161,8 @@ void FastStateMachine::run (Event event)
 
 bool FastStateMachine::isInternalTrigger (Event event) const
 {
-        return ((ir->isBeamPresent () && ir->isBeamInterrupted ()) || event == Event::testTrigger || event == Event::irTrigger);
+        return ((ir->getBeamState () == IrBeam::present && ir->isBeamInterrupted ()) || event == Event::testTrigger
+                || event == Event::irTrigger);
 }
 
 /*****************************************************************************/

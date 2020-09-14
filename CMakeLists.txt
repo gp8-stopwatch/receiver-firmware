@@ -109,7 +109,7 @@ IF (DEFINED DEVICE)
         "src/main.cc"
         "src/Button.cc"
         "src/FastStateMachine.cc"
-        "src/InfraRedBeamModulated.cc"
+        "src/InfraRedBeamExti.cc"
         "src/StopWatch.cc"
         "src/Config.cc"
         "src/Container.cc"
