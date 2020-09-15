@@ -224,10 +224,11 @@ int main ()
         Gpio irTriggerPin (IR_PORT, IR_PINS, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
         HAL_NVIC_SetPriority (IR_IRQn, IR_EXTI_PRIORITY, 0);
         HAL_NVIC_EnableIRQ (IR_IRQn);
-        InfraRedBeamExti beam{(irTriggerPin.get ()) ? (IrBeam::absent) : (IrBeam::present)};
+        // InfraRedBeamExti beam{(irTriggerPin.get ()) ? (IrBeam::absent) : (IrBeam::present)};
+        InfraRedBeamExti beam{irTriggerPin};
 
         protocol.setBeam (&beam);
-        irTriggerPin.setOnToggle ([&beam, &irTriggerPin] { beam.onExti ((irTriggerPin.get ()) ? (IrBeam::absent) : (IrBeam::present)); });
+        irTriggerPin.setOnToggle ([&beam, &irTriggerPin] { beam.onExti (); });
         beam.setFastStateMachine (fStateMachine);
         beam.setStopWatch (stopWatch);
 

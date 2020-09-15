@@ -28,8 +28,10 @@ void sendEvent (FastStateMachine *fStateMachine, Event ev)
 
 /*****************************************************************************/
 
-void InfraRedBeamExti::onExti (IrBeam state)
+void InfraRedBeamExti::onExti ()
 {
+        IrBeam state = getPinState ();
+
         if (!active || lastState == IrBeam::noise) {
                 return;
         }
@@ -81,7 +83,9 @@ void InfraRedBeamExti::run ()
                         HAL_NVIC_SetPriority (TIM15_IRQn, DISPLAY_TIMER_PRIORITY, 0);
                         HAL_NVIC_SetPriority (IR_IRQn, IR_EXTI_PRIORITY, 0);
 
-                        lastState = IrBeam::absent;
+                        // reset
+                        lastState = getPinState ();
+                        beamPresentTimer.start (0);
                 }
         }
 }

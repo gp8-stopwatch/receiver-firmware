@@ -17,6 +17,7 @@
 
 class FastStateMachine;
 class StopWatch;
+class Gpio;
 
 /**
  * Non modulatred for IR barriers and curtains like TSSP 4056.
@@ -29,9 +30,10 @@ public:
         static constexpr int NOISE_EVENTS_CRITICAL = 5;
 
         /// Based on what was the state at the time of powering on.
-        explicit InfraRedBeamExti (IrBeam initialState) : lastState{initialState} {}
+        // explicit InfraRedBeamExti (IrBeam initialState) : lastState{initialState} {}
+        explicit InfraRedBeamExti (Gpio &g) : irTriggerPin{g}, lastState{getPinState ()} {}
 
-        void onExti (IrBeam state);
+        void onExti ();
 
         /// Returns false if the beam was interrupted for more than 3s. True otherwise.
         IrBeam getBeamState () const override
@@ -60,10 +62,14 @@ public:
         void setStopWatch (StopWatch *s) { this->stopWatch = s; }
 
 private:
+        // IR pin level, converted to IrState. No logic.
+        IrBeam getPinState () const { return (irTriggerPin.get ()) ? (IrBeam::absent) : (IrBeam::present); }
+
         Timer beamPresentTimer;
         Timer beamNoiseTimer{NOISE_CLEAR_TIMEOUT_MS};
         Timer eventValidationTimer;
         int noiseEventCounter{};
+        Gpio &irTriggerPin;
         IrBeam lastState;
         bool active{true};
         FastStateMachine *fStateMachine{};
