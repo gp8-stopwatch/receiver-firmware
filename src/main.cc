@@ -229,6 +229,7 @@ int main ()
         protocol.setBeam (&beam);
         irTriggerPin.setOnToggle ([&beam, &irTriggerPin] { beam.onExti ((irTriggerPin.get ()) ? (IrBeam::absent) : (IrBeam::present)); });
         beam.setFastStateMachine (fStateMachine);
+        beam.setStopWatch (stopWatch);
 
         /*--------------------------------------------------------------------------*/
 
@@ -250,7 +251,7 @@ int main ()
                         fStateMachine->run (Event::testTrigger);
                 }
 #else
-                fStateMachine->run (Event::testTrigger);
+                fStateMachine->run (Event::Type::testTrigger);
 #endif
         });
 
@@ -329,7 +330,7 @@ int main ()
                          }),
 
                 cl::cmd (String ("iscounting"), [&fStateMachine] { usbWrite ((fStateMachine->isCounting ()) ? ("1\r\n\r\n") : ("0\r\n\r\n")); }),
-                cl::cmd (String ("reset"), [&fStateMachine] { fStateMachine->run (Event::reset); }),
+                cl::cmd (String ("reset"), [&fStateMachine] { fStateMachine->run (Event::Type::reset); }),
 
                 cl::cmd (String ("clear"),
                          [&history] {
@@ -525,7 +526,7 @@ int main ()
                 buzzer.run ();
 #endif
 
-#ifdef WITH_BUTON
+#ifdef WITH_BUTTON
                 button.run ();
 #endif
 
@@ -545,11 +546,11 @@ int main ()
                 cli.run ();
 #endif
                 if (displayTimer.isExpired ()) {
-                        fStateMachine->run (Event::timePassed);
+                        fStateMachine->run (Event::Type::timePassed);
                         displayTimer.start (refreshRate);
                 }
 
-#ifdef WITH_BUTON
+#ifdef WITH_BUTTON
                 if (button.getPressClear ()) {
                         menu.onEvent (menu::Event::shortPress);
 #ifdef WITH_SOUND

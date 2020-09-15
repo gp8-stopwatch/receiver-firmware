@@ -81,6 +81,7 @@
 * [x] Test trigger in the transmitter (same as receiver) - a test point(s)
 * [ ] Speed trap. Receivers connected together would measure the speed.
 * [x] Result resolution setting (100µs)
+* [ ] Chronograph https://en.wikipedia.org/wiki/Gun_chronograph
 
 # Firmware
 * [x] Settings memory (screen flip & sound on/off should be persisted)
@@ -111,6 +112,7 @@
  * [x] Dots indicating the resolution of the time display.
  * [x] CAN_LATENCY_CORRECTION must be assesed again because I've changed how the START is sent (4B additionally).
  * [ ] Run mode (loop/stop) should be independent of CAN bus trigger message. The receiver should always work according to the current mode, not the message type that triggered it. That said, there should only be one start message as it once was. This is because 
+ * [ ] 
 
 # Bugs
 * [x] So it happened that it couldnt save results history when the page overflowed from 1 back to 0 (after 128 measurements). Probably it didn't cleared the flash.
@@ -210,3 +212,4 @@ Solved. The problem was due to lack of USBD_CDC_ReceivePacket calls. So it seems
 * [x] Config object should be globally available. 
 * [ ] Eliminate ifdef galore somehow.
 * [x] Rename CANbus start event to "trigger" event.
+* [ ] ~~FastStateMachine could be split into two. One for IR and one for CANbus handling. Both would control the same StopWatch instance.~~

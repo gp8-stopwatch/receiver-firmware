@@ -24,10 +24,10 @@ void FastStateMachine::run (Event event)
         bool canEvent{};
 
         // Global transitions (the same for every state)
-        if (event == Event::pause) {
+        if (event.getType () == Event::Type::pause) {
                 state = State::PAUSED;
         }
-        else if (event == Event::reset) {
+        else if (event.getType () == Event::Type::reset) {
                 state = State::WAIT_FOR_BEAM;
         }
 
@@ -38,12 +38,12 @@ void FastStateMachine::run (Event event)
                 }
 
                 // Event possible only if WITH_CHECK_SENSOR_STATUS is set
-                if (event == Event::noIr) {
+                if (event.getType () == Event::Type::noIr) {
                         state = State::WAIT_FOR_BEAM;
                         canEvent = true;
                 }
 
-                if (event == Event::irNoise) {
+                if (event.getType () == Event::Type::irNoise) {
                         state = State::WAIT_FOR_BEAM;
                         canEvent = false;
                 }
@@ -96,26 +96,26 @@ void FastStateMachine::run (Event event)
 
                 // The transition
                 if ((ir->isActive () && ir->getBeamState () == IrBeam::present) || remoteBeamState == RemoteBeamState::allOk) {
-                        state = GP8_READY;
+                        state = READY;
                 }
 
         } break;
 
-        case GP8_READY: {
+        case READY: {
                 noIrRequestSent = false;
                 ready_entryAction ();
 
                 if (isInternalTrigger (event) || (canEvent = isExternalTrigger (event))) {
-                        state = GP8_RUNNING;
+                        state = RUNNING;
                         running_entryAction (canEvent);
                 }
         } break;
 
-        case GP8_RUNNING:
+        case RUNNING:
                 if (isInternalTriggerAndStartTimeout (event) || (canEvent = isExternalTrigger (event))) {
 
                         if (getConfig ().getStopMode () == StopMode::stop) {
-                                state = GP8_STOP;
+                                state = STOP;
                                 stop_entryAction (canEvent);
                         }
                         else {
@@ -129,9 +129,9 @@ void FastStateMachine::run (Event event)
                 display->setTime (stopWatch->getTime (), getConfig ().getResolution ()); // Refresh the screen (shows the time is running)
                 break;
 
-        case GP8_STOP:
+        case STOP:
                 if (isInternalTriggerAndStartTimeout (event) || (canEvent = isExternalTrigger (event))) {
-                        state = GP8_RUNNING;
+                        state = RUNNING;
                         running_entryAction (canEvent);
                 }
 
@@ -162,8 +162,8 @@ void FastStateMachine::run (Event event)
 
 bool FastStateMachine::isInternalTrigger (Event event) const
 {
-        return ((ir->getBeamState () == IrBeam::present && ir->isBeamInterrupted ()) || event == Event::testTrigger
-                || event == Event::irTrigger);
+        return ((ir->getBeamState () == IrBeam::present && ir->isBeamInterrupted ()) || event.getType () == Event::Type::testTrigger
+                || event.getType () == Event::Type::irTrigger);
 }
 
 /*****************************************************************************/
@@ -172,7 +172,7 @@ bool FastStateMachine::isInternalTriggerAndStartTimeout (Event event) const { re
 
 /*****************************************************************************/
 
-bool FastStateMachine::isExternalTrigger (Event event) const { return event == Event::canBusTrigger; }
+bool FastStateMachine::isExternalTrigger (Event event) const { return event.getType () == Event::Type::canBusTrigger; }
 
 /*****************************************************************************/
 

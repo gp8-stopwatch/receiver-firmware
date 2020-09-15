@@ -24,16 +24,28 @@ struct IRandomAccessStorage;
 /**
  * Events for the state machine
  */
-enum class Event {
-        timePassed,  /// Every 10ms / 1ms / 100µs
-        irTrigger,   /// IR beam interrupted
-        testTrigger, /// Test GPIO state changed
-        canBusTrigger,
-        pause,
-        reset, // Use for resume after pause
-        noIr,
-        irPresent,
-        irNoise
+class Event {
+public:
+        enum class Type {
+                timePassed,  /// Every 10ms / 1ms / 100µs
+                irTrigger,   /// IR beam interrupted
+                testTrigger, /// Test GPIO state changed
+                canBusTrigger,
+                pause,
+                reset, // Use for resume after pause
+                noIr,
+                irPresent,
+                irNoise
+        };
+
+        Event (Type t, Result r = 0) : type{t}, time{r} {}
+
+        Type getType () const { return type; }
+        Result getResult () const { return time; }
+
+private:
+        Type type;
+        Result time;
 };
 
 /**
@@ -41,7 +53,7 @@ enum class Event {
  */
 class FastStateMachine {
 public:
-        enum State { WAIT_FOR_BEAM, GP8_READY, GP8_RUNNING, GP8_STOP, LOOP_RUNNING, PAUSED };
+        enum State { WAIT_FOR_BEAM, READY, RUNNING, STOP, LOOP_RUNNING, PAUSED };
         enum RemoteBeamState { wait, allOk, someNotOk, noResponse };
 
         static FastStateMachine *singleton ()
@@ -51,7 +63,7 @@ public:
         }
 
         void run (Event event);
-        bool isCounting () const { return state == State::GP8_RUNNING; }
+        bool isCounting () const { return state == State::RUNNING || state == State::LOOP_RUNNING; }
 
         void setIr (IInfraRedBeam *i) { this->ir = i; }
         void setStopWatch (StopWatch *s) { this->stopWatch = s; }
@@ -95,8 +107,8 @@ private:
 class FastStateMachineProtocolCallback : public IProtocolCallback {
 public:
         FastStateMachineProtocolCallback (FastStateMachine &fs) : fastStateMachine{fs} {}
-        void onTrigger () override { fastStateMachine.run (Event::canBusTrigger); }
-        void onNoIr () override { fastStateMachine.run (Event::noIr); }
+        void onTrigger () override { fastStateMachine.run (Event::Type::canBusTrigger); }
+        void onNoIr () override { fastStateMachine.run (Event::Type::noIr); }
 
 private:
         FastStateMachine &fastStateMachine;

@@ -116,9 +116,9 @@ void DisplayMenu::onEvent (menu::Event p)
 
         static auto m = ls::machine (
                 // Main screen : the stopwatch
-                state ("STOP_WATCH"_ST, entry ([&] { machine.run (Event::reset); }), exit ([&] {
+                state ("STOP_WATCH"_ST, entry ([&] { machine.run (Event::Type::reset); }), exit ([&] {
                                display.clear ();
-                               machine.run (Event::pause);
+                               machine.run (Event::Type::pause);
                                currentResult = 0;
                        }),
                        transition ("RESULT"_ST, shortPress ())),

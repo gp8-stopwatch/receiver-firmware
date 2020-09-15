@@ -10,10 +10,8 @@
 #include "Debug.h"
 #include "ErrorHandler.h"
 #include "FastStateMachine.h"
+#include "StopWatch.h"
 
-static constexpr int MIN_TIME_BETWEEN_EVENTS_MS = 10;
-static constexpr int NOISE_CLEAR_TIMEOUT_MS = 1000;
-static constexpr int NOISE_EVENTS_CRITICAL = 5;
 /*****************************************************************************/
 
 void sendEvent (FastStateMachine *fStateMachine, Event ev)
@@ -32,15 +30,23 @@ void sendEvent (FastStateMachine *fStateMachine, Event ev)
 
 void InfraRedBeamExti::onExti (IrBeam state)
 {
-        if (!active) {
+        if (!active || lastState == IrBeam::noise) {
                 return;
         }
 
         if (state == IrBeam::absent) {
+                // IR was cut off. Start the timer to measure the gap.
+                eventValidationTimer.start (0);
+                beamPresentTimer.start (NO_IR_DETECTED_MS);
+                lastState = IrBeam::absent;
+                // We don't know if this is a valid trigger event or noise, so we store current time for later.
+                triggerRisingEdge = stopWatch->getTime ();
+        }
+        else {
+                lastState = IrBeam::present;
 
-                if (beamPresentTimer.elapsed () < MIN_TIME_BETWEEN_EVENTS_MS) {
-                        beamPresentTimer.start (NO_IR_DETECTED_MS); // Force no IR
-                        beamNoiseTimer.start (NOISE_CLEAR_TIMEOUT_MS);
+                // IR was restored, but the time it was off was too short, which means noise event
+                if (eventValidationTimer.elapsed () < MIN_TIME_BETWEEN_EVENTS_MS) {
 
                         // We simply ingnore spurious noise events if they don't occur too frequently.
                         if (++noiseEventCounter > NOISE_EVENTS_CRITICAL) {
@@ -50,23 +56,13 @@ void InfraRedBeamExti::onExti (IrBeam state)
                                 HAL_NVIC_SetPriority (TIM15_IRQn, IR_EXTI_PRIORITY, 0);    // Priorities are inverted
                                 HAL_NVIC_SetPriority (IR_IRQn, DISPLAY_TIMER_PRIORITY, 0); // Priorities are inverted
 
-                                fStateMachine->run (Event::irNoise);
+                                fStateMachine->run (Event::Type::irNoise);
                         }
                 }
-                else {
-                        beamPresentTimer.start (NO_IR_DETECTED_MS);
-                        lastState = IrBeam::absent;
-                        sendEvent (fStateMachine, Event::irTrigger);
-                }
-        }
-        else {
-                if (beamPresentTimer.elapsed () < MIN_TIME_BETWEEN_EVENTS_MS) {
-                        beamNoiseTimer.start (NOISE_CLEAR_TIMEOUT_MS);
-                        // lastState = IrBeam::noise;
-                }
+                // IR was restored, and the time it was off is valid to qualify it as an trigger event.
                 else {
                         beamPresentTimer.start (0);
-                        lastState = IrBeam::present;
+                        sendEvent (fStateMachine, {Event::Type::irTrigger, triggerRisingEdge});
                 }
         }
 }
@@ -75,8 +71,9 @@ void InfraRedBeamExti::onExti (IrBeam state)
 
 void InfraRedBeamExti::run ()
 {
-        // Clear noise status after NOISE_CLEAR_TIMEOUT_MS or more ms (but it can be restored later during this call).
+        // This runs every NOISE_CLEAR_TIMEOUT_MS and checks if noise events number was exceeded. Then the counter is cleared. Crude but easy.
         if (beamNoiseTimer.isExpired ()) {
+                beamNoiseTimer.start (NOISE_CLEAR_TIMEOUT_MS);
                 noiseEventCounter = 0;
 
                 if (lastState == IrBeam::noise) {

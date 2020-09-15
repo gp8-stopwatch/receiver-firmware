@@ -16,14 +16,7 @@
 #include <stm32f0xx_hal.h>
 
 class FastStateMachine;
-
-/**
- * How much update events since last rise (noOfUpdateEventsSinceLastRise) indicates
- * that light path is cut. Roughly proportional to ms (???)
- * TODO Is 50 not to much?
- */
-#define UPDATE_EVENT_TRESHOLD 20
-// #define BEAM_GONE 25000
+class StopWatch;
 
 /**
  * Non modulatred for IR barriers and curtains like TSSP 4056.
@@ -31,6 +24,10 @@ class FastStateMachine;
  */
 class InfraRedBeamExti : public IInfraRedBeam {
 public:
+        static constexpr int MIN_TIME_BETWEEN_EVENTS_MS = 10;
+        static constexpr int NOISE_CLEAR_TIMEOUT_MS = 1000;
+        static constexpr int NOISE_EVENTS_CRITICAL = 5;
+
         /// Based on what was the state at the time of powering on.
         explicit InfraRedBeamExti (IrBeam initialState) : lastState{initialState} {}
 
@@ -60,11 +57,16 @@ public:
         void setFastStateMachine (FastStateMachine *f) { fStateMachine = f; }
         void run ();
 
+        void setStopWatch (StopWatch *s) { this->stopWatch = s; }
+
 private:
         Timer beamPresentTimer;
-        Timer beamNoiseTimer;
+        Timer beamNoiseTimer{NOISE_CLEAR_TIMEOUT_MS};
+        Timer eventValidationTimer;
         int noiseEventCounter{};
         IrBeam lastState;
         bool active{true};
         FastStateMachine *fStateMachine{};
+        StopWatch *stopWatch{};
+        Result triggerRisingEdge{};
 };
