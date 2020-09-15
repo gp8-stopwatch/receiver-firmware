@@ -23,8 +23,11 @@ public:
         // static constexpr std::array PRESCALERS{1000000, 1000000, 100000, 10000};
         // static constexpr std::array<uint32_t, 4> PERIODS{10, 100, 100, 100};
         // Warning! Correct only with -O3. For a CanFrame with DLC == 0 63 was OK. This is for DLC == 4
+
+        // TODO - why this is not used!?!?!?
         static constexpr uint32_t CAN_LATENCY_CORRECTION = 98;
-        static constexpr unsigned int MAX_TIME = 100U * 60U * 100000U - 1U; // 100 minutes in 10µs units.
+
+        // static constexpr unsigned int MAX_TIME = 100U * 60U * 100000U - 1U; // 100 minutes in 10µs units.
         // static constexpr std::array INCREMENTS{1, 10, 100, 1000};
 
         static StopWatch *singleton ()
@@ -35,8 +38,10 @@ public:
 
         StopWatch ();
 
-        void setResolution (Resolution res) { resolution = res; }
-        void reset (bool canStart) { time = (canStart) ? (CAN_LATENCY_CORRECTION) : (0); }
+        // void setResolution (Resolution res) { resolution = res; }
+        void reset (bool canStart)
+        { /* time = (canStart) ? (CAN_LATENCY_CORRECTION) : (0); */
+        }
 
         /**
          * Starts the timer immediatelly.
@@ -71,8 +76,4 @@ public:
 private:
         TIM_HandleTypeDef prescalerStopWatchTimHandle{};
         TIM_HandleTypeDef mainStopWatchTimHandle{};
-        bool running{};
-        uint32_t time{}; // 10µs incremenets.
-        uint32_t increment{};
-        Resolution resolution{};
 };

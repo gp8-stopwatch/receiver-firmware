@@ -67,6 +67,7 @@ void FastStateMachine::run (Event event)
                 if (ir->isActive () && ir->getBeamState () == IrBeam::noise) {
                         display->setText ("noise ");
 
+                        // TODO
                         // #ifdef WITH_CAN
                         //                         if (protocol != nullptr && !canEvent && !noIrRequestSent) {
                         //                                 protocol->sendNoIr ();

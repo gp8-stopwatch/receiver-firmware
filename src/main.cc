@@ -513,7 +513,7 @@ int main ()
 #ifdef WITH_SOUND
                 buzzer.setActive (config.isBuzzerOn ());
 #endif
-                stopWatch->setResolution (config.getResolution ());
+                // stopWatch->setResolution (config.getResolution ());
                 display.setResolution (config.getResolution ());
         };
 

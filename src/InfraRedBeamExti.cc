@@ -14,6 +14,19 @@
 static constexpr int MIN_TIME_BETWEEN_EVENTS_MS = 10;
 static constexpr int NOISE_CLEAR_TIMEOUT_MS = 1000;
 static constexpr int NOISE_EVENTS_CRITICAL = 5;
+/*****************************************************************************/
+
+void sendEvent (FastStateMachine *fStateMachine, Event ev)
+{
+#ifdef TEST_TRIGGER_MOD_2
+        static int i{};
+        if (++i % 2 == 0) {
+                fStateMachine->run (ev);
+        }
+#else
+        fStateMachine->run (ev);
+#endif
+}
 
 /*****************************************************************************/
 
@@ -43,13 +56,13 @@ void InfraRedBeamExti::onExti (IrBeam state)
                 else {
                         beamPresentTimer.start (NO_IR_DETECTED_MS);
                         lastState = IrBeam::absent;
-                        sendTriggerEvent ();
+                        sendEvent (fStateMachine, Event::irTrigger);
                 }
         }
         else {
                 if (beamPresentTimer.elapsed () < MIN_TIME_BETWEEN_EVENTS_MS) {
                         beamNoiseTimer.start (NOISE_CLEAR_TIMEOUT_MS);
-                        lastState = IrBeam::noise;
+                        // lastState = IrBeam::noise;
                 }
                 else {
                         beamPresentTimer.start (0);
@@ -74,18 +87,4 @@ void InfraRedBeamExti::run ()
                         lastState = IrBeam::absent;
                 }
         }
-}
-
-/*****************************************************************************/
-
-void InfraRedBeamExti::sendTriggerEvent ()
-{
-#ifdef TEST_TRIGGER_MOD_2
-        static int i{};
-        if (++i % 2 == 0) {
-                fStateMachine->run (Event::irTrigger);
-        }
-#else
-        fStateMachine->run (Event::irTrigger);
-#endif
 }

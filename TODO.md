@@ -56,6 +56,7 @@
   * [ ] Battery over-discharge preotection
   * [ ] Othewr means of battery protection (over-charge, over-current)
   * [ ] Emi - I can see lots of noise in the CAN bus, and test-trigger can be easily fired by transients.
+  * [ ] The same goes to IR signal - I can see 20MHz / 60kHz - maybe screen is te cullprit. EDIT - with screen truned off I can see the same noise.
 
 # Case
 * [ ] Make sure the battery holder is well supported by case's back wall. It has to be fixed in place. This way we can ignore the screws that would normally fix the holder to the PCB.

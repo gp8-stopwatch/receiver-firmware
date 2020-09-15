@@ -51,9 +51,6 @@ StopWatch::StopWatch ()
         /*| Stopwatch 16bit prescaler timer (master)                                |*/
         /*+-------------------------------------------------------------------------+*/
 
-        // resolution = res;
-        // increment = INCREMENTS.at (int (resolution));
-
         // int div = PRESCALERS.at (int (res));
         prescalerStopWatchTimHandle.Instance = TIM3;
         prescalerStopWatchTimHandle.Init.Prescaler = (uint32_t) (HAL_RCC_GetHCLKFreq () / 1000000) - 1;

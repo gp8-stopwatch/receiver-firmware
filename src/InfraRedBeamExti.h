@@ -61,8 +61,6 @@ public:
         void run ();
 
 private:
-        inline void sendTriggerEvent ();
-
         Timer beamPresentTimer;
         Timer beamNoiseTimer;
         int noiseEventCounter{};
