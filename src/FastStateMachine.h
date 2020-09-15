@@ -41,7 +41,7 @@ public:
         Event (Type t, Result r = 0) : type{t}, time{r} {}
 
         Type getType () const { return type; }
-        Result getResult () const { return time; }
+        Result getTime () const { return time; }
 
 private:
         Type type;
@@ -74,9 +74,9 @@ public:
 
 private:
         void ready_entryAction ();
-        void running_entryAction (bool canEvent);
-        void stop_entryAction (bool canEvent);
-        void loop_entryAction (bool canEvent);
+        void running_entryAction (Event event, bool canEvent);
+        void stop_entryAction (Event event, bool canEvent);
+        void loop_entryAction (Event event, bool canEvent);
         void pause_entryAction ();
 
         bool isInternalTrigger (Event event) const;

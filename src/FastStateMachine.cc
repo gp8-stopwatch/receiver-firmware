@@ -107,7 +107,7 @@ void FastStateMachine::run (Event event)
 
                 if (isInternalTrigger (event) || (canEvent = isExternalTrigger (event))) {
                         state = RUNNING;
-                        running_entryAction (canEvent);
+                        running_entryAction (event, canEvent);
                 }
         } break;
 
@@ -116,11 +116,11 @@ void FastStateMachine::run (Event event)
 
                         if (getConfig ().getStopMode () == StopMode::stop) {
                                 state = STOP;
-                                stop_entryAction (canEvent);
+                                stop_entryAction (event, canEvent);
                         }
                         else {
                                 state = LOOP_RUNNING;
-                                loop_entryAction (canEvent);
+                                loop_entryAction (event, canEvent);
                         }
 
                         break;
@@ -132,14 +132,14 @@ void FastStateMachine::run (Event event)
         case STOP:
                 if (isInternalTriggerAndStartTimeout (event) || (canEvent = isExternalTrigger (event))) {
                         state = RUNNING;
-                        running_entryAction (canEvent);
+                        running_entryAction (event, canEvent);
                 }
 
                 break;
 
         case LOOP_RUNNING:
                 if (isInternalTriggerAndStartTimeout (event) || (canEvent = isExternalTrigger (event))) {
-                        loop_entryAction (canEvent);
+                        loop_entryAction (event, canEvent);
                 }
 
                 if (loopDisplayTimeout.isExpired ()) {
@@ -212,10 +212,18 @@ void FastStateMachine::ready_entryAction () { display->setTime (0, getConfig ().
 
 /*****************************************************************************/
 
-void FastStateMachine::running_entryAction (bool canEvent)
+void FastStateMachine::running_entryAction (Event event, bool canEvent)
 {
-        stopWatch->reset (canEvent);
-        stopWatch->start ();
+        Result correction{};
+
+        // TODO not tested
+        if (canEvent) {
+                correction += StopWatch::CAN_LATENCY_CORRECTION;
+        }
+
+        correction += (stopWatch->getTime () - event.getTime ());
+        stopWatch->set (correction);
+        // stopWatch->start ();
 
 #ifdef WITH_SOUND
         buzzer->beep (100, 0, 1);
@@ -231,9 +239,10 @@ void FastStateMachine::running_entryAction (bool canEvent)
 
 /*****************************************************************************/
 
-void FastStateMachine::stop_entryAction (bool canEvent)
+void FastStateMachine::stop_entryAction (Event event, bool canEvent)
 {
-        stopWatch->stop ();
+        // stopWatch->stop ();
+        stopWatch->substract (stopWatch->getTime () - event.getTime ());
         startTimeout.start (getConfig ().getBlindTime ());
         uint32_t canTime = (protocol != nullptr) ? (protocol->getLastRemoteStopTime ()) : (0UL);
         uint32_t result = (canEvent) ? (canTime) : (stopWatch->getTime ());
@@ -258,13 +267,14 @@ void FastStateMachine::stop_entryAction (bool canEvent)
 
 /*****************************************************************************/
 
-void FastStateMachine::loop_entryAction (bool canEvent)
+void FastStateMachine::loop_entryAction (Event event, bool canEvent)
 {
-        stopWatch->stop ();
+        // stopWatch->stop ();
         uint32_t canTime = (protocol != nullptr) ? (protocol->getLastRemoteStopTime ()) : (0UL);
         uint32_t result = (canEvent) ? (canTime) : (stopWatch->getTime ());
-        stopWatch->reset (canEvent);
-        stopWatch->start ();
+        // TODO!!!
+        // stopWatch->reset (canEvent);
+        // stopWatch->start ();
 
         if (!canEvent && protocol != nullptr) {
 #ifdef WITH_CAN
@@ -292,4 +302,6 @@ void FastStateMachine::loop_entryAction (bool canEvent)
 
 /****************************************************************************/
 
-void FastStateMachine::pause_entryAction () { stopWatch->stop (); }
+void FastStateMachine::pause_entryAction ()
+{ /* stopWatch->stop (); */
+}

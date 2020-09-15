@@ -112,7 +112,11 @@
  * [x] Dots indicating the resolution of the time display.
  * [x] CAN_LATENCY_CORRECTION must be assesed again because I've changed how the START is sent (4B additionally).
  * [ ] Run mode (loop/stop) should be independent of CAN bus trigger message. The receiver should always work according to the current mode, not the message type that triggered it. That said, there should only be one start message as it once was. This is because 
- * [ ] 
+ * [ ] Time corrections in unifoirm way:
+   * [ ] CAN latency when internal + extarnal sensors are used.
+   * [ ] Trigger rising and falling correction
+     * [ ] Sending this correction via CAN bus as well
+     * [ ] Bigger precission than Result type can provide. I have 2 HW timers, it would be wise to store state of both of them (?)
 
 # Bugs
 * [x] So it happened that it couldnt save results history when the page overflowed from 1 back to 0 (after 128 measurements). Probably it didn't cleared the flash.
