@@ -218,7 +218,7 @@ void FastStateMachine::running_entryAction (Event event, bool canEvent)
 
         // TODO not tested
         if (canEvent) {
-                correction = StopWatch::CAN_LATENCY_CORRECTION + event.getTime ();
+                correction = StopWatch::CAN_LATENCY_CORRECTION /* + event.getTime () */ + protocol->getLastRemoteStopTime ();
         }
         else {
                 correction = (stopWatch->getTime () - event.getTime ());
@@ -257,10 +257,13 @@ void FastStateMachine::stop_entryAction (Event event, bool canEvent)
 
         display->setTime (result, getConfig ().getResolution ());
 
-        if (history != nullptr) {
+        /*--------------------------------------------------------------------------*/
+
 #ifdef WITH_SOUND
-                buzzer->beep (70, 50, 3);
+        buzzer->beep (70, 50, 3);
 #endif
+
+        if (history != nullptr) {
 #ifdef WITH_FLASH
                 history->store (result);
 #endif
@@ -271,12 +274,19 @@ void FastStateMachine::stop_entryAction (Event event, bool canEvent)
 
 void FastStateMachine::loop_entryAction (Event event, bool canEvent)
 {
-        // stopWatch->stop ();
+        Result correction{};
+
+        // if (canEvent) {
+        //         correction = StopWatch::CAN_LATENCY_CORRECTION /* + event.getTime () */ + protocol->getLastRemoteStopTime ();
+        // }
+        // else {
+        correction = (stopWatch->getTime () - event.getTime ());
+        // }
+
+        stopWatch->substract (correction);
         uint32_t canTime = (protocol != nullptr) ? (protocol->getLastRemoteStopTime ()) : (0UL);
         uint32_t result = (canEvent) ? (canTime) : (stopWatch->getTime ());
-        // TODO!!!
-        // stopWatch->reset (canEvent);
-        // stopWatch->start ();
+        stopWatch->set (correction);
 
         if (!canEvent && protocol != nullptr) {
 #ifdef WITH_CAN
@@ -284,18 +294,18 @@ void FastStateMachine::loop_entryAction (Event event, bool canEvent)
 #endif
         }
 
-#ifdef WITH_SOUND
-        buzzer->beep (100, 0, 1);
-#endif
         startTimeout.start (getConfig ().getBlindTime ());
         loopDisplayTimeout.start (LOOP_DISPLAY_TIMEOUT);
 
         display->setTime (result, getConfig ().getResolution ());
 
-        if (history != nullptr) {
+        /*--------------------------------------------------------------------------*/
+
 #ifdef WITH_SOUND
-                buzzer->beep (70, 50, 2);
+        buzzer->beep (70, 50, 2);
 #endif
+
+        if (history != nullptr) {
 #ifdef WITH_FLASH
                 history->store (result);
 #endif

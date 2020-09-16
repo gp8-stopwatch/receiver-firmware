@@ -74,5 +74,5 @@ private:
         bool active{true};
         FastStateMachine *fStateMachine{};
         StopWatch *stopWatch{};
-        Result triggerRisingEdge{};
+        Result triggerRisingEdgeTime{};
 };

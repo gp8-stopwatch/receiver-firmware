@@ -249,7 +249,7 @@ int main ()
 #ifdef TEST_TRIGGER_MOD_2
                 static int i{};
                 if (++i % 2 == 0) {
-                        fStateMachine->run (Event::testTrigger);
+                        fStateMachine->run (Event::Type::testTrigger);
                 }
 #else
                 fStateMachine->run (Event::Type::testTrigger);

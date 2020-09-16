@@ -42,7 +42,7 @@ void InfraRedBeamExti::onExti ()
                 beamPresentTimer.start (NO_IR_DETECTED_MS);
                 lastState = IrBeam::absent;
                 // We don't know if this is a valid trigger event or noise, so we store current time for later.
-                triggerRisingEdge = stopWatch->getTime ();
+                triggerRisingEdgeTime = stopWatch->getTime ();
         }
         else {
                 lastState = IrBeam::present;
@@ -65,7 +65,7 @@ void InfraRedBeamExti::onExti ()
                 // IR was restored, and the time it was off is valid to qualify it as an trigger event.
                 else {
                         beamPresentTimer.start (0);
-                        sendEvent (fStateMachine, {Event::Type::irTrigger, triggerRisingEdge});
+                        sendEvent (fStateMachine, {Event::Type::irTrigger, triggerRisingEdgeTime});
                 }
         }
 }

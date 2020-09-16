@@ -48,7 +48,7 @@ ADD_DEFINITIONS (-DPLATFORM_REGULAR)
 # set(WITH_RTC OFF CACHE BOOL "Complie RTC support")
 # set(WITH_POWER_MANAGER OFF CACHE BOOL "Complie power sensing support")
 # set(WITH_CHECK_SENSOR_STATUS OFF CACHE BOOL "If on, the device checks for external sensors and queries their state")
-# set(WITH_BUTTON OFF CACHE BOOL "Compile button support")
+# set(WITH_BUTTON ON CACHE BOOL "Compile button support")
 # ADD_DEFINITIONS (-DPLATFORM_MICRO)
 
 IF (WITH_SOUND)
