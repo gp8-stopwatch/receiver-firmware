@@ -218,10 +218,12 @@ void FastStateMachine::running_entryAction (Event event, bool canEvent)
 
         // TODO not tested
         if (canEvent) {
-                correction += StopWatch::CAN_LATENCY_CORRECTION;
+                correction = StopWatch::CAN_LATENCY_CORRECTION + event.getTime ();
+        }
+        else {
+                correction = (stopWatch->getTime () - event.getTime ());
         }
 
-        correction += (stopWatch->getTime () - event.getTime ());
         stopWatch->set (correction);
         // stopWatch->start ();
 
@@ -232,7 +234,7 @@ void FastStateMachine::running_entryAction (Event event, bool canEvent)
 
         if (!canEvent && protocol != nullptr) {
 #ifdef WITH_CAN
-                protocol->sendTrigger (0);
+                protocol->sendTrigger (correction);
 #endif
         }
 }

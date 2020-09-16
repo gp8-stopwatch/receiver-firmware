@@ -54,9 +54,10 @@ void InfraRedBeamExti::onExti ()
                         if (++noiseEventCounter > NOISE_EVENTS_CRITICAL) {
                                 lastState = IrBeam::noise;
 
-                                // HAL_NVIC_DisableIRQ (IR_IRQn);
+#ifdef WITH_DISPLAY
                                 HAL_NVIC_SetPriority (TIM15_IRQn, IR_EXTI_PRIORITY, 0);    // Priorities are inverted
                                 HAL_NVIC_SetPriority (IR_IRQn, DISPLAY_TIMER_PRIORITY, 0); // Priorities are inverted
+#endif
 
                                 fStateMachine->run (Event::Type::irNoise);
                         }
@@ -79,10 +80,10 @@ void InfraRedBeamExti::run ()
                 noiseEventCounter = 0;
 
                 if (lastState == IrBeam::noise) {
-                        // HAL_NVIC_EnableIRQ (IR_IRQn);
+#ifdef WITH_DISPLAY
                         HAL_NVIC_SetPriority (TIM15_IRQn, DISPLAY_TIMER_PRIORITY, 0);
                         HAL_NVIC_SetPriority (IR_IRQn, IR_EXTI_PRIORITY, 0);
-
+#endif
                         // reset
                         lastState = getPinState ();
                         beamPresentTimer.start (0);
