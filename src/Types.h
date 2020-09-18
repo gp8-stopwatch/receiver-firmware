@@ -19,6 +19,8 @@
 #include "platform/Micro.h"
 #elif defined(PLATFORM_REGULAR)
 #include "platform/Regular.h"
+#elif defined(PLATFORM_HUGE)
+#include "platform/Huge.h"
 #endif
 
 using String = etl::string<16>;
@@ -47,8 +49,9 @@ enum OperationMode {
 };
 
 enum class DeviceType : uint8_t {
-        receiver,  // Normal receiver with display
-        ir_sensor, // Micro reciver wthout the display, battery nor any buttons.
+        receiver,     // Normal receiver with display
+        ir_sensor,    // Micro reciver wthout the display, battery nor any buttons.
+        huge_display, // 5 inch 7 segment display
 };
 
 #ifdef PLATFORM_REGULAR
@@ -57,6 +60,10 @@ const DeviceType myDeviceType = DeviceType::receiver;
 
 #ifdef PLATFORM_MICRO
 const DeviceType myDeviceType = DeviceType::ir_sensor;
+#endif
+
+#ifdef PLATFORM_HUGE
+const DeviceType myDeviceType = DeviceType::huge_display;
 #endif
 
 static constexpr int RESOLUTION_NUMBER_OF_OPTIONS = 4;

@@ -116,18 +116,11 @@ int main ()
         }
 #endif
 
+#ifdef PLATFORM_HUGE
+        // TODO remove this when new PCBs for huge diplay are ordered
+        Led7SegmentDisplay display (sa, sb, sc, sd, se, sf, sg, sdp, d3, d2, d1, d4, d5, d6);
+#else
         Led7SegmentDisplay display (sa, sb, sc, sd, se, sf, sg, sdp, d1, d2, d3, d4, d5, d6);
-
-#if 0
-        screen.setDigit (0, 0xa);
-        screen.setDigit (1, 0xb);
-        screen.setDigit (2, 0xc);
-        screen.setDigit (3, 0xd);
-        screen.setDigit (4, 0xe);
-        screen.setDigit (5, 0xf);
-
-        while (true) {
-        }
 #endif
 
         HardwareTimer tim15 (TIM15, 48 - 1, 200 - 1); // Update 5kHz
@@ -139,6 +132,17 @@ int main ()
         FakeDisplay display;
 #endif
 
+#if 1
+        display.setDigit (0, 0xa);
+        display.setDigit (1, 0xb);
+        display.setDigit (2, 0xc);
+        display.setDigit (3, 0xd);
+        display.setDigit (4, 0xe);
+        display.setDigit (5, 0xf);
+
+        while (true) {
+        }
+#endif
         /*+-------------------------------------------------------------------------+*/
         /*| Config                                                                  |*/
         /*+-------------------------------------------------------------------------+*/
@@ -591,7 +595,8 @@ int main ()
 
 /*****************************************************************************/
 
-#ifdef PLATFORM_REGULAR
+#if defined(PLATFORM_REGULAR) || defined(PLATFORM_HUGE)
+
 void SystemClock_Config ()
 {
         RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -612,7 +617,11 @@ void SystemClock_Config ()
         RCC_OscInitStruct.HSI14CalibrationValue = 16;
         RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
         RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+#if defined(PLATFORM_REGULAR)
         RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL5;
+#elif defined(PLATFORM_HUGE)
+        RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL12;
+#endif
         RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV2;
 
         if (HAL_RCC_OscConfig (&RCC_OscInitStruct) != HAL_OK) {
@@ -636,9 +645,9 @@ void SystemClock_Config ()
                 Error_Handler ();
         }
 }
-#endif
 
-#ifdef PLATFORM_MICRO
+#elif defined(PLATFORM_MICRO)
+
 void SystemClock_Config ()
 {
         RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -669,6 +678,7 @@ void SystemClock_Config ()
                 Error_Handler ();
         }
 }
+
 #endif
 
 /*****************************************************************************/

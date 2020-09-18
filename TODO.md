@@ -58,6 +58,11 @@
   * [ ] Emi - I can see lots of noise in the CAN bus, and test-trigger can be easily fired by transients.
   * [x] The same goes to IR signal - I can see 20MHz / 60kHz - maybe screen is te cullprit. EDIT - with screen truned off I can see the same noise. **It was caused by faulty power supply of my LED lamps**
 
+## Huge display
+* [ ] czy nie potrzeba kondensatorów !? 
+* [ ] jaki jest na prawdę prąd
+* [ ] zmierzyć jaki ma być opornik dla DP
+
 # Case
 * [ ] Make sure the battery holder is well supported by case's back wall. It has to be fixed in place. This way we can ignore the screws that would normally fix the holder to the PCB.
 * [ ] Pod grilem musi być wytłoczenie, bo głośniczek jest za wysoki.

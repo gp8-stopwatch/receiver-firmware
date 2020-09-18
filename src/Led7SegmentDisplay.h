@@ -110,8 +110,13 @@ public:
         void setResolution (Resolution res) override;
 
 private:
-        /// Turns a single display on or fof
+#ifdef PLATFORM_HUGE
+        /// Turns a single display on or off
+        void turnDisplay (uint8_t d, bool b) { *common.at (d) = !CA ^ b; }
+#else
+        /// Turns a single display on or off
         void turnDisplay (uint8_t d, bool b) { *common.at (d) = !CA ^ !b; }
+#endif
         void outputDigit (uint8_t position);
         uint8_t flipFont (uint8_t font) { return (font & 0xc0) | (font & 0x07) << 3 | (font & 0x38) >> 3; }
 
