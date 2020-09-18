@@ -7,6 +7,7 @@
  ****************************************************************************/
 
 #include "InfraRedBeamExti.h"
+#include "Container.h"
 #include "Debug.h"
 #include "ErrorHandler.h"
 #include "FastStateMachine.h"

@@ -95,6 +95,7 @@ private:
         Buzzer *buzzer{};
         History *history{};
         CanProtocol *protocol{};
+        Result lastTime;
 
         mutable Timer reqRespTimer;
         mutable bool infoRequestSent{};

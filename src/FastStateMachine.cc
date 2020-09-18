@@ -126,7 +126,8 @@ void FastStateMachine::run (Event event)
                         break;
                 }
 
-                display->setTime (stopWatch->getTime (), getConfig ().getResolution ()); // Refresh the screen (shows the time is running)
+                display->setTime (stopWatch->getTime () - lastTime,
+                                  getConfig ().getResolution ()); // Refresh the screen (shows the time is running)
                 break;
 
         case STOP:
@@ -143,7 +144,7 @@ void FastStateMachine::run (Event event)
                 }
 
                 if (loopDisplayTimeout.isExpired ()) {
-                        display->setTime (stopWatch->getTime (),
+                        display->setTime (stopWatch->getTime () - lastTime,
                                           getConfig ().getResolution ()); // Refresh the screen (shows the time is running)
                 }
 
@@ -214,17 +215,20 @@ void FastStateMachine::ready_entryAction () { display->setTime (0, getConfig ().
 
 void FastStateMachine::running_entryAction (Event event, bool canEvent)
 {
-        Result correction{};
+        // Result correction{};
 
         // TODO not tested
         if (canEvent) {
-                correction = StopWatch::CAN_LATENCY_CORRECTION /* + event.getTime () */ + protocol->getLastRemoteStopTime ();
+                // correction = StopWatch::CAN_LATENCY_CORRECTION /* + event.getTime () */ + protocol->getLastRemoteStopTime ();
+                // TODO StopWatch::CAN_LATENCY_CORRECTION + protocol->getLastRemoteStopTime () should be stored in the event.getTime
+                lastTime = StopWatch::CAN_LATENCY_CORRECTION /* + event.getTime () */ + protocol->getLastRemoteStopTime ();
         }
         else {
-                correction = (stopWatch->getTime () - event.getTime ());
+                // correction = (stopWatch->getTime () - event.getTime ());
+                lastTime = event.getTime ();
         }
 
-        stopWatch->set (correction);
+        // stopWatch->set (correction);
         // stopWatch->start ();
 
 #ifdef WITH_SOUND
@@ -234,7 +238,7 @@ void FastStateMachine::running_entryAction (Event event, bool canEvent)
 
         if (!canEvent && protocol != nullptr) {
 #ifdef WITH_CAN
-                protocol->sendTrigger (correction);
+                protocol->sendTrigger (lastTime);
 #endif
         }
 }
@@ -244,10 +248,10 @@ void FastStateMachine::running_entryAction (Event event, bool canEvent)
 void FastStateMachine::stop_entryAction (Event event, bool canEvent)
 {
         // stopWatch->stop ();
-        stopWatch->substract (stopWatch->getTime () - event.getTime ());
+        // stopWatch->substract (stopWatch->getTime () - event.getTime ());
         startTimeout.start (getConfig ().getBlindTime ());
         uint32_t canTime = (protocol != nullptr) ? (protocol->getLastRemoteStopTime ()) : (0UL);
-        uint32_t result = (canEvent) ? (canTime) : (stopWatch->getTime ());
+        uint32_t result = (canEvent) ? (canTime) : (event.getTime () - lastTime);
 
         if (!canEvent && protocol != nullptr) {
 #ifdef WITH_CAN
@@ -263,30 +267,31 @@ void FastStateMachine::stop_entryAction (Event event, bool canEvent)
         buzzer->beep (70, 50, 3);
 #endif
 
-        if (history != nullptr) {
 #ifdef WITH_FLASH
+        if (history != nullptr) {
                 history->store (result);
-#endif
         }
+#endif
 }
 
 /*****************************************************************************/
 
 void FastStateMachine::loop_entryAction (Event event, bool canEvent)
 {
-        Result correction{};
-
-        // if (canEvent) {
-        //         correction = StopWatch::CAN_LATENCY_CORRECTION /* + event.getTime () */ + protocol->getLastRemoteStopTime ();
-        // }
-        // else {
-        correction = (stopWatch->getTime () - event.getTime ());
-        // }
-
-        stopWatch->substract (correction);
+        // stopWatch->substract (correction);
         uint32_t canTime = (protocol != nullptr) ? (protocol->getLastRemoteStopTime ()) : (0UL);
-        uint32_t result = (canEvent) ? (canTime) : (stopWatch->getTime ());
-        stopWatch->set (correction);
+        uint32_t result = (canEvent) ? (canTime) : (event.getTime () - lastTime);
+        // stopWatch->set (correction);
+
+        if (canEvent) {
+                // correction = StopWatch::CAN_LATENCY_CORRECTION /* + event.getTime () */ + protocol->getLastRemoteStopTime ();
+                // TODO StopWatch::CAN_LATENCY_CORRECTION + protocol->getLastRemoteStopTime () should be stored in the event.getTime
+                lastTime = StopWatch::CAN_LATENCY_CORRECTION /* + event.getTime () */ + protocol->getLastRemoteStopTime ();
+        }
+        else {
+                // correction = (stopWatch->getTime () - event.getTime ());
+                lastTime = event.getTime ();
+        }
 
         if (!canEvent && protocol != nullptr) {
 #ifdef WITH_CAN
@@ -305,11 +310,11 @@ void FastStateMachine::loop_entryAction (Event event, bool canEvent)
         buzzer->beep (70, 50, 2);
 #endif
 
-        if (history != nullptr) {
 #ifdef WITH_FLASH
+        if (history != nullptr) {
                 history->store (result);
-#endif
         }
+#endif
 }
 
 /****************************************************************************/

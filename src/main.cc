@@ -132,7 +132,7 @@ int main ()
         FakeDisplay display;
 #endif
 
-#if 1
+#if 0
         display.setDigit (0, 0xa);
         display.setDigit (1, 0xb);
         display.setDigit (2, 0xc);

@@ -68,6 +68,8 @@ private:
         Timer beamPresentTimer;
         Timer beamNoiseTimer{NOISE_CLEAR_TIMEOUT_MS};
         Timer eventValidationTimer;
+        Timer blindTimeout;
+
         int noiseEventCounter{};
         Gpio &irTriggerPin;
         IrBeam lastState;
