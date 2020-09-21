@@ -67,7 +67,7 @@ private:
 
         Timer beamPresentTimer;
         Timer beamNoiseTimer{NOISE_CLEAR_TIMEOUT_MS};
-        Timer lastIrChange;
+        Result lastIrChange{};
         Timer blindTimeout;
 
         int noiseEventCounter{};
@@ -78,4 +78,6 @@ private:
         StopWatch *stopWatch{};
         std::optional<Result> triggerRisingEdgeTime{};
         Result triggerFallingEdgeTime{};
+        uint32_t irPresentPeriod{};
+        uint32_t irAbsentPeriod{};
 };

@@ -37,22 +37,31 @@ void InfraRedBeamExti::onExti ()
                 return;
         }
 
+        Result now = stopWatch->getTime ();
+
         if (state == IrBeam::absent) {
 
                 beamPresentTimer.start (NO_IR_DETECTED_MS);
-                // lastState = IrBeam::absent;
+                lastState = IrBeam::absent;
                 // We don't know if this is a valid trigger event or noise, so we store current time for later.
 
                 if (!triggerRisingEdgeTime) {
-                        triggerRisingEdgeTime = stopWatch->getTime ();
+                        triggerRisingEdgeTime = now;
+                }
+                else {
+                        irPresentPeriod += now - lastIrChange;
                 }
         }
         else {
-                // lastState = IrBeam::present;
-                triggerFallingEdgeTime = stopWatch->getTime ();
+                lastState = IrBeam::present;
+                triggerFallingEdgeTime = now;
+
+                if (triggerRisingEdgeTime) {
+                        irAbsentPeriod += now - lastIrChange;
+                }
 
                 // IR was restored, but the time it was off was too short, which means noise event
-                if (lastIrChange.elapsed () < MIN_TIME_BETWEEN_EVENTS_MS) {
+                if (now - lastIrChange < MIN_TIME_BETWEEN_EVENTS_MS * 100) {
 
                         // We simply ingnore spurious noise events if they don't occur too frequently.
                         if (++noiseEventCounter > NOISE_EVENTS_CRITICAL) {
@@ -69,28 +78,29 @@ void InfraRedBeamExti::onExti ()
                 // IR was restored, and the time it was off is valid to qualify it as an trigger event.
                 else {
                         beamPresentTimer.start (0);
-                        // sendEvent (fStateMachine, {Event::Type::irTrigger, triggerRisingEdgeTime});
                 }
         }
 
         // Rising or falling edge on IR pin.
-        lastIrChange.start (0);
+        lastIrChange = now;
 }
 
 /*****************************************************************************/
 
 void InfraRedBeamExti::run ()
 {
+        Result now = stopWatch->getTime ();
+
         // EVENT detection. Looking for correct envelope
-        if (triggerRisingEdgeTime && lastIrChange.elapsed () >= MIN_TIME_BETWEEN_EVENTS_MS && getPinState () == IrBeam::present) {
+        if (triggerRisingEdgeTime && now - lastIrChange >= MIN_TIME_BETWEEN_EVENTS_MS * 100 && getPinState () == IrBeam::present) {
 
                 Result envelope = triggerFallingEdgeTime - *triggerRisingEdgeTime;
 
-                if (envelope >= MIN_TIME_BETWEEN_EVENTS_MS * 100 && envelope < DEFAULT_BLIND_TIME_MS * 100) {
+                if (envelope >= MIN_TIME_BETWEEN_EVENTS_MS * 100 && envelope < DEFAULT_BLIND_TIME_MS * 100 && irAbsentPeriod > irPresentPeriod) {
                         sendEvent (fStateMachine, {Event::Type::irTrigger, *triggerRisingEdgeTime});
                 }
 
-                triggerFallingEdgeTime = 0;
+                irPresentPeriod = irAbsentPeriod = triggerFallingEdgeTime = 0;
                 triggerRisingEdgeTime.reset ();
         }
 
