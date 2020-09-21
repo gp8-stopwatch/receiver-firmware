@@ -27,7 +27,7 @@ class InfraRedBeamExti : public IInfraRedBeam {
 public:
         static constexpr int MIN_TIME_BETWEEN_EVENTS_MS = 10;
         static constexpr int NOISE_CLEAR_TIMEOUT_MS = 1000;
-        static constexpr int NOISE_EVENTS_CRITICAL = 5;
+        static constexpr int NOISE_EVENTS_CRITICAL = 100;
 
         /// Based on what was the state at the time of powering on.
         // explicit InfraRedBeamExti (IrBeam initialState) : lastState{initialState} {}
@@ -67,7 +67,7 @@ private:
 
         Timer beamPresentTimer;
         Timer beamNoiseTimer{NOISE_CLEAR_TIMEOUT_MS};
-        Timer eventValidationTimer;
+        Timer lastIrChange;
         Timer blindTimeout;
 
         int noiseEventCounter{};
@@ -76,5 +76,6 @@ private:
         bool active{true};
         FastStateMachine *fStateMachine{};
         StopWatch *stopWatch{};
-        Result triggerRisingEdgeTime{};
+        std::optional<Result> triggerRisingEdgeTime{};
+        Result triggerFallingEdgeTime{};
 };

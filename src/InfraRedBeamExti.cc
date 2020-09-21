@@ -38,18 +38,21 @@ void InfraRedBeamExti::onExti ()
         }
 
         if (state == IrBeam::absent) {
-                // IR was cut off. Start the timer to measure the gap.
-                eventValidationTimer.start (0);
+
                 beamPresentTimer.start (NO_IR_DETECTED_MS);
-                lastState = IrBeam::absent;
+                // lastState = IrBeam::absent;
                 // We don't know if this is a valid trigger event or noise, so we store current time for later.
-                triggerRisingEdgeTime = stopWatch->getTime ();
+
+                if (!triggerRisingEdgeTime) {
+                        triggerRisingEdgeTime = stopWatch->getTime ();
+                }
         }
         else {
-                lastState = IrBeam::present;
+                // lastState = IrBeam::present;
+                triggerFallingEdgeTime = stopWatch->getTime ();
 
                 // IR was restored, but the time it was off was too short, which means noise event
-                if (eventValidationTimer.elapsed () < MIN_TIME_BETWEEN_EVENTS_MS) {
+                if (lastIrChange.elapsed () < MIN_TIME_BETWEEN_EVENTS_MS) {
 
                         // We simply ingnore spurious noise events if they don't occur too frequently.
                         if (++noiseEventCounter > NOISE_EVENTS_CRITICAL) {
@@ -66,16 +69,33 @@ void InfraRedBeamExti::onExti ()
                 // IR was restored, and the time it was off is valid to qualify it as an trigger event.
                 else {
                         beamPresentTimer.start (0);
-                        sendEvent (fStateMachine, {Event::Type::irTrigger, triggerRisingEdgeTime});
+                        // sendEvent (fStateMachine, {Event::Type::irTrigger, triggerRisingEdgeTime});
                 }
         }
+
+        // Rising or falling edge on IR pin.
+        lastIrChange.start (0);
 }
 
 /*****************************************************************************/
 
 void InfraRedBeamExti::run ()
 {
-        // This runs every NOISE_CLEAR_TIMEOUT_MS and checks if noise events number was exceeded. Then the counter is cleared. Crude but easy.
+        // EVENT detection. Looking for correct envelope
+        if (triggerRisingEdgeTime && lastIrChange.elapsed () >= MIN_TIME_BETWEEN_EVENTS_MS && getPinState () == IrBeam::present) {
+
+                Result envelope = triggerFallingEdgeTime - *triggerRisingEdgeTime;
+
+                if (envelope >= MIN_TIME_BETWEEN_EVENTS_MS * 100 && envelope < DEFAULT_BLIND_TIME_MS * 100) {
+                        sendEvent (fStateMachine, {Event::Type::irTrigger, *triggerRisingEdgeTime});
+                }
+
+                triggerFallingEdgeTime = 0;
+                triggerRisingEdgeTime.reset ();
+        }
+
+        // NOISE. This runs every NOISE_CLEAR_TIMEOUT_MS and checks if noise events number was exceeded. Then the counter is cleared.
+        // Crude but simple.
         if (beamNoiseTimer.isExpired ()) {
                 beamNoiseTimer.start (NOISE_CLEAR_TIMEOUT_MS);
                 noiseEventCounter = 0;
