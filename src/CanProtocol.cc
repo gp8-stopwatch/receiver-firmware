@@ -11,6 +11,7 @@
 #include "Container.h"
 #include "Debug.h"
 #include "ErrorHandler.h"
+#include "StopWatch.h"
 #include <gsl/gsl>
 
 /*****************************************************************************/
@@ -28,7 +29,7 @@ void CanProtocol::onCanNewFrame (CanFrame const &frame)
                 if (Messages (messageId) == Messages::TRIGGER) {
                         uint8_t ii[4] = {frame.data[1], frame.data[2], frame.data[3], frame.data[4]};
                         remoteStopTime = *reinterpret_cast<uint32_t *> (ii);
-                        callback->onTrigger ();
+                        callback->onTrigger (remoteStopTime + StopWatch::CAN_LATENCY_CORRECTION);
                 }
 #ifdef WITH_CHECK_SENSOR_STATUS
                 else if (Messages (messageId) == Messages::NO_IR) {

@@ -74,8 +74,8 @@ public:
 
 private:
         void ready_entryAction ();
-        void running_entryAction (Event event, bool canEvent);
-        void stop_entryAction (Event event, bool canEvent);
+        void running_entryAction (Event event /* , bool canEvent */);
+        void stop_entryAction (Event event /* , bool canEvent */);
         void loop_entryAction (Event event, bool canEvent);
         void pause_entryAction ();
 
@@ -108,7 +108,7 @@ private:
 class FastStateMachineProtocolCallback : public IProtocolCallback {
 public:
         FastStateMachineProtocolCallback (FastStateMachine &fs) : fastStateMachine{fs} {}
-        void onTrigger () override { fastStateMachine.run (Event::Type::canBusTrigger); }
+        void onTrigger (Result time) override { fastStateMachine.run ({Event::Type::canBusTrigger, time}); }
         void onNoIr () override { fastStateMachine.run (Event::Type::noIr); }
 
 private:

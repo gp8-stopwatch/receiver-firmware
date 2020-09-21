@@ -26,7 +26,7 @@ struct IProtocolCallback {
         IProtocolCallback &operator= (IProtocolCallback &&) = default;
         virtual ~IProtocolCallback () = default;
 
-        virtual void onTrigger () = 0;
+        virtual void onTrigger (Result time) = 0;
         virtual void onNoIr () = 0;
 };
 
