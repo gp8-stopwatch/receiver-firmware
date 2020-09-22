@@ -169,7 +169,10 @@ bool FastStateMachine::isInternalTrigger (Event event) const
 
 /*****************************************************************************/
 
-bool FastStateMachine::isInternalTriggerAndStartTimeout (Event event) const { return isInternalTrigger (event) && startTimeout.isExpired (); }
+bool FastStateMachine::isInternalTriggerAndStartTimeout (Event event) const
+{
+        return isInternalTrigger (event); /* && startTimeout.isExpired (); */
+}
 
 /*****************************************************************************/
 
@@ -235,7 +238,7 @@ void FastStateMachine::running_entryAction (Event event /* , bool canEvent */)
 
         // stopWatch->set (correction);
         // stopWatch->start ();
-        startTimeout.start (getConfig ().getBlindTime ());
+        // startTimeout.start (getConfig ().getBlindTime ());
 
         /*--------------------------------------------------------------------------*/
         /* CAN bus stuff                                                            */
@@ -272,7 +275,7 @@ void FastStateMachine::stop_entryAction (Event event /* , bool canEvent */)
 
         display->setTime (result, getConfig ().getResolution ());
 
-        startTimeout.start (getConfig ().getBlindTime ());
+        // startTimeout.start (getConfig ().getBlindTime ());
 
         /*--------------------------------------------------------------------------*/
         /* CAN bus stuff                                                            */
@@ -307,24 +310,28 @@ void FastStateMachine::loop_entryAction (Event event, bool canEvent)
         /* Local time stuff                                                         */
         /*--------------------------------------------------------------------------*/
 
-        // stopWatch->substract (correction);
-        uint32_t canTime = (protocol != nullptr) ? (protocol->getLastRemoteStopTime ()) : (0UL);
-        uint32_t result = (canEvent) ? (canTime) : (event.getTime () - lastTime);
-        // stopWatch->set (correction);
+        Result now = event.getTime ();
+        Result result = now - lastTime;
+        lastTime = now;
 
-        if (canEvent) {
-                // correction = StopWatch::CAN_LATENCY_CORRECTION /* + event.getTime () */ + protocol->getLastRemoteStopTime ();
-                // TODO StopWatch::CAN_LATENCY_CORRECTION + protocol->getLastRemoteStopTime () should be stored in the event.getTime
-                lastTime = StopWatch::CAN_LATENCY_CORRECTION /* + event.getTime () */ + protocol->getLastRemoteStopTime ();
-        }
-        else {
-                // correction = (stopWatch->getTime () - event.getTime ());
-                lastTime = event.getTime ();
-        }
+        // // stopWatch->substract (correction);
+        // uint32_t canTime = (protocol != nullptr) ? (protocol->getLastRemoteStopTime ()) : (0UL);
+        // uint32_t result = (canEvent) ? (canTime) : (event.getTime () - lastTime);
+        // // stopWatch->set (correction);
+
+        // if (canEvent) {
+        //         // correction = StopWatch::CAN_LATENCY_CORRECTION /* + event.getTime () */ + protocol->getLastRemoteStopTime ();
+        //         // TODO StopWatch::CAN_LATENCY_CORRECTION + protocol->getLastRemoteStopTime () should be stored in the event.getTime
+        //         lastTime = StopWatch::CAN_LATENCY_CORRECTION /* + event.getTime () */ + protocol->getLastRemoteStopTime ();
+        // }
+        // else {
+        //         // correction = (stopWatch->getTime () - event.getTime ());
+        //         lastTime = event.getTime ();
+        // }
 
         display->setTime (result, getConfig ().getResolution ());
 
-        startTimeout.start (getConfig ().getBlindTime ());
+        // startTimeout.start (getConfig ().getBlindTime ());
         loopDisplayTimeout.start (LOOP_DISPLAY_TIMEOUT);
 
         /*--------------------------------------------------------------------------*/

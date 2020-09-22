@@ -34,6 +34,7 @@ public:
         explicit InfraRedBeamExti (Gpio &g) : irTriggerPin{g}, lastState{getPinState ()} {}
 
         void onExti ();
+        void run ();
 
         /// Returns false if the beam was interrupted for more than 3s. True otherwise.
         IrBeam getBeamState () const override
@@ -57,8 +58,6 @@ public:
         void setActive (bool b) override { active = b; }
 
         void setFastStateMachine (FastStateMachine *f) { fStateMachine = f; }
-        void run ();
-
         void setStopWatch (StopWatch *s) { this->stopWatch = s; }
 
 private:

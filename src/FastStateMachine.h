@@ -89,7 +89,6 @@ private:
         State state{WAIT_FOR_BEAM};
         IInfraRedBeam *ir{};
         StopWatch *stopWatch{};
-        Timer startTimeout;
         Timer loopDisplayTimeout;
         IDisplay *display{};
         Buzzer *buzzer{};

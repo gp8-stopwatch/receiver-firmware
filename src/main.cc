@@ -232,7 +232,7 @@ int main ()
         InfraRedBeamExti beam{irTriggerPin};
 
         protocol.setBeam (&beam);
-        irTriggerPin.setOnToggle ([&beam, &irTriggerPin] { beam.onExti (); });
+        irTriggerPin.setOnToggle ([&beam] { beam.onExti (); });
         beam.setFastStateMachine (fStateMachine);
         beam.setStopWatch (stopWatch);
 
@@ -249,16 +249,7 @@ int main ()
         Gpio testTriggerPin (TEST_TRIGGER_PORT, TEST_TRIGGER_PINS, GPIO_MODE_IT_RISING, GPIO_PULLDOWN);
         HAL_NVIC_SetPriority (TEST_TRIGGER_IRQn, TEST_TRIGGER_EXTI_PRIORITY, 0);
         HAL_NVIC_EnableIRQ (TEST_TRIGGER_IRQn);
-        testTriggerPin.setOnToggle ([fStateMachine] {
-#ifdef TEST_TRIGGER_MOD_2
-                static int i{};
-                if (++i % 2 == 0) {
-                        fStateMachine->run (Event::Type::testTrigger);
-                }
-#else
-                fStateMachine->run (Event::Type::testTrigger);
-#endif
-        });
+        testTriggerPin.setOnToggle ([&beam, &testTriggerPin] { beam.onExti (); });
 
 #ifdef WITH_CAN
         FastStateMachineProtocolCallback callback{*fStateMachine};
