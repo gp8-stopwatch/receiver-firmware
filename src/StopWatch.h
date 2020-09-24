@@ -25,7 +25,7 @@ public:
         // Warning! Correct only with -O3. For a CanFrame with DLC == 0 63 was OK. This is for DLC == 4
 
         // Warning - this timeout can vary (~50µs). It has to be manually tested before release.
-        static constexpr Result CAN_LATENCY_CORRECTION = 90;
+        // static constexpr Result CAN_LATENCY_CORRECTION = 90;
 
         // static constexpr unsigned int MAX_TIME = 100U * 60U * 100000U - 1U; // 100 minutes in 10µs units.
         // static constexpr std::array INCREMENTS{1, 10, 100, 1000};

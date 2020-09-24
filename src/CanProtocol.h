@@ -18,6 +18,10 @@
 
 /*****************************************************************************/
 
+enum class Message : uint8_t { START, STOP, LOOP, NO_IR, INFO_REQ, INFO_RESP, NOISE };
+
+/*****************************************************************************/
+
 struct IProtocolCallback {
         IProtocolCallback () = default;
         IProtocolCallback (IProtocolCallback const &) = default;
@@ -26,8 +30,7 @@ struct IProtocolCallback {
         IProtocolCallback &operator= (IProtocolCallback &&) = default;
         virtual ~IProtocolCallback () = default;
 
-        virtual void onTrigger (Result time) = 0;
-        virtual void onNoIr () = 0;
+        virtual void onMessage (Message msg, Result time) = 0;
 };
 
 /*****************************************************************************/
@@ -48,18 +51,17 @@ using InfoRespDataCollection = etl::vector<InfoRespData, 16>;
 
 class CanProtocol : public ICanCallback {
 public:
-        enum class Messages : uint8_t { TRIGGER, NO_IR, INFO_REQ, INFO_RESP };
-
         CanProtocol (Can &can, uint32_t u, DeviceType dt) : can (can), uid (u & 0x1FFFFFFF), deviceType{dt} {}
 
-        void sendTrigger (uint32_t time);
-        void sendNoIr () { can.send (CanFrame{uid, true, 1, uint8_t (Messages::NO_IR)}, CAN_SEND_TIMEOUT); }
+        void sendTrigger (Message msg, Result time);
+        void sendNoIr () { can.send (CanFrame{uid, true, 1, uint8_t (Message::NO_IR)}, CAN_SEND_TIMEOUT); }
 
         void sendInfoRequest ();
         void setCallback (IProtocolCallback *cb) { callback = cb; }
 
         /// This is a little hack to get rid of passing the time in the event, which would be difficult, since an event is an enum.
-        uint32_t getLastRemoteStopTime () const { return remoteStopTime; }
+        // uint32_t getLastRemoteStopTime () const { return remoteStopTime; }
+
         InfoRespDataCollection &getInfoRespDataCollection () { return lastInfoResponseData; }
         InfoRespDataCollection const &getInfoRespDataCollection () const { return lastInfoResponseData; }
 
@@ -74,7 +76,6 @@ private:
         Can &can;
         IProtocolCallback *callback{};
         uint32_t uid;
-        mutable uint32_t remoteStopTime{};
         DeviceType deviceType;
         IInfraRedBeam *beam{};
         InfoRespDataCollection lastInfoResponseData;

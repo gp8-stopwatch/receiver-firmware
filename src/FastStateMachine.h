@@ -29,8 +29,10 @@ public:
         enum class Type {
                 timePassed,  /// Every 10ms / 1ms / 100µs
                 irTrigger,   /// IR beam interrupted
-                testTrigger, /// Test GPIO state changed
-                canBusTrigger,
+                testTrigger, /// External trigger (M-LVDS) GPIO state changed
+                canBusStart, /// Peripheral device reported switching to the RUNNING state
+                canBusStop,  /// Peripheral device reported switching to the STOP state
+                canBusLoop,  /// Peripheral device reported the restart of the LOOP state.
                 pause,
                 reset, // Use for resume after pause
                 noIr,
@@ -76,12 +78,18 @@ private:
         void ready_entryAction ();
         void running_entryAction (Event event /* , bool canEvent */);
         void stop_entryAction (Event event /* , bool canEvent */);
-        void loop_entryAction (Event event, bool canEvent);
-        void pause_entryAction ();
+        void loop_entryAction (Event event /* , bool canEvent */);
+        // void pause_entryAction ();
 
+        void checkCanBusEvents (Event event);
         bool isInternalTrigger (Event event) const;
-        bool isInternalTriggerAndStartTimeout (Event event) const;
-        bool isExternalTrigger (Event event) const;
+        bool isCanBusEvent (Event event) const
+        {
+                auto eType = event.getType ();
+                return (eType == Event::Type::canBusStart || eType == Event::Type::canBusStop || eType == Event::Type::canBusLoop);
+        }
+
+        // bool isExternalTrigger (Event event) const;
         RemoteBeamState isRemoteBeamStateOk () const;
 
         /*--------------------------------------------------------------------------*/
@@ -94,7 +102,8 @@ private:
         Buzzer *buzzer{};
         History *history{};
         CanProtocol *protocol{};
-        Result lastTime;
+        Result lastTime{};
+        Result beforeLastTime{};
 
         mutable Timer reqRespTimer;
         mutable bool infoRequestSent{};
@@ -107,8 +116,32 @@ private:
 class FastStateMachineProtocolCallback : public IProtocolCallback {
 public:
         FastStateMachineProtocolCallback (FastStateMachine &fs) : fastStateMachine{fs} {}
-        void onTrigger (Result time) override { fastStateMachine.run ({Event::Type::canBusTrigger, time}); }
-        void onNoIr () override { fastStateMachine.run (Event::Type::noIr); }
+        void onMessage (Message msg, Result time) override
+        {
+
+                switch (msg) {
+                case Message::START:
+                        fastStateMachine.run ({Event::Type::canBusStart, time});
+                        break;
+
+                case Message::STOP:
+                        fastStateMachine.run ({Event::Type::canBusStop, time});
+                        break;
+
+                case Message::LOOP:
+                        fastStateMachine.run ({Event::Type::canBusLoop, time});
+                        break;
+
+#ifdef WITH_CHECK_SENSOR_STATUS
+                case Message::NO_IR:
+                        fastStateMachine.run ({Event::Type::noIr, time});
+                        break;
+#endif
+
+                default:
+                        break;
+                }
+        }
 
 private:
         FastStateMachine &fastStateMachine;
