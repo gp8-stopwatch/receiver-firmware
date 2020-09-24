@@ -191,12 +191,12 @@ int main ()
         /*| History saved in the flash                                              |*/
         /*+-------------------------------------------------------------------------+*/
 
-#ifdef WITH_FLASH
+#ifdef WITH_HISTORY
         History history{rtc};
-        FlashEepromStorage<2048, 4> hiScoreStorage (4, 1, 0x801E800 /*0x08020000 - 3 * 2048*/);
+        FlashEepromStorage<2048, 4> hiScoreStorage (4, 1, size_t (&_hiscore_storage_address));
         hiScoreStorage.init ();
         history.setHiScoreStorage (&hiScoreStorage);
-        FlashEepromStorage<2048, 4> historyStorage (12, 2, 0x801F000 /*0x08020000 - 2 * 2048*/);
+        FlashEepromStorage<2048, 4> historyStorage (12, 2, size_t (&_history_storage_address));
         historyStorage.init ();
         history.setHistoryStorage (&historyStorage);
 #endif
@@ -225,14 +225,23 @@ int main ()
         /*--------------------------------------------------------------------------*/
 
         // IR on means the state is LOW. Beam interruption means transition from LOW to HI i.e. rising.
-        Gpio irTriggerPin (IR_PORT, IR_PINS, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
+        Gpio irTriggerInput (IR_PORT, IR_PINS, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
         HAL_NVIC_SetPriority (IR_IRQn, IR_EXTI_PRIORITY, 0);
         HAL_NVIC_EnableIRQ (IR_IRQn);
-        // InfraRedBeamExti beam{(irTriggerPin.get ()) ? (IrBeam::absent) : (IrBeam::present)};
-        InfraRedBeamExti beam{irTriggerPin};
+
+        // External trigger
+        Gpio extTriggerInput (EXT_TRIGGER_INPUT_PORT, EXT_TRIGGER_INPUT_PINS, GPIO_MODE_IT_RISING_FALLING);
+        Gpio extTriggerOutput (EXT_TRIGGER_OUTPUT_PORT, EXT_TRIGGER_OUTPUT_PINS, GPIO_MODE_OUTPUT_PP);
+        Gpio extTriggerOutEnable (EXT_TRIGGER_OUT_ENABLE_PORT, EXT_TRIGGER_OUT_ENABLE_PINS, GPIO_MODE_OUTPUT_PP);
+        HAL_NVIC_SetPriority (EXT_TRIGGER_INPUT_IRQn, EXT_TRIGGER_INPUT_EXTI_PRIORITY, 0);
+        HAL_NVIC_EnableIRQ (EXT_TRIGGER_INPUT_IRQn);
+
+        InfraRedBeamExti beam{irTriggerInput, extTriggerOutput, extTriggerOutEnable};
+        irTriggerInput.setOnToggle ([&beam] { beam.onExti (beam.getPinState (), false); });
+        extTriggerInput.setOnToggle (
+                [&beam, &extTriggerInput] { beam.onExti ((extTriggerInput.get ()) ? (IrBeam::absent) : (IrBeam::present), true); });
 
         protocol.setBeam (&beam);
-        irTriggerPin.setOnToggle ([&beam] { beam.onExti (); });
         beam.setFastStateMachine (fStateMachine);
         beam.setStopWatch (stopWatch);
 
@@ -245,12 +254,6 @@ int main ()
         Button button (buttonPin);
 #endif
 
-        // Test trigger
-        Gpio testTriggerPin (TEST_TRIGGER_PORT, TEST_TRIGGER_PINS, GPIO_MODE_IT_RISING, GPIO_PULLDOWN);
-        HAL_NVIC_SetPriority (TEST_TRIGGER_IRQn, TEST_TRIGGER_EXTI_PRIORITY, 0);
-        HAL_NVIC_EnableIRQ (TEST_TRIGGER_IRQn);
-        testTriggerPin.setOnToggle ([&beam, &testTriggerPin] { beam.onExti (); });
-
 #ifdef WITH_CAN
         FastStateMachineProtocolCallback callback{*fStateMachine};
         protocol.setCallback (&callback);
@@ -262,7 +265,7 @@ int main ()
         fStateMachine->setBuzzer (&buzzer);
 #endif
 
-#ifdef WITH_FLASH
+#ifdef WITH_HISTORY
         fStateMachine->setHistory (&history);
 #endif
 
@@ -284,7 +287,7 @@ int main ()
 
         DisplayMenu menu (config, display, *fStateMachine);
 
-#ifdef WITH_FLASH
+#ifdef WITH_HISTORY
         menu.setHistory (&history);
 #endif
 
@@ -526,7 +529,7 @@ int main ()
                 button.run ();
 #endif
 
-#ifdef WITH_FLASH
+#ifdef WITH_HISTORY
                 history.run ();
 #endif
 

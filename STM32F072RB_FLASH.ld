@@ -37,11 +37,18 @@ _estack = 0x20003FFF;    /* end of RAM */
 _Min_Heap_Size = 0x200;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
+_config_storage_address = 0x08020000 - 4 * 2048; 
+_hiscore_storage_address = 0x08020000 - 3 * 2048; /* 0x801E800 */ 
+_history_storage_address = 0x08020000 - 2 * 2048; /* 0x801F000 */
+
 /* Specify the memory areas */
 MEMORY
 {
-FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 128K
-RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 16K
+FLASH (rx)        : ORIGIN = 0x8000000, LENGTH = 124K
+HISTORY_NVM (r)   : ORIGIN = _history_storage_address, LENGTH = 2K
+HI_SCORE_NVM (r)  : ORIGIN = _hiscore_storage_address, LENGTH = 1K
+CONFIG_NVM (r)    : ORIGIN = _config_storage_address, LENGTH = 1K
+RAM (xrw)         : ORIGIN = 0x20000000, LENGTH = 16K
 }
 
 /* Define output sections */
@@ -125,7 +132,6 @@ SECTIONS
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
   } >RAM AT> FLASH
-
   
   /* Uninitialized data section */
   . = ALIGN(4);

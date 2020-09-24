@@ -121,8 +121,13 @@ void DisplayMenu::onEvent (menu::Event p)
                                machine.run (Event::Type::pause);
                                currentResult = 0;
                        }),
+#ifdef WITH_HISTORY
                        transition ("RESULT"_ST, shortPress ())),
+#else
+                       transition ("FLIP"_ST, shortPress ())),
+#endif
 
+#ifdef WITH_HISTORY
                 // Results
                 state ("RESULT"_ST, entry (tryDisplayResult), exit ([] {}),
                        transition ("NEXT_RESULT"_ST, longPress (), [] (auto /*a*/) { /* ++currentResult; */ }),
@@ -131,6 +136,7 @@ void DisplayMenu::onEvent (menu::Event p)
                 state ("NEXT_RESULT"_ST, entry (tryDisplayResult), exit ([] {}),
                        transition ("NEXT_RESULT"_ST, shortPress (), [] (auto /*a*/) { /* ++currentResult; */ }),
                        transition ("FLIP"_ST, longPress ())),
+#endif
 
                 // Screen orientation
                 state ("FLIP"_ST, entry ([&] { display.setText ("1.FLIP "); }), exit ([] {}),

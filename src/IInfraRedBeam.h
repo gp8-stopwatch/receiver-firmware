@@ -11,7 +11,7 @@
 #include <cstdint>
 
 /// State of the IR beam (light).
-enum class IrBeam { absent, present, noise };
+enum class IrBeam { absent, present, noise /* , extAbsent, extPresent */ };
 
 /**
  *Base for various receivers.

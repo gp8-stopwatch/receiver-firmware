@@ -29,38 +29,57 @@ void sendEvent (FastStateMachine *fStateMachine, Event ev)
 
 /*****************************************************************************/
 
-void InfraRedBeamExti::onExti ()
+void InfraRedBeamExti::onExti (IrBeam state, bool external)
 {
-        IrBeam state = getPinState ();
-
-        if (!active || lastState == IrBeam::noise) {
+        if ((!active && !external) || lastState == IrBeam::noise) {
                 return;
         }
 
         Result now = stopWatch->getTime ();
+        Result lastIrChangeDuration = now - lastIrChangeTimePoint;
+        lastIrChangeTimePoint = now;
 
         if (state == IrBeam::absent) {
-                beamPresentTimer.start (NO_IR_DETECTED_MS);
-                lastState = IrBeam::absent;
-                // We don't know if this is a valid trigger event or noise, so we store current time for later.
-
                 if (!triggerRisingEdgeTime) {
                         triggerRisingEdgeTime = now;
+                        triggerFallingEdgeTime = now;
+
+                        if (!external) {
+                                extTriggerOutEnable = true;
+                                extTriggerOutput = true;
+                        }
                 }
                 else {
-                        irPresentPeriod += now - lastIrChange;
+                        irPresentPeriod += lastIrChangeDuration;
+                }
+
+                beamPresentTimer.start (NO_IR_DETECTED_MS);
+
+                if (!external) {
+                        lastState = IrBeam::absent;
                 }
         }
         else {
-                lastState = IrBeam::present;
                 triggerFallingEdgeTime = now;
 
                 if (triggerRisingEdgeTime) {
-                        irAbsentPeriod += now - lastIrChange;
+                        irAbsentPeriod += lastIrChangeDuration;
+                }
+
+                if (!external) {
+                        lastState = IrBeam::present;
+                }
+                else { // external event!
+                        // We receive already filtered event, so there's no need to check the envelope.
+                        sendEvent (fStateMachine, {Event::Type::canBusTrigger, *triggerRisingEdgeTime});
+                        blindTimeout.start (getConfig ().getBlindTime ());
+                        // Reset the state.
+                        irPresentPeriod = irAbsentPeriod = triggerFallingEdgeTime = 0;
+                        triggerRisingEdgeTime.reset ();
                 }
 
                 // IR was restored, but the time it was off was too short, which means noise spike
-                if (now - lastIrChange < MIN_TIME_BETWEEN_EVENTS_MS * 100) {
+                if (lastIrChangeDuration < MIN_TIME_BETWEEN_EVENTS_MS * 100) {
 
                         // We simply ingnore spurious noise events if they don't occur too frequently.
                         if (++noiseEventCounter > NOISE_EVENTS_CRITICAL) {
@@ -79,21 +98,23 @@ void InfraRedBeamExti::onExti ()
                         beamPresentTimer.start (0);
                 }
         }
-
-        // Rising or falling edge on IR pin.
-        lastIrChange = now;
 }
 
 /*****************************************************************************/
 
 void InfraRedBeamExti::run ()
 {
-        Result now = stopWatch->getTime ();
+        // The whole state has to be retrieved atomically
+        __disable_irq ();
+        Result lastIrChangeDuration = stopWatch->getTime () - lastIrChangeTimePoint;
+        bool triggerRisingEdgeTimeSet = bool (triggerRisingEdgeTime);
+        bool duty = irAbsentPeriod > irPresentPeriod;
+        auto lastStateCopy = lastState;
+        Result envelope = (triggerRisingEdgeTimeSet) ? (triggerFallingEdgeTime - *triggerRisingEdgeTime) : (0);
+        __enable_irq ();
 
         // EVENT detection. Looking for correct envelope
-        if (triggerRisingEdgeTime && now - lastIrChange >= MIN_TIME_BETWEEN_EVENTS_MS * 100 && getPinState () == IrBeam::present) {
-
-                Result envelope = triggerFallingEdgeTime - *triggerRisingEdgeTime;
+        if (triggerRisingEdgeTimeSet && lastIrChangeDuration >= MIN_TIME_BETWEEN_EVENTS_MS * 100 && lastStateCopy == IrBeam::present) {
 
                 /*
                  * Numerous conditions has to be met to qualify noisy IR signal as a valid event:
@@ -103,11 +124,19 @@ void InfraRedBeamExti::run ()
                  * MIN_TIME_BETWEEN_EVENTS_MS.
                  * - IR has to be absent at least half of the envelope time.
                  */
-                if (envelope >= MIN_TIME_BETWEEN_EVENTS_MS * 100 && envelope < DEFAULT_BLIND_TIME_MS * 100 && irAbsentPeriod > irPresentPeriod
+                if (envelope >= MIN_TIME_BETWEEN_EVENTS_MS * 100 && envelope < DEFAULT_BLIND_TIME_MS * 100 && duty
                     && blindTimeout.isExpired ()) {
 
+                        extTriggerOutput.set (false);
+                        extTriggerOutEnable.set (false);
                         sendEvent (fStateMachine, {Event::Type::irTrigger, *triggerRisingEdgeTime});
                         blindTimeout.start (getConfig ().getBlindTime ());
+                }
+                else {
+                        extTriggerOutput.set (false);
+                        extTriggerOutEnable.set (false);
+                        // EVENT CANCEL
+                        // sendEvent (fStateMachine, {Event::Type::irTrigger, *triggerRisingEdgeTime});
                 }
 
                 // After correct event has been detected, we reset everything.

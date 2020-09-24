@@ -31,9 +31,12 @@ public:
 
         /// Based on what was the state at the time of powering on.
         // explicit InfraRedBeamExti (IrBeam initialState) : lastState{initialState} {}
-        explicit InfraRedBeamExti (Gpio &g) : irTriggerPin{g}, lastState{getPinState ()} {}
+        explicit InfraRedBeamExti (Gpio &irTriggerPin, Gpio &extTriggerOutput, Gpio &extTriggerOutEnable)
+            : irTriggerPin{irTriggerPin}, extTriggerOutput{extTriggerOutput}, extTriggerOutEnable{extTriggerOutEnable}, lastState{getPinState ()}
+        {
+        }
 
-        void onExti ();
+        void onExti (IrBeam state, bool external);
         void run ();
 
         /// Returns false if the beam was interrupted for more than 3s. True otherwise.
@@ -60,23 +63,26 @@ public:
         void setFastStateMachine (FastStateMachine *f) { fStateMachine = f; }
         void setStopWatch (StopWatch *s) { this->stopWatch = s; }
 
-private:
         // IR pin level, converted to IrState. No logic.
         IrBeam getPinState () const { return (irTriggerPin.get ()) ? (IrBeam::absent) : (IrBeam::present); }
 
+private:
         Timer beamPresentTimer;
         Timer beamNoiseTimer{NOISE_CLEAR_TIMEOUT_MS};
-        Result lastIrChange{};
         Timer blindTimeout;
+
+        std::optional<Result> triggerRisingEdgeTime{};
+        Result triggerFallingEdgeTime{};
+        Result lastIrChangeTimePoint{};
+        uint32_t irPresentPeriod{};
+        uint32_t irAbsentPeriod{};
 
         int noiseEventCounter{};
         Gpio &irTriggerPin;
-        IrBeam lastState;
+        Gpio &extTriggerOutput;
+        Gpio &extTriggerOutEnable;
+        IrBeam lastState{};
         bool active{true};
         FastStateMachine *fStateMachine{};
         StopWatch *stopWatch{};
-        std::optional<Result> triggerRisingEdgeTime{};
-        Result triggerFallingEdgeTime{};
-        uint32_t irPresentPeriod{};
-        uint32_t irAbsentPeriod{};
 };

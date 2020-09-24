@@ -16,6 +16,8 @@
 #include "InfraRedBeamExti.h"
 #include "StopWatch.h"
 
+#undef WITH_CAN
+
 /*****************************************************************************/
 
 void FastStateMachine::run (Event event)
@@ -295,7 +297,7 @@ void FastStateMachine::stop_entryAction (Event event /* , bool canEvent */)
         buzzer->beep (70, 50, 3);
 #endif
 
-#ifdef WITH_FLASH
+#ifdef WITH_HISTORY
         if (history != nullptr) {
                 history->store (result);
         }
@@ -352,7 +354,7 @@ void FastStateMachine::loop_entryAction (Event event, bool canEvent)
         buzzer->beep (70, 50, 2);
 #endif
 
-#ifdef WITH_FLASH
+#ifdef WITH_HISTORY
         if (history != nullptr) {
                 history->store (result);
         }

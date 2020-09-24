@@ -17,7 +17,7 @@
 StopWatch::StopWatch ()
 {
         /*+-------------------------------------------------------------------------+*/
-        /*| Stopwatch 32bit main timer (slave)                                      |*/
+        /*| Stopwatch 32bit main timer (slave) counting 100kHz from TIM3            |*/
         /*+-------------------------------------------------------------------------+*/
 
         mainStopWatchTimHandle.Instance = TIM2;
@@ -48,7 +48,7 @@ StopWatch::StopWatch ()
         }
 
         /*+-------------------------------------------------------------------------+*/
-        /*| Stopwatch 16bit prescaler timer (master)                                |*/
+        /*| Stopwatch 16bit prescaler timer (master) 100kHz                         |*/
         /*+-------------------------------------------------------------------------+*/
 
         // int div = PRESCALERS.at (int (res));
