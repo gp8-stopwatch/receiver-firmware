@@ -45,6 +45,7 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
                         triggerFallingEdgeTime = now;
 
                         if (!external) {
+                                HAL_NVIC_DisableIRQ (EXT_TRIGGER_INPUT_IRQn);
                                 extTriggerOutEnable = true;
                                 extTriggerOutput = true;
                         }
@@ -129,12 +130,16 @@ void InfraRedBeamExti::run ()
 
                         extTriggerOutput.set (false);
                         extTriggerOutEnable.set (false);
+                        // HAL_NVIC_EnableIRQ (EXT_TRIGGER_INPUT_IRQn);
+
                         sendEvent (fStateMachine, {Event::Type::irTrigger, *triggerRisingEdgeTime});
                         blindTimeout.start (getConfig ().getBlindTime ());
                 }
                 else {
                         extTriggerOutput.set (false);
                         extTriggerOutEnable.set (false);
+                        // HAL_NVIC_EnableIRQ (EXT_TRIGGER_INPUT_IRQn);
+
                         // EVENT CANCEL
                         // sendEvent (fStateMachine, {Event::Type::irTrigger, *triggerRisingEdgeTime});
                 }

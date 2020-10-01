@@ -226,27 +226,28 @@ int main ()
 
         // IR on means the state is LOW. Beam interruption means transition from LOW to HI i.e. rising.
         Gpio irTriggerInput (IR_PORT, IR_PINS, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
-        HAL_NVIC_SetPriority (IR_IRQn, IR_EXTI_PRIORITY, 0);
-        HAL_NVIC_EnableIRQ (IR_IRQn);
 
         // External trigger
         Gpio extTriggerInput (EXT_TRIGGER_INPUT_PORT, EXT_TRIGGER_INPUT_PINS, GPIO_MODE_IT_RISING_FALLING);
         Gpio extTriggerOutput (EXT_TRIGGER_OUTPUT_PORT, EXT_TRIGGER_OUTPUT_PINS, GPIO_MODE_OUTPUT_PP);
         Gpio extTriggerOutEnable (EXT_TRIGGER_OUT_ENABLE_PORT, EXT_TRIGGER_OUT_ENABLE_PINS, GPIO_MODE_OUTPUT_PP);
-        HAL_NVIC_SetPriority (EXT_TRIGGER_INPUT_IRQn, EXT_TRIGGER_INPUT_EXTI_PRIORITY, 0);
-        HAL_NVIC_EnableIRQ (EXT_TRIGGER_INPUT_IRQn);
 
         // while (true) {
 
+        //         // extTriggerOutEnable = true;
+        //         // extTriggerOutput = true;
+        //         // HAL_Delay (6);
+        //         // extTriggerOutput = false;
+        //         // HAL_Delay (6);
+        //         // extTriggerOutEnable = false;
+
         //         extTriggerOutEnable = true;
-
         //         extTriggerOutput = true;
-        //         HAL_Delay (1);
+        //         HAL_Delay (12);
         //         extTriggerOutput = false;
-        //         HAL_Delay (1);
-
         //         extTriggerOutEnable = false;
-        //         HAL_Delay (10);
+
+        //         HAL_Delay (1000);
         // }
 
         InfraRedBeamExti beam{irTriggerInput, extTriggerOutput, extTriggerOutEnable};
@@ -285,6 +286,12 @@ int main ()
 #ifdef WITH_CAN
         fStateMachine->setCanProtocol (&protocol);
 #endif
+
+        HAL_NVIC_SetPriority (IR_IRQn, IR_EXTI_PRIORITY, 0);
+        HAL_NVIC_EnableIRQ (IR_IRQn);
+
+        HAL_NVIC_SetPriority (EXT_TRIGGER_INPUT_IRQn, EXT_TRIGGER_INPUT_EXTI_PRIORITY, 0);
+        HAL_NVIC_EnableIRQ (EXT_TRIGGER_INPUT_IRQn);
 
         /*+-------------------------------------------------------------------------+*/
         /*| Battery, light sensor, others                                            |*/

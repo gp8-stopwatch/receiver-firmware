@@ -123,8 +123,10 @@ void FastStateMachine::run (Event event)
         } break;
 
         case RUNNING:
-                if (isInternalTrigger (event)) {
+                // Refresh the screen (shows the time is running). In an event of the stop_entryAction this will be re-set again.
+                display->setTime (stopWatch->getTime () - lastTime, getConfig ().getResolution ());
 
+                if (isInternalTrigger (event)) {
                         if (getConfig ().getStopMode () == StopMode::stop) {
                                 state = STOP;
                                 stop_entryAction (event /* , canEvent */);
@@ -133,14 +135,11 @@ void FastStateMachine::run (Event event)
                                 state = LOOP_RUNNING;
                                 loop_entryAction (event);
                         }
-
-                        break;
+                }
+                else {
+                        checkCanBusEvents (event);
                 }
 
-                checkCanBusEvents (event);
-
-                display->setTime (stopWatch->getTime () - lastTime,
-                                  getConfig ().getResolution ()); // Refresh the screen (shows the time is running)
                 break;
 
         case STOP:
@@ -148,20 +147,22 @@ void FastStateMachine::run (Event event)
                         state = RUNNING;
                         running_entryAction (event /* , canEvent */);
                 }
-
-                checkCanBusEvents (event);
+                else {
+                        checkCanBusEvents (event);
+                }
                 break;
 
         case LOOP_RUNNING:
-                if (isInternalTrigger (event)) {
-                        loop_entryAction (event);
-                }
-
-                checkCanBusEvents (event);
-
                 if (loopDisplayTimeout.isExpired ()) {
                         display->setTime (stopWatch->getTime () - lastTime,
                                           getConfig ().getResolution ()); // Refresh the screen (shows the time is running)
+                }
+
+                if (isInternalTrigger (event)) {
+                        loop_entryAction (event);
+                }
+                else {
+                        checkCanBusEvents (event);
                 }
 
                 break;

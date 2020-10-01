@@ -31,7 +31,7 @@ public:
 
         /// Based on what was the state at the time of powering on.
         // explicit InfraRedBeamExti (IrBeam initialState) : lastState{initialState} {}
-        explicit InfraRedBeamExti (Gpio &irTriggerPin, Gpio &extTriggerOutput, Gpio &extTriggerOutEnable)
+        InfraRedBeamExti (Gpio &irTriggerPin, Gpio &extTriggerOutput, Gpio &extTriggerOutEnable)
             : irTriggerPin{irTriggerPin}, extTriggerOutput{extTriggerOutput}, extTriggerOutEnable{extTriggerOutEnable}, lastState{getPinState ()}
         {
         }
