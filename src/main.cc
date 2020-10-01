@@ -236,6 +236,19 @@ int main ()
         HAL_NVIC_SetPriority (EXT_TRIGGER_INPUT_IRQn, EXT_TRIGGER_INPUT_EXTI_PRIORITY, 0);
         HAL_NVIC_EnableIRQ (EXT_TRIGGER_INPUT_IRQn);
 
+        // while (true) {
+
+        //         extTriggerOutEnable = true;
+
+        //         extTriggerOutput = true;
+        //         HAL_Delay (1);
+        //         extTriggerOutput = false;
+        //         HAL_Delay (1);
+
+        //         extTriggerOutEnable = false;
+        //         HAL_Delay (10);
+        // }
+
         InfraRedBeamExti beam{irTriggerInput, extTriggerOutput, extTriggerOutEnable};
         irTriggerInput.setOnToggle ([&beam] { beam.onExti (beam.getPinState (), false); });
         extTriggerInput.setOnToggle (

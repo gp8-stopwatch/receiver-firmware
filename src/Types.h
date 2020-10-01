@@ -27,7 +27,7 @@ using String = etl::string<16>;
 using Result = uint32_t; /// Results are in 10µs units. Maybe someday I'll use std::chrono
 
 constexpr size_t DISPLAY_TIMER_PRIORITY = 2;
-constexpr size_t CAN_BUS_PRIORITY = 1;
+constexpr size_t CAN_BUS_PRIORITY = 1; // CAN bus is no longer used for time synchronization, so low priority
 constexpr size_t BUTTON_EXTI_PRIORITY = 1;
 constexpr size_t IR_EXTI_PRIORITY = 1;
 constexpr size_t EXT_TRIGGER_INPUT_EXTI_PRIORITY = 1;

@@ -114,7 +114,7 @@ void FastStateMachine::run (Event event)
                 noIrRequestSent = false;
                 ready_entryAction ();
 
-                if (isInternalTrigger (event) /* || (canEvent = isExternalTrigger (event)) */) {
+                if (isInternalTrigger (event)) {
                         state = RUNNING;
                         running_entryAction (event /*, canEvent */);
                 }
@@ -123,7 +123,7 @@ void FastStateMachine::run (Event event)
         } break;
 
         case RUNNING:
-                if (isInternalTrigger (event) /* || (canEvent = isExternalTrigger (event)) */) {
+                if (isInternalTrigger (event)) {
 
                         if (getConfig ().getStopMode () == StopMode::stop) {
                                 state = STOP;
@@ -144,7 +144,7 @@ void FastStateMachine::run (Event event)
                 break;
 
         case STOP:
-                if (isInternalTrigger (event) /* || (canEvent = isExternalTrigger (event)) */) {
+                if (isInternalTrigger (event)) {
                         state = RUNNING;
                         running_entryAction (event /* , canEvent */);
                 }
@@ -153,7 +153,7 @@ void FastStateMachine::run (Event event)
                 break;
 
         case LOOP_RUNNING:
-                if (isInternalTrigger (event) /* || (canEvent = isExternalTrigger (event)) */) {
+                if (isInternalTrigger (event)) {
                         loop_entryAction (event);
                 }
 
@@ -179,13 +179,8 @@ void FastStateMachine::run (Event event)
 
 bool FastStateMachine::isInternalTrigger (Event event) const
 {
-        return ((ir->getBeamState () == IrBeam::present && ir->isBeamInterrupted ()) || event.getType () == Event::Type::testTrigger
-                || event.getType () == Event::Type::irTrigger);
+        return ((ir->getBeamState () == IrBeam::present && ir->isBeamInterrupted ()) || event.getType () == Event::Type::irTrigger);
 }
-
-/*****************************************************************************/
-
-// bool FastStateMachine::isExternalTrigger (Event event) const { return event.getType () == Event::Type::canBusTrigger; }
 
 /*****************************************************************************/
 
@@ -228,12 +223,6 @@ void FastStateMachine::ready_entryAction () { display->setTime (0, getConfig ().
 void FastStateMachine::running_entryAction (Event event /* , bool canEvent */)
 {
         /*--------------------------------------------------------------------------*/
-        /* Local time stuff                                                         */
-        /*--------------------------------------------------------------------------*/
-
-        // lastTime = event.getTime ();
-
-        /*--------------------------------------------------------------------------*/
         /* CAN bus stuff                                                            */
         /*--------------------------------------------------------------------------*/
 
@@ -260,9 +249,7 @@ void FastStateMachine::stop_entryAction (Event event /* , bool canEvent */)
         /* Local time stuff                                                         */
         /*--------------------------------------------------------------------------*/
 
-        // Result result = event.getTime () - lastTime;
         Result result = lastTime - beforeLastTime;
-
         display->setTime (result, getConfig ().getResolution ());
 
         /*--------------------------------------------------------------------------*/
@@ -298,9 +285,6 @@ void FastStateMachine::loop_entryAction (Event event /* , bool canEvent */)
         /* Local time stuff                                                         */
         /*--------------------------------------------------------------------------*/
 
-        // Result now = event.getTime ();
-        // Result result = now - lastTime;
-        // lll lastTime = now;
         Result result = lastTime - beforeLastTime;
         display->setTime (result, getConfig ().getResolution ());
         loopDisplayTimeout.start (LOOP_DISPLAY_TIMEOUT);
@@ -331,10 +315,6 @@ void FastStateMachine::loop_entryAction (Event event /* , bool canEvent */)
 }
 
 /****************************************************************************/
-
-// void FastStateMachine::pause_entryAction ()
-// { /* stopWatch->stop (); */
-// }
 
 void FastStateMachine::checkCanBusEvents (Event event)
 {

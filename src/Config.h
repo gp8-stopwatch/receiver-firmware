@@ -54,6 +54,7 @@ public:
         bool isBuzzerOn () const { return buzzerOn; }
         void setBuzzerOn (bool b) { buzzerOn = b; }
 
+        // TODO UNCOMENT THIS!!!!!!
         // uint16_t getBlindTime () const { return (blindTime == std::numeric_limits<uint16_t>::max ()) ? (DEFAULT_BLIND_TIME_MS) : (blindTime);
         // }
         uint16_t getBlindTime () const { return 1000; }

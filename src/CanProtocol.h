@@ -59,9 +59,6 @@ public:
         void sendInfoRequest ();
         void setCallback (IProtocolCallback *cb) { callback = cb; }
 
-        /// This is a little hack to get rid of passing the time in the event, which would be difficult, since an event is an enum.
-        // uint32_t getLastRemoteStopTime () const { return remoteStopTime; }
-
         InfoRespDataCollection &getInfoRespDataCollection () { return lastInfoResponseData; }
         InfoRespDataCollection const &getInfoRespDataCollection () const { return lastInfoResponseData; }
 
