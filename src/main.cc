@@ -362,7 +362,8 @@ int main ()
                 cl::cmd (String ("factory"), [] { getConfigFlashEepromStorage ().clear (); }),
                 cl::cmd (String ("help"),
                          [] {
-                                 usbWrite ("result, last, date, reset, clear, factory, help, battery, getFlip, setFlip, getIr, setIr, getSn, "
+                                 usbWrite ("result, resultMs, last, lastMs, date, isCounting, reset, clear, factory, help, battery, getFlip, "
+                                           "setFlip, getIr, setIr, getSn, "
                                            "setSn, getRes, setRes, periph, getBlind, setBlind\r\n\r\n");
                          }),
                 cl::cmd (String ("battery"),
