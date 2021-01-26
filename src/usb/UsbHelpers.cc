@@ -9,6 +9,9 @@
 #include "UsbHelpers.h"
 #include "Debug.h"
 
+void printResultS (Result time);
+void printResultMs (Result time);
+
 /*****************************************************************************/
 
 void print (int i)
@@ -29,7 +32,24 @@ void print (unsigned int i)
 
 /****************************************************************************/
 
-void printResult (Result time)
+void printResult (Result time, ResultAccuracy ra)
+{
+        switch (ra) {
+        case ResultAccuracy::SECOND:
+                printResultS (time);
+                break;
+        case ResultAccuracy::MILISECOND:
+                printResultMs (time);
+                break;
+
+        default:
+                break;
+        }
+}
+
+/****************************************************************************/
+
+void printResultS (Result time)
 {
         char buf[11];
         uint32_t sec100 = time % 100000;
@@ -49,6 +69,19 @@ void printResult (Result time)
         usbWrite (".");
 
         itoa ((unsigned int)(sec100), buf, 5);
+        usbWrite (buf);
+}
+
+/****************************************************************************/
+
+void printResultMs (Result time)
+{
+        char buf[11];
+        uint32_t msecFrac = time % 100;
+        uint32_t msec = time / 100;
+
+        msec += (msecFrac >= 50) ? (1) : (0);
+        itoa ((unsigned int)(msec), buf, 0);
         usbWrite (buf);
 }
 

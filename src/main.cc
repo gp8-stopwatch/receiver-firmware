@@ -340,7 +340,9 @@ int main ()
 
         auto cli = cl::cli<String> (
                 cl::cmd (String ("result"), [&history] { history.printHistory (); }),
+                cl::cmd (String ("resultMs"), [&history] { history.printHistory (ResultAccuracy::MILISECOND); }),
                 cl::cmd (String ("last"), [&history] { history.printLast (); }),
+                cl::cmd (String ("lastMs"), [&history] { history.printLast (ResultAccuracy::MILISECOND); }),
                 cl::cmd (String ("date"),
                          [&rtc] {
                                  auto r = rtc.getDate ();

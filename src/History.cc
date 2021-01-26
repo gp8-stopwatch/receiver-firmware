@@ -16,11 +16,11 @@
 
 /****************************************************************************/
 
-void printEntry (History::Entry const &en)
+void printEntry (History::Entry const &en, ResultAccuracy ra)
 {
         printDate (en.date, en.time);
         usbWrite (" ");
-        printResult (en.result);
+        printResult (en.result, ra);
 }
 
 /**
@@ -66,15 +66,15 @@ void History::run ()
 
 /*****************************************************************************/
 
-void History::printHistory () const 
+void History::printHistory (ResultAccuracy ra) const
 {
         usbWrite ("Best ");
 
         if (hiScore != std::numeric_limits<uint32_t>::max ()) {
-                printResult (hiScore);
+                printResult (hiScore, ra);
         }
         else {
-                printResult (0);
+                printResult (0, ra);
         }
 
         usbWrite ("\r\n");
@@ -89,7 +89,7 @@ void History::printHistory () const
                         ++cnt;
                         print (cnt);
                         usbWrite (" ");
-                        printEntry (en);
+                        printEntry (en, ra);
                         usbWrite ("\r\n");
                         newLine = true;
                 }
@@ -112,7 +112,7 @@ History::Entry History::getEntry (size_t index) const
 
 /*****************************************************************************/
 
-void History::printLast () const
+void History::printLast (ResultAccuracy ra) const
 {
         std::optional<Entry> last{};
 
@@ -125,7 +125,7 @@ void History::printLast () const
         }
 
         if (last) {
-                printEntry (*last);
+                printEntry (*last, ra);
                 usbWrite ("\r\n");
         }
 

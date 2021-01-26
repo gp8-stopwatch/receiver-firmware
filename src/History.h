@@ -33,8 +33,8 @@ public:
         Result getHiScore () const { return hiScore; }
         History::Entry getEntry (size_t index) const;
 
-        void printHistory () const;
-        void printLast () const;
+        void printHistory (ResultAccuracy ra = ResultAccuracy::SECOND) const;
+        void printLast (ResultAccuracy ra = ResultAccuracy::SECOND) const;
 
         void setHistoryStorage (ICircullarQueueStorage *value) { historyStorage = value; }
         void setHiScoreStorage (IRandomAccessStorage *value)
