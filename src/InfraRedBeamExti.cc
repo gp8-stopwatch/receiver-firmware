@@ -27,7 +27,17 @@ void sendEvent (FastStateMachine *fStateMachine, Event ev)
 #endif
 }
 
-/*****************************************************************************/
+/**
+
+       Start                                         Stop
+-------+     +---------------------------------------+           +----  IrBeam::present
+       |     |                                       |           |
+       |     |                                       |           |
+       |     |                                       |           |
+       |     |                                       |           |
+       +-----+                                       +-----------+      IrBeam::absent
+
+ */
 
 void InfraRedBeamExti::onExti (IrBeam state, bool external)
 {

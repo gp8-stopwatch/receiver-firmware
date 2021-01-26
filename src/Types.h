@@ -13,7 +13,7 @@
 #ifdef __cplusplus
 #include "Hal.h"
 #include <cstdint>
-#include <etl/cstring.h>
+#include <etl/string.h>
 
 #if defined(PLATFORM_MICRO)
 #include "platform/Micro.h"

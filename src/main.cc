@@ -33,7 +33,7 @@
 #include "usbd_desc.h"
 #include <cstdbool>
 #include <cstring>
-#include <etl/cstring.h>
+#include <etl/string.h>
 #include <limits>
 #include <new>
 #include <stm32f0xx_hal.h>

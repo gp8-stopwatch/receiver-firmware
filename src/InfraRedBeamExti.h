@@ -21,6 +21,7 @@ class Gpio;
 
 /**
  * Non modulated for IR barriers and curtains like TSSP 4056.
+ * They output
  */
 class InfraRedBeamExti : public IInfraRedBeam {
 public:

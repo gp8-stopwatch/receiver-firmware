@@ -43,6 +43,7 @@ public:
         // { /* time = (canStart) ? (CAN_LATENCY_CORRECTION) : (0); */
         // }
 
+#if 0
         void set (Result actualTime)
         {
                 TIM3->CNT = 0;
@@ -56,6 +57,7 @@ public:
                 tmp -= actualTime;
                 TIM2->CNT = tmp;
         }
+#endif
 
         /**
          * Starts the timer immediatelly.
