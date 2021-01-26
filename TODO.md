@@ -55,8 +55,9 @@
   * [ ] Input protection
   * [ ] Battery over-discharge preotection
   * [ ] Other means of battery protection (over-charge, over-current)
-  * [ ] Emi - I can see lots of noise in the CAN bus, and test-trigger can be easily fired by transients.
+  * [x] Emi - I can see lots of noise in the CAN bus, and test-trigger can be easily fired by transients.
   * [x] The same goes to IR signal - I can see 20MHz / 60kHz - maybe screen is te cullprit. EDIT - with screen truned off I can see the same noise. **It was caused by faulty power supply of my LED lamps**
+  * [ ] Connect test trigger to the IR output pin, and make a solder jumper. 
 
 ## Huge display
 * [ ] czy nie potrzeba kondensatorów !? 

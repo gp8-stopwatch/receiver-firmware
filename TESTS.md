@@ -207,7 +207,7 @@ Scenario
                                   mod2                                       
 ```
 
-5. Less crucial, but possible test is to test two TCXO oscillators in parallel. This time an exetrnal signal generator is connected to the *receiver test trigger* GPIO of both receivers. 
+5. Two one or two receivers bypasing the IR sensor. This can be useful as the sensor has the biggest error of all the elements. This time an exetrnal signal generator is connected to the *receiver test trigger* GPIO of both receivers **OR** directly to IR output pin (test point P5). 
 
 ```
              +------------+             

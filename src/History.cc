@@ -66,7 +66,7 @@ void History::run ()
 
 /*****************************************************************************/
 
-void History::printHistory ()
+void History::printHistory () const 
 {
         usbWrite ("Best ");
 
@@ -112,7 +112,7 @@ History::Entry History::getEntry (size_t index) const
 
 /*****************************************************************************/
 
-void History::printLast ()
+void History::printLast () const
 {
         std::optional<Entry> last{};
 
