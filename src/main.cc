@@ -49,6 +49,7 @@ template <> struct Traits<String> {
         static constexpr LineEnd outputLineEnd{LineEnd::crlf};
         static constexpr size_t maxTokenSize = 16;
         static constexpr bool echo = true;
+        static constexpr Case comparison = Case::insensitive;
 };
 
 template <> void output<String> (String const &tok) { usbWrite (tok.c_str ()); }
