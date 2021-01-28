@@ -10,6 +10,8 @@
   * [x] Choose one
   * [x] Test it somehow (it's tiny, and I don't have a footprint on PCB)
 * [x] There has to be a bug in the trigger algorithm. When the resolution was set to 10ms there have been off by 10ms errors on 4s runs (1 in 20 aprox). But when the resolution was set to 100µs, the error fluctuates between 300 and 600µs (-O0). When -O3 and 100µs resolution, the error is smaller like 200-400µs but it also fluctuates. 10ms = 10000µs. Divided by 20 gives 500µs, so it is almost like in the first scenario the errors accumulated somehow. 
+
+* [ ]??? I think I rolled this back. Why?
 * [x] Timer TIM1 should be restarted (counting from 0) when start event happens.
   * [x] test
 * [x] Value of the counter should be taken into account when system stops. It's value should be rounded, not discarded like now.
@@ -19,6 +21,7 @@
   * [x] Test new receivers (for IR curtains, barriers)
 * [x] CAN latency tests.
 * [ ] GPSDO tests
+* [ ]
 
 # Hardware
 * [x] Boot pin easy accessible (for DFU).

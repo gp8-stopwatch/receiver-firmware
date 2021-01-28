@@ -247,3 +247,18 @@ Scenario
 8. Test with a motorized rig
 
 9. RTC
+
+# Triggering tests cases
+Variables
+* Devices connected : 
+  * With screen and setup (regular)
+  * Without (micro)
+* Mode selected : 
+  * Stop mode 
+  * Loop mode
+* Event received : 
+  * canStart 
+  * canStop 
+  * canLoop 
+  * irTrigger 
+  * mlvdsTrigger
