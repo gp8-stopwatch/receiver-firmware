@@ -19,7 +19,7 @@ void sendEvent (FastStateMachine *fStateMachine, Event ev)
 {
 #ifdef TEST_TRIGGER_MOD_2
         static int i{};
-        if (++i % 2 == 0) {
+        if (++i % 2 == 1) {
                 fStateMachine->run (ev);
         }
 #else

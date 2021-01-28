@@ -16,10 +16,12 @@
 
 /****************************************************************************/
 
-void printEntry (History::Entry const &en, ResultAccuracy ra)
+void printEntry (History::Entry const &en, ResultAccuracy ra, bool datePrint = true)
 {
-        printDate (en.date, en.time);
-        usbWrite (" ");
+        if (datePrint) {
+                printDate (en.date, en.time);
+                usbWrite (" ");
+        }
         printResult (en.result, ra);
 }
 
@@ -125,7 +127,7 @@ void History::printLast (ResultAccuracy ra) const
         }
 
         if (last) {
-                printEntry (*last, ra);
+                printEntry (*last, ra, false);
                 usbWrite ("\r\n");
         }
 
