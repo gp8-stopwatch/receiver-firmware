@@ -16,8 +16,11 @@
 #include "InfraRedBeamExti.h"
 #include "StopWatch.h"
 
-/*****************************************************************************/
-
+/**
+ * Q&A
+ * Q: Why not clear the stopwatch timer before new measurement? That would increase accuracy.
+ * A: Because only one participant could be contesting at the same time then.
+ */
 void FastStateMachine::run (Event event)
 {
         // Temp variable for storing information if the trigger was interanal or external.
@@ -42,8 +45,8 @@ void FastStateMachine::run (Event event)
                         beforeLastTime = lastTime;
                         lastTime = event.getTime ();
                 }
-                else if (eType == Event::Type::canBusStop || // external CAN bus event overrides the testTrigger
-                         eType == Event::Type::canBusLoop) { // external CAN bus event overrides the testTrigger
+                else if (eType == Event::Type::canBusStop || // external CAN bus event overrides the test trigger
+                         eType == Event::Type::canBusLoop) { // external CAN bus event overrides the test trigger
                         beforeLastTime = 0;
                         lastTime = event.getTime ();
                 }

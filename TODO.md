@@ -23,6 +23,8 @@
 * [ ] GPSDO tests
 * [ ] loop / stop mode should be active according to local configuration, not the event type. This is because micro receiver does not have button to change the mode! The mode can be changed only on the regular. 
 * [ ] Test if everything works when switching modes from stop to loop back and forth without powering off. Will it transition between modes seamlesly?
+* [ ] Timer overflow problem!
+* [ ] There is wrong naming of absolute time (from the device start) and time durations (diff between two time points). Use std::chrono naming.
 
 # Hardware
 * [x] Boot pin easy accessible (for DFU).
