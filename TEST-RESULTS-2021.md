@@ -30,6 +30,10 @@
 | 00:06.00002 |
 | 00:06.00002 |
 
+
+# Test2
+Not exactly. Regular receiver was connected instead of a micro.
+
 | test 2      |
 | ----------- |
 | 00:05.99999 |

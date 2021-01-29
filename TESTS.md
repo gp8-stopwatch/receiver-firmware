@@ -98,7 +98,7 @@ Links:
 * http://www.vishay.com/ir-receiver-modules/presence-sensor/
 * https://www.researchgate.net/publication/300910559_IR_Barrier_Data_Integration_for_Obstacle_Detection
   
-# Test cases
+# Accuracy test cases
 Changing test conditions / environment. Every test can / should be performed in these varying conditions:
 * Various stopwatch accuracies. 10ms, 1ms, 100µs and 10µs.
 * Various levels of IR intensity (as set on the transmitter).
@@ -246,8 +246,6 @@ Scenario
 7. Field test with slow-mo camera 
 8. Test with a motorized rig
 
-9. RTC
-
 # Triggering tests cases
 Variables
 * Devices connected : 
@@ -262,3 +260,9 @@ Variables
   * canLoop 
   * irTrigger 
   * mlvdsTrigger
+
+# Battery test cases
+* a
+
+# Other test cases
+* RTC

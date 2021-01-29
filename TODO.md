@@ -21,7 +21,8 @@
   * [x] Test new receivers (for IR curtains, barriers)
 * [x] CAN latency tests.
 * [ ] GPSDO tests
-* [ ]
+* [ ] loop / stop mode should be active according to local configuration, not the event type. This is because micro receiver does not have button to change the mode! The mode can be changed only on the regular. 
+* [ ] Test if everything works when switching modes from stop to loop back and forth without powering off. Will it transition between modes seamlesly?
 
 # Hardware
 * [x] Boot pin easy accessible (for DFU).
@@ -125,7 +126,7 @@
    * [ ] CAN latency when internal + extarnal sensors are used.
    * [ ] Trigger rising and falling correction
      * [ ] Sending this correction via CAN bus as well
-     * [ ] Bigger precission than Result type can provide. I have 2 HW timers, it would be wise to store state of both of them (?)
+     * [ ] Bigger precission than Result type can provide. I have 2 HW timers, it would be wise to store state of both of them (?). yeah, I could use uint64_t instead of uint32_t as a result type. Then I could store 1µs or even 500ns. This would hopefully decrease errors caused by arithmetic (there are some substractions). Alternatively I could get rid of those substractions, but I think I introduced this during noise-cancelation implementation.
 
 # Bugs
 * [x] So it happened that it couldnt save results history when the page overflowed from 1 back to 0 (after 128 measurements). Probably it didn't cleared the flash.
