@@ -1,6 +1,6 @@
-# test 5 (signal gen to IR out) 26/01/2021 -O3, USB
+# test A5 (signal gen to IR out) 26/01/2021 -O3, USB
 
-| test 1      |
+| test A1     |
 | ----------- |
 | 00:06.00003 |
 | 00:06.00001 |
@@ -31,10 +31,10 @@
 | 00:06.00002 |
 
 
-# Test2
+# Test A2
 Not exactly. Regular receiver was connected instead of a micro.
 
-| test 2      |
+| test A2     |
 | ----------- |
 | 00:05.99999 |
 | 00:06.00001 |
@@ -82,7 +82,9 @@ Not exactly. Regular receiver was connected instead of a micro.
 | 00:06.00010 |
 | 00:06.00002 |
 
-| test 5      |
+# Test A5
+
+| test A5     |
 | ----------- |
 | 00:06.00002 |
 | 00:06.00001 |
@@ -116,7 +118,12 @@ Not exactly. Regular receiver was connected instead of a micro.
 | 00:06.00002 |
 
 
+# Trigger tests
+## Signal gen
 
+| date       | T1S | T1L | T2S | T2L | T3S | T3L | T4S | T4L |
+| ---------- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 29/01/2021 | 1   | 1   | 0   | 1   |     |     | 0   | 0   |
 
 
 

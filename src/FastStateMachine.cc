@@ -45,11 +45,11 @@ void FastStateMachine::run (Event event)
                         beforeLastTime = lastTime;
                         lastTime = event.getTime ();
                 }
-                else if (eType == Event::Type::canBusStop || // external CAN bus event overrides the test trigger
-                         eType == Event::Type::canBusLoop) { // external CAN bus event overrides the test trigger
-                        beforeLastTime = 0;
-                        lastTime = event.getTime ();
-                }
+                // else if (eType == Event::Type::canBusStop || // external CAN bus event overrides the test trigger
+                //          eType == Event::Type::canBusLoop) { // external CAN bus event overrides the test trigger
+                //         beforeLastTime = 0;
+                //         lastTime = event.getTime ();
+                // }
                 // Event possible only if WITH_CHECK_SENSOR_STATUS is set
                 else if (eType == Event::Type::noIr) {
                         state = State::WAIT_FOR_BEAM;
@@ -253,7 +253,15 @@ void FastStateMachine::stop_entryAction (Event event /* , bool canEvent */)
         /* Local time stuff                                                         */
         /*--------------------------------------------------------------------------*/
 
-        Result result = lastTime - beforeLastTime;
+        Result result{};
+
+        if (isCanBusEvent (event)) {
+                result = event.getTime ();
+        }
+        else {
+                result = lastTime - beforeLastTime;
+        }
+
         display->setTime (result, getConfig ().getResolution ());
 
         /*--------------------------------------------------------------------------*/
@@ -289,8 +297,17 @@ void FastStateMachine::loop_entryAction (Event event /* , bool canEvent */)
         /* Local time stuff                                                         */
         /*--------------------------------------------------------------------------*/
 
-        Result result = lastTime - beforeLastTime;
+        Result result{};
+
+        if (isCanBusEvent (event)) {
+                result = event.getTime ();
+        }
+        else {
+                result = lastTime - beforeLastTime;
+        }
+
         display->setTime (result, getConfig ().getResolution ());
+
         loopDisplayTimeout.start (LOOP_DISPLAY_TIMEOUT);
 
         /*--------------------------------------------------------------------------*/

@@ -108,7 +108,7 @@ Changing test conditions / environment. Every test can / should be performed in 
 * Different temperatures. 0°C as well as in 50°C. Using the IR.
 
 Tests to perform (in importance order):
-1. 1 receiver and 1 transmitter. Signal generator connected to the *transmitter test trigger*. Transmitter outputs an IR trigger every N seconds. 
+A1. 1 receiver and 1 transmitter. Signal generator connected to the *transmitter test trigger*. Transmitter outputs an IR trigger every N seconds. 
  
 Desired outcome : every result displayed on the receiver's screen is in spec.
 
@@ -129,7 +129,7 @@ Desired outcome : every result displayed on the receiver's screen is in spec.
 +-------------+                +--------------+
 ```
 
-2. Like test 1. but with micro-reveiver connected to the main-receiver.
+A2. Like test 1. but with micro-reveiver connected to the main-receiver.
 
 ```
                                                               +------------+ 
@@ -148,7 +148,7 @@ Desired outcome : every result displayed on the receiver's screen is in spec.
 +-------------+                +-------------+               +--------------+
 ```
 
-3. 2 receivers are connected using CAN bus, and one transmitter is connected to an external signal generator. Transmitter outputs a trigger signal to both receivers, but receivers are modified so they react to every second event. This way, by turinig them on in correct order one can simulate two transmitters using only one.
+A3. 2 receivers are connected using CAN bus, and one transmitter is connected to an external signal generator. Transmitter outputs a trigger signal to both receivers, but receivers are modified so they react to every second event. This way, by turinig them on in correct order one can simulate two transmitters using only one.
 
 Scenario
 * Transmitter (instructed by the signel generator) outputs a trigger event. Both receivers are able to detect it, but only the **receiver 1** processes it because of the *modulo 2* mechanism (elaborate). The **receiver 1** would be at the **START** of the circuit in normal circumstances.
@@ -181,7 +181,7 @@ Scenario
               mod2                                       
 ```
 
-4. Variation of test 2 with two micro receivers.
+A4. Variation of test 2 with two micro receivers.
 
 ```
                                                               +------------+ 
@@ -207,7 +207,7 @@ Scenario
                                   mod2                                       
 ```
 
-5. Two one or two receivers bypasing the IR sensor. This can be useful as the sensor has the biggest error of all the elements. This time an exetrnal signal generator is connected to the *receiver test trigger* GPIO of both receivers **OR** directly to IR output pin (test point P5). 
+A5. Two one or two receivers bypasing the IR sensor. This can be useful as the sensor has the biggest error of all the elements. This time an exetrnal signal generator is connected to the *receiver test trigger* GPIO of both receivers **OR** directly to IR output pin (test point P5). 
 
 ```
              +------------+             
@@ -225,7 +225,7 @@ Scenario
 +-------------+          +-------------+
 ```
 
-6. So called *crude test*. Simply trigger two independent receivers and observe if results are the same. 
+A6. So called *crude test*. Simply trigger two independent receivers and observe if results are the same. 
 
 ```
 +-------------+                                        
@@ -243,17 +243,30 @@ Scenario
 +-------------+                                        
 ```
 
-7. Field test with slow-mo camera 
-8. Test with a motorized rig
+A7. Field test with slow-mo camera 
+A8. Test with a motorized rig
 
 # Triggering tests cases
 Variables
-* Devices connected : 
-  * With screen and setup (regular)
-  * Without (micro)
+* Device connection variant : 
+  * T1. Like in A1. transmiter -> regular
+    * T1S : Stop
+    * T1L : Loop
+  * T2. Like in A2. transmitter -> micro + regular
+    * T2S : Stop
+    * T2L : Loop
+  * T3. Like in A3. transmitter -> regular x2
+    * T3S : Stop
+    * T3L : Loop
+  * T4. Like in A4. transmitter -> micro1 / transmitter -> micro2 + regular.
+    * T4S : Stop
+    * T4L : Loop 
 * Mode selected : 
   * Stop mode 
   * Loop mode
+* Trigger source used : 
+  * IR beam
+  * Signal gen connected instead the IR
 * Event received : 
   * canStart 
   * canStop 

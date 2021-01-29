@@ -44,3 +44,7 @@ See docs.iwasz.com
 IR PA8
 Button PB15
 Test trigger PB3
+
+
+FAQ
+* Noise error : check terminator switches.
