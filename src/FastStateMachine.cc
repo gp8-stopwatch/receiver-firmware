@@ -45,14 +45,19 @@ void FastStateMachine::run (Event event)
                         beforeLastTime = lastTime;
                         lastTime = event.getTime ();
                 }
+#ifdef WITH_LEGACY_TRIGGER
+                else if (eType == Event::Type::canBusLoop || eType == Event::Type::canBusStart
+                         || eType == Event::Type::canBusStop) { // Legacy mode without LVDS signal
+                        beforeLastTime = lastTime;
+                        lastTime = stopWatch->getTime ();
+                }
+#endif
                 // Event possible only if WITH_CHECK_SENSOR_STATUS is set
                 else if (eType == Event::Type::noIr) {
                         state = State::WAIT_FOR_BEAM;
-                        // canEvent = true;
                 }
                 else if (eType == Event::Type::irNoise) {
                         state = State::WAIT_FOR_BEAM;
-                        // canEvent = false;
                 }
         }
 
@@ -118,7 +123,7 @@ void FastStateMachine::run (Event event)
                  */
                 if (isInternalTrigger (event) || isCanBusEvent (event)) {
                         state = RUNNING;
-                        running_entryAction (event /*, canEvent */);
+                        running_entryAction (event);
                 }
 
         } break;
@@ -130,7 +135,7 @@ void FastStateMachine::run (Event event)
                 if (isInternalTrigger (event) || isCanBusEvent (event)) {
                         if (getConfig ().getStopMode () == StopMode::stop) {
                                 state = STOP;
-                                stop_entryAction (event /* , canEvent */);
+                                stop_entryAction (event);
                         }
                         else {
                                 state = LOOP_RUNNING;
@@ -143,7 +148,7 @@ void FastStateMachine::run (Event event)
         case STOP:
                 if (isInternalTrigger (event) || isCanBusEvent (event)) {
                         state = RUNNING;
-                        running_entryAction (event /* , canEvent */);
+                        running_entryAction (event);
                 }
 
                 break;

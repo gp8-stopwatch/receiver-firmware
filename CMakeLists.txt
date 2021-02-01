@@ -34,6 +34,7 @@ set(WITH_RTC ON CACHE BOOL "Complie RTC support")
 set(WITH_POWER_MANAGER ON CACHE BOOL "Complie power sensing support")
 set(WITH_CHECK_SENSOR_STATUS ON CACHE BOOL "If on, the device checks for external sensors and queries their state")
 set(WITH_BUTTON ON CACHE BOOL "Compile button support")
+set(WITH_LEGACY_TRIGGER ON CACHE BOOL "Trigger algorithm without LVDS signal")
 ADD_DEFINITIONS (-DPLATFORM_REGULAR)
 
 # Micro receiver
@@ -51,6 +52,7 @@ ADD_DEFINITIONS (-DPLATFORM_REGULAR)
 # set(WITH_POWER_MANAGER OFF CACHE BOOL "Complie power sensing support")
 # set(WITH_CHECK_SENSOR_STATUS OFF CACHE BOOL "If on, the device checks for external sensors and queries their state")
 # set(WITH_BUTTON ON CACHE BOOL "Compile button support")
+# set(WITH_LEGACY_TRIGGER ON CACHE BOOL "Trigger algorithm without LVDS signal")
 # ADD_DEFINITIONS (-DPLATFORM_MICRO)
 
 # Huge display without built in receiver
@@ -68,6 +70,7 @@ ADD_DEFINITIONS (-DPLATFORM_REGULAR)
 # set(WITH_POWER_MANAGER ON CACHE BOOL "Complie power sensing support")
 # set(WITH_CHECK_SENSOR_STATUS ON CACHE BOOL "If on, the device checks for external sensors and queries their state")
 # set(WITH_BUTTON ON CACHE BOOL "Compile button support")
+# set(WITH_LEGACY_TRIGGER OFF CACHE BOOL "Trigger algorithm without LVDS signal")
 # ADD_DEFINITIONS (-DPLATFORM_HUGE)
 
 IF (WITH_SOUND)
@@ -124,6 +127,10 @@ ENDIF ()
 
 IF (WITH_BUTTON)
     ADD_DEFINITIONS (-DWITH_BUTTON=1)
+ENDIF ()
+
+IF (WITH_LEGACY_TRIGGER)
+    ADD_DEFINITIONS (-DWITH_LEGACY_TRIGGER=1)
 ENDIF ()
 
 

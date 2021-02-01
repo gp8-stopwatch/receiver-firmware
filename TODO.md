@@ -30,6 +30,7 @@
   * [ ] I can lower the CAN bus IRQ priority. It still has 1, and a comment that it is low, when in fact it isn't. Dunno why.2
 * [ ] Do not disable IRQs in InfraRedExti 
 * [x] After resetting the main (regulrar) stopwatch, connected micro can send a stop or loop signal which instantenously shows a result on the screen, even though there were no counting on the screen. This first result should be ignored. EDIT it is, because FastStateMachine is in ready state, and then it ransitions to the Loop state.
+* [x] Legacy mode for Piotr.
 
 # Hardware
 * [x] Boot pin easy accessible (for DFU).

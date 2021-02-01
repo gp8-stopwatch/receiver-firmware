@@ -98,8 +98,10 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
                         lastState = IrBeam::present;
                 }
                 else { // external event!
-                        // We receive already filtered event, so there's no need to check the envelope.
+                       // We receive already filtered event, so there's no need to check the envelope.
+#ifndef WITH_LEGACY_TRIGGER
                         sendEvent (fStateMachine, {Event::Type::testTrigger, *triggerRisingEdgeTime});
+#endif
                         blindTimeout.start (getConfig ().getBlindTime ());
                         // Reset the state.
                         irPresentPeriod = irAbsentPeriod = triggerFallingEdgeTime = 0;

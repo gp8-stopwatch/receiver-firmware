@@ -30,9 +30,9 @@ public:
                 timePassed,  /// Every 10ms / 1ms / 100µs
                 irTrigger,   /// IR beam interrupted
                 testTrigger, /// External trigger (M-LVDS) GPIO state changed
-                // canBusStart, /// Peripheral device reported switching to the RUNNING state
-                // canBusStop,  /// Peripheral device reported switching to the STOP state
-                canBusLoop, /// Peripheral device reported the restart of the LOOP state.
+                canBusStart, /// Peripheral device reported switching to the RUNNING state
+                canBusStop,  /// Peripheral device reported switching to the STOP state
+                canBusLoop,  /// Peripheral device reported the restart of the LOOP state.
                 pause,
                 reset, // Use for resume after pause
                 noIr,
