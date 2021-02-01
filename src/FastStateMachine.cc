@@ -232,7 +232,7 @@ void FastStateMachine::running_entryAction (Event event /* , bool canEvent */)
 
 #ifdef WITH_CAN
         if (protocol != nullptr && !isCanBusEvent (event)) {
-                protocol->sendTrigger (Message::START, lastTime);
+                protocol->sendTrigger (Message::START, lastTime); //?
         }
 #endif
 
@@ -308,6 +308,7 @@ void FastStateMachine::loop_entryAction (Event event /* , bool canEvent */)
 
         display->setTime (result, getConfig ().getResolution ());
 
+        // if (result > 0 ??? sprawdzić)
         loopDisplayTimeout.start (LOOP_DISPLAY_TIMEOUT);
 
         /*--------------------------------------------------------------------------*/

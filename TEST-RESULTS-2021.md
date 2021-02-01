@@ -121,9 +121,9 @@ Not exactly. Regular receiver was connected instead of a micro.
 # Trigger tests
 ## Signal gen
 
-| date       | T1S | T1L | T2S | T2L | T3S | T3L | T4S | T4L |
-| ---------- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 29/01/2021 | 1   | 1   | 0   | 1   |     |     | 0   | 0   |
+| date       | commit                                   | T1S | T1L | T2S | T2L | T3S | T3L | T4S | T4L |
+| ---------- | ---------------------------------------- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 29/01/2021 | bf5f4a350ed8785d101482f470f3750ee874db31 | 1   | 1   | 0   | 1   | -   | 0   | 0   | 0   |
 
 
 

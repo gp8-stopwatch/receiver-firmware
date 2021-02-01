@@ -13,6 +13,8 @@
 #include "FastStateMachine.h"
 #include "StopWatch.h"
 
+#include "UsbHelpers.h"
+
 /*****************************************************************************/
 
 void sendEvent (FastStateMachine *fStateMachine, Event ev)
@@ -27,20 +29,35 @@ void sendEvent (FastStateMachine *fStateMachine, Event ev)
 #endif
 }
 
-/**
-
-       Start                                         Stop
--------+     +---------------------------------------+           +----  IrBeam::present
-       |     |                                       |           |
-       |     |                                       |           |
-       |     |                                       |           |
-       |     |                                       |           |
+/*
        +-----+                                       +-----------+      IrBeam::absent
-
+       |     |                                       |           |
+       |     |                                       |           |
+       |     |                                       |           |
+       |     |                                       |           |
+-------+     +---------------------------------------+           +----  IrBeam::present
  */
 
 void InfraRedBeamExti::onExti (IrBeam state, bool external)
 {
+        // For testing
+        // if (external) {
+        //         if (state == IrBeam::absent) {
+        //                 print ("0");
+        //         }
+        //         else {
+        //                 print ("1");
+        //         }
+        // }
+        // else {
+        //         if (state == IrBeam::absent) {
+        //                 print ("a");
+        //         }
+        //         else {
+        //                 print ("p");
+        //         }
+        // }
+
         if ((!active && !external) || lastState == IrBeam::noise) {
                 return;
         }
@@ -55,7 +72,7 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
                         triggerFallingEdgeTime = now;
 
                         if (!external) {
-                                HAL_NVIC_DisableIRQ (EXT_TRIGGER_INPUT_IRQn);
+                                EXTI->IMR &= ~EXT_TRIGGER_INPUT_PINS;
                                 extTriggerOutEnable = true;
                                 extTriggerOutput = true;
                         }
@@ -115,7 +132,8 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
 
 void InfraRedBeamExti::run ()
 {
-        // The whole state has to be retrieved atomically
+        // TODO Do not disable ALL the IRQs!
+        // The whole state has to be retrieved atomically.
         __disable_irq ();
         Result lastIrChangeDuration = stopWatch->getTime () - lastIrChangeTimePoint;
         bool triggerRisingEdgeTimeSet = bool (triggerRisingEdgeTime);
@@ -138,21 +156,20 @@ void InfraRedBeamExti::run ()
                 if (envelope >= MIN_TIME_BETWEEN_EVENTS_MS * 100 && envelope < DEFAULT_BLIND_TIME_MS * 100 && duty
                     && blindTimeout.isExpired ()) {
 
-                        extTriggerOutput.set (false);
-                        extTriggerOutEnable.set (false);
-                        // HAL_NVIC_EnableIRQ (EXT_TRIGGER_INPUT_IRQn);
-
                         sendEvent (fStateMachine, {Event::Type::irTrigger, *triggerRisingEdgeTime});
                         blindTimeout.start (getConfig ().getBlindTime ());
                 }
-                else {
-                        extTriggerOutput.set (false);
-                        extTriggerOutEnable.set (false);
-                        // HAL_NVIC_EnableIRQ (EXT_TRIGGER_INPUT_IRQn);
+                // else {
+                //         // extTriggerOutput.set (false);
+                //         // extTriggerOutEnable.set (false);
 
-                        // EVENT CANCEL
-                        // sendEvent (fStateMachine, {Event::Type::irTrigger, *triggerRisingEdgeTime});
-                }
+                //         // EVENT CANCEL
+                //         // sendEvent (fStateMachine, {Event::Type::irTrigger, *triggerRisingEdgeTime});
+                // }
+
+                extTriggerOutput.set (false);
+                extTriggerOutEnable.set (false);
+                EXTI->IMR |= EXT_TRIGGER_INPUT_PINS;
 
                 // After correct event has been detected, we reset everything.
                 irPresentPeriod = irAbsentPeriod = triggerFallingEdgeTime = 0;
