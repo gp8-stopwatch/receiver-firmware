@@ -159,13 +159,6 @@ void InfraRedBeamExti::run ()
                         sendEvent (fStateMachine, {Event::Type::irTrigger, *triggerRisingEdgeTime});
                         blindTimeout.start (getConfig ().getBlindTime ());
                 }
-                // else {
-                //         // extTriggerOutput.set (false);
-                //         // extTriggerOutEnable.set (false);
-
-                //         // EVENT CANCEL
-                //         // sendEvent (fStateMachine, {Event::Type::irTrigger, *triggerRisingEdgeTime});
-                // }
 
                 extTriggerOutput.set (false);
                 extTriggerOutEnable.set (false);

@@ -18,7 +18,7 @@
 
 /*****************************************************************************/
 
-enum class Message : uint8_t { START, STOP, LOOP, NO_IR, INFO_REQ, INFO_RESP, NOISE };
+enum class Message : uint8_t { /* START, STOP, */ LOOP, NO_IR, INFO_REQ, INFO_RESP, NOISE };
 
 /*****************************************************************************/
 

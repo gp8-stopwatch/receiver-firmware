@@ -45,11 +45,6 @@ void FastStateMachine::run (Event event)
                         beforeLastTime = lastTime;
                         lastTime = event.getTime ();
                 }
-                // else if (eType == Event::Type::canBusStop || // external CAN bus event overrides the test trigger
-                //          eType == Event::Type::canBusLoop) { // external CAN bus event overrides the test trigger
-                //         beforeLastTime = 0;
-                //         lastTime = event.getTime ();
-                // }
                 // Event possible only if WITH_CHECK_SENSOR_STATUS is set
                 else if (eType == Event::Type::noIr) {
                         state = State::WAIT_FOR_BEAM;
@@ -117,19 +112,22 @@ void FastStateMachine::run (Event event)
                 noIrRequestSent = false;
                 ready_entryAction ();
 
-                if (isInternalTrigger (event)) {
+                /*
+                 * Even if the mode was selected to "loop", the very first counting is performed in the "running" mode.
+                 * This is to avoid showing the first result which is not there.
+                 */
+                if (isInternalTrigger (event) || isCanBusEvent (event)) {
                         state = RUNNING;
                         running_entryAction (event /*, canEvent */);
                 }
 
-                checkCanBusEvents (event);
         } break;
 
         case RUNNING:
                 // Refresh the screen (shows the time is running). In an event of the stop_entryAction this will be re-set again.
                 display->setTime (stopWatch->getTime () - lastTime, getConfig ().getResolution ());
 
-                if (isInternalTrigger (event)) {
+                if (isInternalTrigger (event) || isCanBusEvent (event)) {
                         if (getConfig ().getStopMode () == StopMode::stop) {
                                 state = STOP;
                                 stop_entryAction (event /* , canEvent */);
@@ -139,20 +137,15 @@ void FastStateMachine::run (Event event)
                                 loop_entryAction (event);
                         }
                 }
-                else {
-                        checkCanBusEvents (event);
-                }
 
                 break;
 
         case STOP:
-                if (isInternalTrigger (event)) {
+                if (isInternalTrigger (event) || isCanBusEvent (event)) {
                         state = RUNNING;
                         running_entryAction (event /* , canEvent */);
                 }
-                else {
-                        checkCanBusEvents (event);
-                }
+
                 break;
 
         case LOOP_RUNNING:
@@ -161,11 +154,8 @@ void FastStateMachine::run (Event event)
                                           getConfig ().getResolution ()); // Refresh the screen (shows the time is running)
                 }
 
-                if (isInternalTrigger (event)) {
+                if (isInternalTrigger (event) || isCanBusEvent (event)) {
                         loop_entryAction (event);
-                }
-                else {
-                        checkCanBusEvents (event);
                 }
 
                 break;
@@ -224,7 +214,7 @@ void FastStateMachine::ready_entryAction () { display->setTime (0, getConfig ().
 
 /*****************************************************************************/
 
-void FastStateMachine::running_entryAction (Event event /* , bool canEvent */)
+void FastStateMachine::running_entryAction (Event event)
 {
         /*--------------------------------------------------------------------------*/
         /* CAN bus stuff                                                            */
@@ -232,7 +222,7 @@ void FastStateMachine::running_entryAction (Event event /* , bool canEvent */)
 
 #ifdef WITH_CAN
         if (protocol != nullptr && !isCanBusEvent (event)) {
-                protocol->sendTrigger (Message::START, lastTime); //?
+                protocol->sendTrigger (Message::LOOP, lastTime); //?
         }
 #endif
 
@@ -247,7 +237,7 @@ void FastStateMachine::running_entryAction (Event event /* , bool canEvent */)
 
 /*****************************************************************************/
 
-void FastStateMachine::stop_entryAction (Event event /* , bool canEvent */)
+void FastStateMachine::stop_entryAction (Event event)
 {
         /*--------------------------------------------------------------------------*/
         /* Local time stuff                                                         */
@@ -270,7 +260,7 @@ void FastStateMachine::stop_entryAction (Event event /* , bool canEvent */)
 
 #ifdef WITH_CAN
         if (protocol != nullptr && !isCanBusEvent (event)) {
-                protocol->sendTrigger (Message::STOP, result);
+                protocol->sendTrigger (Message::LOOP, result);
         }
 #endif
 
@@ -291,7 +281,7 @@ void FastStateMachine::stop_entryAction (Event event /* , bool canEvent */)
 
 /*****************************************************************************/
 
-void FastStateMachine::loop_entryAction (Event event /* , bool canEvent */)
+void FastStateMachine::loop_entryAction (Event event)
 {
         /*--------------------------------------------------------------------------*/
         /* Local time stuff                                                         */
@@ -307,8 +297,6 @@ void FastStateMachine::loop_entryAction (Event event /* , bool canEvent */)
         }
 
         display->setTime (result, getConfig ().getResolution ());
-
-        // if (result > 0 ??? sprawdzić)
         loopDisplayTimeout.start (LOOP_DISPLAY_TIMEOUT);
 
         /*--------------------------------------------------------------------------*/
@@ -334,24 +322,4 @@ void FastStateMachine::loop_entryAction (Event event /* , bool canEvent */)
                 history->store (result);
         }
 #endif
-}
-
-/****************************************************************************/
-
-void FastStateMachine::checkCanBusEvents (Event event)
-{
-        auto eType = event.getType ();
-
-        if (eType == Event::Type::canBusStart) {
-                state = RUNNING;
-                running_entryAction (event);
-        }
-        else if (eType == Event::Type::canBusStop) {
-                state = STOP;
-                stop_entryAction (event);
-        }
-        else if (eType == Event::Type::canBusLoop) {
-                state = LOOP_RUNNING;
-                loop_entryAction (event);
-        }
 }

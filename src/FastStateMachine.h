@@ -30,9 +30,9 @@ public:
                 timePassed,  /// Every 10ms / 1ms / 100µs
                 irTrigger,   /// IR beam interrupted
                 testTrigger, /// External trigger (M-LVDS) GPIO state changed
-                canBusStart, /// Peripheral device reported switching to the RUNNING state
-                canBusStop,  /// Peripheral device reported switching to the STOP state
-                canBusLoop,  /// Peripheral device reported the restart of the LOOP state.
+                // canBusStart, /// Peripheral device reported switching to the RUNNING state
+                // canBusStop,  /// Peripheral device reported switching to the STOP state
+                canBusLoop, /// Peripheral device reported the restart of the LOOP state.
                 pause,
                 reset, // Use for resume after pause
                 noIr,
@@ -81,12 +81,12 @@ private:
         void loop_entryAction (Event event /* , bool canEvent */);
         // void pause_entryAction ();
 
-        void checkCanBusEvents (Event event);
+        // void checkCanBusEvents (Event event);
         bool isInternalTrigger (Event event) const;
         bool isCanBusEvent (Event event) const
         {
                 auto eType = event.getType ();
-                return (eType == Event::Type::canBusStart || eType == Event::Type::canBusStop || eType == Event::Type::canBusLoop);
+                return (/* eType == Event::Type::canBusStart || eType == Event::Type::canBusStop || */ eType == Event::Type::canBusLoop);
         }
 
         // bool isExternalTrigger (Event event) const;
@@ -120,13 +120,13 @@ public:
         {
 
                 switch (msg) {
-                case Message::START:
-                        fastStateMachine.run ({Event::Type::canBusStart, time});
-                        break;
+                        // case Message::START:
+                        //         fastStateMachine.run ({Event::Type::canBusStart, time});
+                        //         break;
 
-                case Message::STOP:
-                        fastStateMachine.run ({Event::Type::canBusStop, time});
-                        break;
+                        // case Message::STOP:
+                        //         fastStateMachine.run ({Event::Type::canBusStop, time});
+                        //         break;
 
                 case Message::LOOP:
                         fastStateMachine.run ({Event::Type::canBusLoop, time});
