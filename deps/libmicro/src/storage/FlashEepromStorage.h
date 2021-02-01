@@ -13,6 +13,7 @@
 #include "IRandomAccessStorage.h"
 #include <array>
 #include <cstring>
+#include <etl/array_view.h>
 
 /**
  * TODO There are a lot of possible improvements here.
@@ -37,7 +38,7 @@ public:
 
         /**
          * @brief Constructor
-         * @param capacity Size of a logical record which will be stored. For EEPROM memories it would be
+         * @param capacity Size of a logical record which will be stored [in bytes]. For EEPROM memories it would be
          * the memory size, but since we emulate EEPROM in FLASH, we need to know how much of the usable
          * memory will be implented in much bigger region of FLASH. Then, every time you change at least
          * 1 word (WRITE_SIZE) of that memory, whole new record will be append to the FLASH.
@@ -129,9 +130,44 @@ template <size_t PAGE_SIZE, size_t WRITE_SIZE> void FlashEepromStorage<PAGE_SIZE
 {
         contents = (uint8_t *)address;
 
-        /*---------------------------------------------------------------------------*/
-
+        // Figure out where is the first writable cell (of capacity size)
         initOffsets ();
+
+        // If, by any chance current offset is at the very end of the page, we adjust it as the store method would.
+        auto offsetToCheck = currentOffset;
+        auto pageToCheck = currentPage;
+
+        if (offsetToCheck + capacity + WRITE_SIZE > PAGE_SIZE) {
+                ++pageToCheck;
+                pageToCheck %= numOfPages;
+                offsetToCheck = 0;
+        }
+
+        // This is the cell to be written contents. It should be empty (0xff)
+        etl::array_view<uint8_t> cell{contents + offsetToCheck, contents + offsetToCheck + capacity};
+
+        bool writable = true;
+
+        // Check if all the bytes in the current cell are cleared (and thus writable). Clear == 0xff
+        for (auto c : cell) {
+                if (c != 0xff) {
+                        writable = false;
+                        break;
+                }
+        }
+
+        /*
+         * That is a fatal error. I encunetered this strange situation of flash memory beeing corrupted
+         * quite a few times. I suspect that intensive debugging, and other faults (unrelated to the flash
+         * itself) were what caused this. For example a proghram could hang somewhere where a trigger
+         * event occured, and this is exaclty when the flash subsystem is trying to store a result. So
+         * it could happen that a result was stored only partially this corrupting the flash.
+         *
+         * The only thing I can do is to clear the flash.
+         */
+        if (!writable) {
+                clear ();
+        }
 }
 
 /*****************************************************************************/

@@ -124,6 +124,7 @@ Not exactly. Regular receiver was connected instead of a micro.
 | date       | commit                                   | T1S | T1L | T2S | T2L | T3S | T3L | T4S | T4L |
 | ---------- | ---------------------------------------- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 29/01/2021 | bf5f4a350ed8785d101482f470f3750ee874db31 | 1   | 1   | 0   | 1   | -   | 0   | 0   | 0   |
+| 01/02/2021 | 370fdfe0efcb8603183507f3ec150dc834ba9f74 | 1   | 1   | 1   | 1   | 1   | 1   | 1   | 1   |
 
 
 
