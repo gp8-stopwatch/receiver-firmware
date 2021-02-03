@@ -45,18 +45,8 @@ void FastStateMachine::run (Event event)
                         beforeLastTime = lastTime;
                         lastTime = event.getTime ();
                 }
-#ifdef WITH_LEGACY_TRIGGER
-                else if (eType == Event::Type::canBusLoop || eType == Event::Type::canBusStart
-                         || eType == Event::Type::canBusStop) { // Legacy mode without LVDS signal
-                        beforeLastTime = lastTime;
-                        lastTime = stopWatch->getTime ();
-                }
-#endif
                 // Event possible only if WITH_CHECK_SENSOR_STATUS is set
-                else if (eType == Event::Type::noIr) {
-                        state = State::WAIT_FOR_BEAM;
-                }
-                else if (eType == Event::Type::irNoise) {
+                else if (eType == Event::Type::noIr || eType == Event::Type::irNoise) {
                         state = State::WAIT_FOR_BEAM;
                 }
         }
@@ -135,12 +125,12 @@ void FastStateMachine::run (Event event)
                 if (isInternalTrigger (event) || isCanBusEvent (event)) {
                         if (getConfig ().getStopMode () == StopMode::stop) {
                                 state = STOP;
-                                stop_entryAction (event);
                         }
                         else {
                                 state = LOOP_RUNNING;
-                                loop_entryAction (event);
                         }
+
+                        loopStop_entryAction (event);
                 }
 
                 break;
@@ -160,15 +150,12 @@ void FastStateMachine::run (Event event)
                 }
 
                 if (isInternalTrigger (event) || isCanBusEvent (event)) {
-                        loop_entryAction (event);
+                        loopStop_entryAction (event);
                 }
 
                 break;
 
         case State::PAUSED:
-                // pause_entryAction ();
-                break;
-
         default:
                 break;
         }
@@ -242,51 +229,7 @@ void FastStateMachine::running_entryAction (Event event)
 
 /*****************************************************************************/
 
-void FastStateMachine::stop_entryAction (Event event)
-{
-        /*--------------------------------------------------------------------------*/
-        /* Local time stuff                                                         */
-        /*--------------------------------------------------------------------------*/
-
-        Result result{};
-
-        if (isCanBusEvent (event)) {
-                result = event.getTime ();
-        }
-        else {
-                result = lastTime - beforeLastTime;
-        }
-
-        display->setTime (result, getConfig ().getResolution ());
-
-        /*--------------------------------------------------------------------------*/
-        /* CAN bus stuff                                                            */
-        /*--------------------------------------------------------------------------*/
-
-#ifdef WITH_CAN
-        if (protocol != nullptr && !isCanBusEvent (event)) {
-                protocol->sendTrigger (Message::LOOP, result);
-        }
-#endif
-
-        /*--------------------------------------------------------------------------*/
-        /* Bookkeeping                                                              */
-        /*--------------------------------------------------------------------------*/
-
-#ifdef WITH_SOUND
-        buzzer->beep (70, 50, 3);
-#endif
-
-#ifdef WITH_HISTORY
-        if (history != nullptr) {
-                history->store (result);
-        }
-#endif
-}
-
-/*****************************************************************************/
-
-void FastStateMachine::loop_entryAction (Event event)
+void FastStateMachine::loopStop_entryAction (Event event)
 {
         /*--------------------------------------------------------------------------*/
         /* Local time stuff                                                         */
@@ -319,7 +262,7 @@ void FastStateMachine::loop_entryAction (Event event)
         /*--------------------------------------------------------------------------*/
 
 #ifdef WITH_SOUND
-        buzzer->beep (70, 50, 2);
+        buzzer->beep (70, 50, (state == LOOP_RUNNING) ? (2) : (3));
 #endif
 
 #ifdef WITH_HISTORY

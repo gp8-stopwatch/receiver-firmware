@@ -11,8 +11,7 @@
   * [x] Test it somehow (it's tiny, and I don't have a footprint on PCB)
 * [x] There has to be a bug in the trigger algorithm. When the resolution was set to 10ms there have been off by 10ms errors on 4s runs (1 in 20 aprox). But when the resolution was set to 100µs, the error fluctuates between 300 and 600µs (-O0). When -O3 and 100µs resolution, the error is smaller like 200-400µs but it also fluctuates. 10ms = 10000µs. Divided by 20 gives 500µs, so it is almost like in the first scenario the errors accumulated somehow. 
 
-* [ ]??? I think I rolled this back. Why?
-* [x] Timer TIM1 should be restarted (counting from 0) when start event happens.
+* [x] Timer TIM1 should be restarted (counting from 0) when start event happens. EDIT : no. 2 participants had to use 2 timers then. 
   * [x] test
 * [x] Value of the counter should be taken into account when system stops. It's value should be rounded, not discarded like now.
   * [x] test
@@ -21,13 +20,13 @@
   * [x] Test new receivers (for IR curtains, barriers)
 * [x] CAN latency tests.
 * [ ] GPSDO tests
-* [ ] loop / stop mode should be active according to local configuration, not the event type. This is because micro receiver does not have button to change the mode! The mode can be changed only on the regular. 
-* [ ] Test if everything works when switching modes from stop to loop back and forth without powering off. Will it transition between modes seamlesly?
+* [x] loop / stop mode should be active according to local configuration, not the event type. This is because micro receiver does not have button to change the mode! The mode can be changed only on the regular. 
+* [x] Test if everything works when switching modes from stop to loop back and forth without powering off. Will it transition between modes seamlesly?
 * [ ] Timer overflow problem!
 * [ ] There is wrong naming of absolute time (from the device start) and time durations (diff between two time points). Use std::chrono naming.
-* [ ] lvds pulses (on the output of the transceiver) are 10ms longer. Is 22ms, should be 12.
+* [ ] lvds pulses (on the output of the transceiver) are 10ms longer. Is 22ms, should be 12. Maybe it's nothing, but curious why.
 * [ ] I have LVDS, I can lower the CAN bus bitrate
-  * [ ] I can lower the CAN bus IRQ priority. It still has 1, and a comment that it is low, when in fact it isn't. Dunno why.2
+  * [x] I can lower the CAN bus IRQ priority. It still has 1, and a comment that it is low, when in fact it isn't. Dunno why. Lowered to 3.
 * [ ] Do not disable IRQs in InfraRedExti 
 * [x] After resetting the main (regulrar) stopwatch, connected micro can send a stop or loop signal which instantenously shows a result on the screen, even though there were no counting on the screen. This first result should be ignored. EDIT it is, because FastStateMachine is in ready state, and then it ransitions to the Loop state.
 * [x] Legacy mode for Piotr.
@@ -37,6 +36,9 @@
   * [x] getFlip, setFlip - does not store values. Does the config work at all?
   * [ ] All the commands should be tested when 2 or more receivers are connected.
 * [ ] factory reset does not work
+* [ ] Screen is flickering a little when there is nothing connected to the CAN. This is because the external trigger have higher priority than the screen.
+* [x] I can see 50Hz on the LVDS outputs (R pin connected to the MCU). However there are pretty long danggling wires connected to this port. Maybe pull low? Pulling low helped.
+* [ ] Does noise detection even work? Why it is not reporting an noise-error when the cable is dangling (spurious pulses can be seen using the analyser).
 
 # Hardware
 * [x] Boot pin easy accessible (for DFU).

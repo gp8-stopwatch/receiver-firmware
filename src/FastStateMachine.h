@@ -30,8 +30,6 @@ public:
                 timePassed,  /// Every 10ms / 1ms / 100µs
                 irTrigger,   /// IR beam interrupted
                 testTrigger, /// External trigger (M-LVDS) GPIO state changed
-                canBusStart, /// Peripheral device reported switching to the RUNNING state
-                canBusStop,  /// Peripheral device reported switching to the STOP state
                 canBusLoop,  /// Peripheral device reported the restart of the LOOP state.
                 pause,
                 reset, // Use for resume after pause
@@ -78,7 +76,7 @@ private:
         void ready_entryAction ();
         void running_entryAction (Event event /* , bool canEvent */);
         void stop_entryAction (Event event /* , bool canEvent */);
-        void loop_entryAction (Event event /* , bool canEvent */);
+        void loopStop_entryAction (Event event /* , bool canEvent */);
         // void pause_entryAction ();
 
         // void checkCanBusEvents (Event event);

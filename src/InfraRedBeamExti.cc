@@ -99,9 +99,7 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
                 }
                 else { // external event!
                        // We receive already filtered event, so there's no need to check the envelope.
-#ifndef WITH_LEGACY_TRIGGER
                         sendEvent (fStateMachine, {Event::Type::testTrigger, *triggerRisingEdgeTime});
-#endif
                         blindTimeout.start (getConfig ().getBlindTime ());
                         // Reset the state.
                         irPresentPeriod = irAbsentPeriod = triggerFallingEdgeTime = 0;
@@ -179,6 +177,7 @@ void InfraRedBeamExti::run ()
 
                 if (lastState == IrBeam::noise) {
 #ifdef WITH_DISPLAY
+                        // TODO The priorites are inverted, but they are not inverted back when noise is back to normal
                         HAL_NVIC_SetPriority (TIM15_IRQn, DISPLAY_TIMER_PRIORITY, 0);
                         HAL_NVIC_SetPriority (IR_IRQn, IR_EXTI_PRIORITY, 0);
 #endif

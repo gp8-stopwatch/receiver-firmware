@@ -150,8 +150,8 @@ int main ()
 
         const uint32_t *MICRO_CONTROLLER_UID = new (reinterpret_cast<void *> (0x1FFFF7AC)) uint32_t;
         cfg::Config &config = getConfig ();
-        getConfigFlashEepromStorage ().init (); // TODO use RAII
 #ifdef WITH_FLASH
+        getConfigFlashEepromStorage ().init (); // TODO use RAII
         readConfigFromFlash ();
 #endif
 
@@ -230,7 +230,7 @@ int main ()
         Gpio irTriggerInput (IR_PORT, IR_PINS, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
 
         // External trigger
-        Gpio extTriggerInput (EXT_TRIGGER_INPUT_PORT, EXT_TRIGGER_INPUT_PINS, GPIO_MODE_IT_RISING_FALLING);
+        Gpio extTriggerInput (EXT_TRIGGER_INPUT_PORT, EXT_TRIGGER_INPUT_PINS, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLDOWN);
         Gpio extTriggerOutput (EXT_TRIGGER_OUTPUT_PORT, EXT_TRIGGER_OUTPUT_PINS, GPIO_MODE_OUTPUT_PP);
         Gpio extTriggerOutEnable (EXT_TRIGGER_OUT_ENABLE_PORT, EXT_TRIGGER_OUT_ENABLE_PINS, GPIO_MODE_OUTPUT_PP);
 
@@ -360,7 +360,11 @@ int main ()
                                  history.clearHiScore ();
                                  history.clearResults ();
                          }),
-                cl::cmd (String ("factory"), [] { getConfigFlashEepromStorage ().clear (); }),
+                cl::cmd (String ("factory"),
+                         [&] {
+                                 getConfigFlashEepromStorage ().clear ();
+                                 refreshAll ();
+                         }),
                 cl::cmd (String ("help"),
                          [] {
                                  usbWrite ("result, resultMs, last, lastMs, date, isCounting, reset, clear, factory, help, battery, getFlip, "
