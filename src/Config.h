@@ -45,8 +45,8 @@ public:
         StopMode getStopMode () const { return stopMode; }
         void setStopMode (StopMode s) { stopMode = s; }
 
-        bool isDisplayRightSideUp () const { return displayRightSideUp; }
-        void setDisplayRightSideUp (bool d) { displayRightSideUp = d; }
+        bool isFlip () const { return displayRightSideUp; }
+        void setFlip (bool d) { displayRightSideUp = d; }
 
         bool isIrSensorOn () const { return irSensorOn; }
         void setIrSensorOn (bool i) { irSensorOn = i; }
@@ -54,10 +54,7 @@ public:
         bool isBuzzerOn () const { return buzzerOn; }
         void setBuzzerOn (bool b) { buzzerOn = b; }
 
-        // TODO UNCOMENT THIS!!!!!!
-        // uint16_t getBlindTime () const { return (blindTime == std::numeric_limits<uint16_t>::max ()) ? (DEFAULT_BLIND_TIME_MS) : (blindTime);
-        // }
-        uint16_t getBlindTime () const { return 1000; }
+        uint16_t getBlindTime () const { return (blindTime == std::numeric_limits<uint16_t>::max ()) ? (DEFAULT_BLIND_TIME_MS) : (blindTime); }
         void setBlindTime (uint16_t b) { blindTime = b; }
 
 private:

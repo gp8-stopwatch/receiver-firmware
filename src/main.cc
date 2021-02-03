@@ -150,6 +150,7 @@ int main ()
 
         const uint32_t *MICRO_CONTROLLER_UID = new (reinterpret_cast<void *> (0x1FFFF7AC)) uint32_t;
         cfg::Config &config = getConfig ();
+        getConfigFlashEepromStorage ().init (); // TODO use RAII
 #ifdef WITH_FLASH
         readConfigFromFlash ();
 #endif
@@ -378,10 +379,10 @@ int main ()
                                  usbWrite ("%\r\n\r\n");
                          }),
 
-                cl::cmd (String ("getFlip"), [] { usbWrite ((getConfig ().isDisplayRightSideUp ()) ? ("0\r\n\r\n") : ("1\r\n\r\n")); }),
+                cl::cmd (String ("getFlip"), [] { usbWrite ((getConfig ().isFlip ()) ? ("1\r\n\r\n") : ("0\r\n\r\n")); }),
                 cl::cmd (String ("setFlip"),
                          [&] (String const &arg) {
-                                 getConfig ().setDisplayRightSideUp (bool (std::atoi (arg.c_str ())));
+                                 getConfig ().setFlip (bool (std::atoi (arg.c_str ())));
                                  refreshAll ();
                          }),
 
@@ -532,7 +533,7 @@ int main ()
 
         // Refresh stopwatch state to reflect the config.
         auto refreshSettings = [&] {
-                display.setFlip (!config.isDisplayRightSideUp ());
+                display.setFlip (config.isFlip ());
                 beam.setActive (config.isIrSensorOn ());
 #ifdef WITH_SOUND
                 buzzer.setActive (config.isBuzzerOn ());

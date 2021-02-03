@@ -31,6 +31,12 @@
 * [ ] Do not disable IRQs in InfraRedExti 
 * [x] After resetting the main (regulrar) stopwatch, connected micro can send a stop or loop signal which instantenously shows a result on the screen, even though there were no counting on the screen. This first result should be ignored. EDIT it is, because FastStateMachine is in ready state, and then it ransitions to the Loop state.
 * [x] Legacy mode for Piotr.
+* [ ] 22:09,495 shows as 22 09 49 on the screen. Piotr. Possible that he failed to upgrade to the newest. 
+* [ ] Check if "blind-time" setting which is set on the regular receiver is honored on the connected micro. I think it is not.
+  * [x] Generally speaking setBlind does not seem to work. He sets, and then reads, and gets the old value.
+  * [x] getFlip, setFlip - does not store values. Does the config work at all?
+  * [ ] All the commands should be tested when 2 or more receivers are connected.
+* [ ] factory reset does not work
 
 # Hardware
 * [x] Boot pin easy accessible (for DFU).
