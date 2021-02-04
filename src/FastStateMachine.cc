@@ -263,8 +263,10 @@ void FastStateMachine::loopStop_entryAction (Event event)
         /*--------------------------------------------------------------------------*/
 
 #ifdef WITH_USB
-        printResult (result, ResultDisplayStyle::SECOND);
-        usbWrite ("\r\n");
+        if (auto rd = getConfig ().getAutoDisplayResult (); rd != ResultDisplayStyle::none) {
+                printResult (result, rd);
+                usbWrite ("\r\n");
+        }
 #endif
 
 #ifdef WITH_SOUND

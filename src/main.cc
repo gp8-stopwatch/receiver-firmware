@@ -342,9 +342,9 @@ int main ()
 
         auto cli = cl::cli<String> (
                 cl::cmd (String ("result"), [&history] { history.printHistory (); }),
-                cl::cmd (String ("resultMs"), [&history] { history.printHistory (ResultDisplayStyle::MILISECOND); }),
+                cl::cmd (String ("resultMs"), [&history] { history.printHistory (ResultDisplayStyle::milisecondOnly); }),
                 cl::cmd (String ("last"), [&history] { history.printLast (); }),
-                cl::cmd (String ("lastMs"), [&history] { history.printLast (ResultDisplayStyle::MILISECOND); }),
+                cl::cmd (String ("lastMs"), [&history] { history.printLast (ResultDisplayStyle::milisecondOnly); }),
                 cl::cmd (String ("date"),
                          [&rtc] {
                                  auto r = rtc.getDate ();
@@ -369,7 +369,7 @@ int main ()
                          [] {
                                  usbWrite ("result, resultMs, last, lastMs, date, isCounting, reset, clear, factory, help, battery, getFlip, "
                                            "setFlip, getIr, setIr, getSn, "
-                                           "setSn, getRes, setRes, periph, getBlind, setBlind\r\n\r\n");
+                                           "setSn, getRes, setRes, getAuto, setAuto, periph, getBlind, setBlind\r\n\r\n");
                          }),
                 cl::cmd (String ("battery"),
                          [&power] {
@@ -447,6 +447,39 @@ int main ()
 
                                  refreshAll ();
                          }),
+
+                cl::cmd (String ("setAuto"),
+                         [&] (String const &arg) {
+                                 if (arg == "s") {
+                                         getConfig ().setAutoDisplayResult (ResultDisplayStyle::secondFraction);
+                                 }
+                                 else if (arg == "ms") {
+                                         getConfig ().setAutoDisplayResult (ResultDisplayStyle::milisecondOnly);
+                                 }
+                                 else if (arg == "none") {
+                                         getConfig ().setAutoDisplayResult (ResultDisplayStyle::none);
+                                 }
+                         }),
+                cl::cmd (String ("getAuto"),
+                         [] {
+                                 switch (getConfig ().getAutoDisplayResult ()) {
+                                 case ResultDisplayStyle::secondFraction:
+                                         usbWrite ("s\r\n\r\n");
+                                         break;
+
+                                 case ResultDisplayStyle::milisecondOnly:
+                                         usbWrite ("ms\r\n\r\n");
+                                         break;
+
+                                 case ResultDisplayStyle::none:
+                                         usbWrite ("none\r\n\r\n");
+                                         break;
+
+                                 default:
+                                         break;
+                                 }
+                         }),
+
                 cl::cmd (String ("periph"),
                          [&protocol] {
                                  protocol.sendInfoRequest ();

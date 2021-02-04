@@ -25,11 +25,11 @@ public:
                 brightness = Brightness::levelAuto;
                 participantsNumber = ParticipantsNumber::one;
                 stopMode = StopMode::restart;
+                autoDisplayResult = ResultDisplayStyle::none;
 
-                displayRightSideUp = true;
+                flip = true;
                 irSensorOn = true;
                 buzzerOn = true;
-                padding = 0;
                 blindTime = DEFAULT_BLIND_TIME_MS;
         }
 
@@ -45,8 +45,11 @@ public:
         StopMode getStopMode () const { return stopMode; }
         void setStopMode (StopMode s) { stopMode = s; }
 
-        bool isFlip () const { return displayRightSideUp; }
-        void setFlip (bool d) { displayRightSideUp = d; }
+        ResultDisplayStyle getAutoDisplayResult () const { return autoDisplayResult; }
+        void setAutoDisplayResult (ResultDisplayStyle rs) { autoDisplayResult = rs; }
+
+        bool isFlip () const { return flip; }
+        void setFlip (bool d) { flip = d; }
 
         bool isIrSensorOn () const { return irSensorOn; }
         void setIrSensorOn (bool i) { irSensorOn = i; }
@@ -62,11 +65,12 @@ private:
         Brightness brightness : 3;
         ParticipantsNumber participantsNumber : 1;
         StopMode stopMode : 1;
+        ResultDisplayStyle autoDisplayResult : 2;
 
-        bool displayRightSideUp : 1;
+        bool flip : 1;
         bool irSensorOn : 1;
         bool buzzerOn : 1;
-        char padding : 4;
+
         uint16_t blindTime;
 };
 

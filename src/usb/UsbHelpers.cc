@@ -35,10 +35,10 @@ void print (unsigned int i)
 void printResult (Result time, ResultDisplayStyle ra)
 {
         switch (ra) {
-        case ResultDisplayStyle::SECOND:
+        case ResultDisplayStyle::secondFraction:
                 printResultS (time);
                 break;
-        case ResultDisplayStyle::MILISECOND:
+        case ResultDisplayStyle::milisecondOnly:
                 printResultMs (time);
                 break;
 

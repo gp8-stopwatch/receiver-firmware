@@ -29,7 +29,7 @@ using Result = uint32_t; /// Results are in 10µs units. Maybe someday I'll use 
 /**
  * How to display a result.
  */
-enum class ResultDisplayStyle { SECOND, MILISECOND };
+enum ResultDisplayStyle { secondFraction = 0b00, milisecondOnly = 0b01, none = 0b11 };
 
 constexpr size_t DISPLAY_TIMER_PRIORITY = 2;
 constexpr size_t CAN_BUS_PRIORITY = 3; // CAN bus is no longer used for time synchronization, so low priority
@@ -37,7 +37,7 @@ constexpr size_t BUTTON_EXTI_PRIORITY = 1;
 constexpr size_t IR_EXTI_PRIORITY = 1;
 constexpr size_t EXT_TRIGGER_INPUT_EXTI_PRIORITY = 1;
 
-inline const char *VERSION = "1.0.5";
+inline const char *VERSION = "1.0.6";
 
 constexpr int LOW_VOLTAGE_MV = 3000;
 constexpr int LOW_VOLTAGE_CRITICAL_MV = 2900;
