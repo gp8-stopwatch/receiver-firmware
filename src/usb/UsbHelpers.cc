@@ -32,13 +32,13 @@ void print (unsigned int i)
 
 /****************************************************************************/
 
-void printResult (Result time, ResultAccuracy ra)
+void printResult (Result time, ResultDisplayStyle ra)
 {
         switch (ra) {
-        case ResultAccuracy::SECOND:
+        case ResultDisplayStyle::SECOND:
                 printResultS (time);
                 break;
-        case ResultAccuracy::MILISECOND:
+        case ResultDisplayStyle::MILISECOND:
                 printResultMs (time);
                 break;
 

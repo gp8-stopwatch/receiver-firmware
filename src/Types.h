@@ -29,7 +29,7 @@ using Result = uint32_t; /// Results are in 10µs units. Maybe someday I'll use 
 /**
  * How to display a result.
  */
-enum class ResultAccuracy { SECOND, MILISECOND };
+enum class ResultDisplayStyle { SECOND, MILISECOND };
 
 constexpr size_t DISPLAY_TIMER_PRIORITY = 2;
 constexpr size_t CAN_BUS_PRIORITY = 3; // CAN bus is no longer used for time synchronization, so low priority

@@ -40,6 +40,7 @@
 * [x] I can see 50Hz on the LVDS outputs (R pin connected to the MCU). However there are pretty long danggling wires connected to this port. Maybe pull low? Pulling low helped.
 * [ ] Does noise detection even work? Why it is not reporting an noise-error when the cable is dangling (spurious pulses can be seen using the analyser).
 * [ ] Increase Result type from uint32_t to 64. Store 1µs resolution. EDIT : no noticeable improvement was observed (in theory it should improve, but GPSDO would be necessary). 
+* [ ] Test signal integrity.
 
 # Hardware
 * [x] Boot pin easy accessible (for DFU).

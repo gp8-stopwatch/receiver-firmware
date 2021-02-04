@@ -16,5 +16,5 @@
 inline void print (gsl::czstring<> s) { usbWrite (s); }
 void print (int i);
 void print (unsigned int i);
-void printResult (Result time, ResultAccuracy ra = ResultAccuracy::SECOND);
+void printResult (Result time, ResultDisplayStyle ra = ResultDisplayStyle::SECOND);
 void printDate (RTC_DateTypeDef const &date, Time const &time);

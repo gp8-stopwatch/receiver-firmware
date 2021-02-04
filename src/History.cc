@@ -16,7 +16,7 @@
 
 /****************************************************************************/
 
-void printEntry (History::Entry const &en, ResultAccuracy ra, bool datePrint = true)
+void printEntry (History::Entry const &en, ResultDisplayStyle ra, bool datePrint = true)
 {
         if (datePrint) {
                 printDate (en.date, en.time);
@@ -68,7 +68,7 @@ void History::run ()
 
 /*****************************************************************************/
 
-void History::printHistory (ResultAccuracy ra) const
+void History::printHistory (ResultDisplayStyle ra) const
 {
         usbWrite ("Best ");
 
@@ -114,7 +114,7 @@ History::Entry History::getEntry (size_t index) const
 
 /*****************************************************************************/
 
-void History::printLast (ResultAccuracy ra) const
+void History::printLast (ResultDisplayStyle ra) const
 {
         std::optional<Entry> last{};
 

@@ -15,6 +15,7 @@
 #include "IDisplay.h"
 #include "InfraRedBeamExti.h"
 #include "StopWatch.h"
+#include "UsbHelpers.h"
 
 /**
  * Q&A
@@ -260,6 +261,11 @@ void FastStateMachine::loopStop_entryAction (Event event)
         /*--------------------------------------------------------------------------*/
         /* Bookkeeping                                                              */
         /*--------------------------------------------------------------------------*/
+
+#ifdef WITH_USB
+        printResult (result, ResultDisplayStyle::SECOND);
+        usbWrite ("\r\n");
+#endif
 
 #ifdef WITH_SOUND
         buzzer->beep (70, 50, (state == LOOP_RUNNING) ? (2) : (3));
