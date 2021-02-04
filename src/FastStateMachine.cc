@@ -81,7 +81,7 @@ void FastStateMachine::run (Event event)
                         display->setText ("noi.r.  ");
 
 #ifdef WITH_CAN
-                        if (protocol != nullptr && !isCanBusEvent (event) && !noIrRequestSent) {
+                        if (protocol != nullptr && !isExternalTrigger (event) && !noIrRequestSent) {
                                 protocol->sendNoIr ();
                                 noIrRequestSent = true;
                         }
@@ -111,7 +111,7 @@ void FastStateMachine::run (Event event)
                  * Even if the mode was selected to "loop", the very first counting is performed in the "running" mode.
                  * This is to avoid showing the first result which is not there.
                  */
-                if (isInternalTrigger (event) || isCanBusEvent (event)) {
+                if (isInternalTrigger (event) || isExternalTrigger (event)) {
                         state = RUNNING;
                         running_entryAction (event);
                 }
@@ -122,7 +122,7 @@ void FastStateMachine::run (Event event)
                 // Refresh the screen (shows the time is running). In an event of the stop_entryAction this will be re-set again.
                 display->setTime (stopWatch->getTime () - lastTime, getConfig ().getResolution ());
 
-                if (isInternalTrigger (event) || isCanBusEvent (event)) {
+                if (isInternalTrigger (event) || isExternalTrigger (event)) {
                         if (getConfig ().getStopMode () == StopMode::stop) {
                                 state = STOP;
                         }
@@ -136,7 +136,7 @@ void FastStateMachine::run (Event event)
                 break;
 
         case STOP:
-                if (isInternalTrigger (event) || isCanBusEvent (event)) {
+                if (isInternalTrigger (event) || isExternalTrigger (event)) {
                         state = RUNNING;
                         running_entryAction (event);
                 }
@@ -149,7 +149,7 @@ void FastStateMachine::run (Event event)
                                           getConfig ().getResolution ()); // Refresh the screen (shows the time is running)
                 }
 
-                if (isInternalTrigger (event) || isCanBusEvent (event)) {
+                if (isInternalTrigger (event) || isExternalTrigger (event)) {
                         loopStop_entryAction (event);
                 }
 
@@ -212,11 +212,11 @@ void FastStateMachine::running_entryAction (Event event)
         /* CAN bus stuff                                                            */
         /*--------------------------------------------------------------------------*/
 
-#ifdef WITH_CAN
-        if (protocol != nullptr && !isCanBusEvent (event)) {
-                protocol->sendTrigger (Message::LOOP, lastTime); //?
-        }
-#endif
+        // #ifdef WITH_CAN
+        //         if (protocol != nullptr && !isCanBusEvent (event)) {
+        //                 protocol->sendTrigger (Message::LOOP, lastTime); //?
+        //         }
+        // #endif
 
         /*--------------------------------------------------------------------------*/
         /* Bookkeeping                                                              */
@@ -237,12 +237,12 @@ void FastStateMachine::loopStop_entryAction (Event event)
 
         Result result{};
 
-        if (isCanBusEvent (event)) {
-                result = event.getTime ();
-        }
-        else {
-                result = lastTime - beforeLastTime;
-        }
+        // if (isCanBusEvent (event)) {
+        //         result = event.getTime ();
+        // }
+        // else {
+        result = lastTime - beforeLastTime;
+        // }
 
         display->setTime (result, getConfig ().getResolution ());
         loopDisplayTimeout.start (LOOP_DISPLAY_TIMEOUT);
@@ -251,11 +251,11 @@ void FastStateMachine::loopStop_entryAction (Event event)
         /* CAN bus stuff                                                            */
         /*--------------------------------------------------------------------------*/
 
-#ifdef WITH_CAN
-        if (!isCanBusEvent (event) && protocol != nullptr) {
-                protocol->sendTrigger (Message::LOOP, result);
-        }
-#endif
+        // #ifdef WITH_CAN
+        //         if (!isCanBusEvent (event) && protocol != nullptr) {
+        //                 protocol->sendTrigger (Message::LOOP, result);
+        //         }
+        // #endif
 
         /*--------------------------------------------------------------------------*/
         /* Bookkeeping                                                              */

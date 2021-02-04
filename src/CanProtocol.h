@@ -53,7 +53,7 @@ class CanProtocol : public ICanCallback {
 public:
         CanProtocol (Can &can, uint32_t u, DeviceType dt) : can (can), uid (u & 0x1FFFFFFF), deviceType{dt} {}
 
-        void sendTrigger (Message msg, Result time);
+        // void sendTrigger (Message msg, Result time);
         void sendNoIr () { can.send (CanFrame{uid, true, 1, uint8_t (Message::NO_IR)}, CAN_SEND_TIMEOUT); }
 
         void sendInfoRequest ();

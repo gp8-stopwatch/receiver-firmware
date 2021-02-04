@@ -29,8 +29,8 @@ public:
         enum class Type {
                 timePassed,  /// Every 10ms / 1ms / 100µs
                 irTrigger,   /// IR beam interrupted
-                testTrigger, /// External trigger (M-LVDS) GPIO state changed
-                canBusLoop,  /// Peripheral device reported the restart of the LOOP state.
+                testTrigger, /// External trigger (M-LVDS) GPIO state changed. TODO change name to externalTrigger
+                // canBusLoop,  /// Peripheral device reported the restart of the LOOP state.
                 pause,
                 reset, // Use for resume after pause
                 noIr,
@@ -81,11 +81,7 @@ private:
 
         // void checkCanBusEvents (Event event);
         bool isInternalTrigger (Event event) const;
-        bool isCanBusEvent (Event event) const
-        {
-                auto eType = event.getType ();
-                return (/* eType == Event::Type::canBusStart || eType == Event::Type::canBusStop || */ eType == Event::Type::canBusLoop);
-        }
+        bool isExternalTrigger (Event event) const { return event.getType () == Event::Type::testTrigger; }
 
         // bool isExternalTrigger (Event event) const;
         RemoteBeamState isRemoteBeamStateOk () const;
@@ -126,9 +122,9 @@ public:
                         //         fastStateMachine.run ({Event::Type::canBusStop, time});
                         //         break;
 
-                case Message::LOOP:
-                        fastStateMachine.run ({Event::Type::canBusLoop, time});
-                        break;
+                        // case Message::LOOP:
+                        //         fastStateMachine.run ({Event::Type::canBusLoop, time});
+                        //         break;
 
 #ifdef WITH_CHECK_SENSOR_STATUS
                 case Message::NO_IR:
