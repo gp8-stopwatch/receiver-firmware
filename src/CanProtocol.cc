@@ -23,7 +23,7 @@ void CanProtocol::onCanNewFrame (CanFrame const &frame)
                 return;
         }
 
-        Result remoteStopTime{};
+        // Result1us remoteStopTime{};
 
         if (frame.dlc >= 1 && callback != nullptr) {
                 auto messageId = frame.data[0];
@@ -55,9 +55,9 @@ void CanProtocol::onCanNewFrame (CanFrame const &frame)
                 }
 #endif
                 else {
-                        uint8_t ii[4] = {frame.data[1], frame.data[2], frame.data[3], frame.data[4]};
-                        remoteStopTime = *reinterpret_cast<uint32_t *> (ii);
-                        callback->onMessage (Message (messageId), remoteStopTime);
+                        // uint8_t ii[4] = {frame.data[1], frame.data[2], frame.data[3], frame.data[4]};
+                        // remoteStopTime = *reinterpret_cast<uint32_t *> (ii);
+                        callback->onMessage (Message (messageId) /*, remoteStopTime */);
                 }
         }
 }

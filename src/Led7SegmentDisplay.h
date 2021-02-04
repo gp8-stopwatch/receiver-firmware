@@ -25,7 +25,7 @@
 class Led7SegmentDisplay : public IDisplay {
 public:
         template <typename... G>
-        Led7SegmentDisplay (Gpio &a, Gpio &b, Gpio &c, Gpio &d, Gpio &e, Gpio &f, Gpio &g, Gpio &dp, G &... dd)
+        Led7SegmentDisplay (Gpio &a, Gpio &b, Gpio &c, Gpio &d, Gpio &e, Gpio &f, Gpio &g, Gpio &dp, G &...dd)
             : segment{&a, &b, &c, &d, &e, &f, &g, &dp}, common{&dd...}
         {
                 for (Gpio *g : common) {
@@ -46,7 +46,7 @@ public:
         uint8_t getIcons () const override { return 0; }
         void setIcons (uint8_t /*bitmask*/) override {}
 
-        void setTime (uint32_t time, Resolution res) override;
+        void setTime (Result10us time, Resolution res) override;
         void setText (const char *) override;
 
         void setFlip (bool b) override { flip = b; }

@@ -62,8 +62,8 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
                 return;
         }
 
-        Result now = stopWatch->getTime ();
-        Result lastIrChangeDuration = now - lastIrChangeTimePoint;
+        Result1us now = stopWatch->getTime ();
+        Result1us lastIrChangeDuration = now - lastIrChangeTimePoint;
         lastIrChangeTimePoint = now;
 
         if (state == IrBeam::absent) {
@@ -135,11 +135,11 @@ void InfraRedBeamExti::run ()
         // TODO Do not disable ALL the IRQs!
         // The whole state has to be retrieved atomically.
         __disable_irq ();
-        Result lastIrChangeDuration = stopWatch->getTime () - lastIrChangeTimePoint;
+        Result1us lastIrChangeDuration = stopWatch->getTime () - lastIrChangeTimePoint;
         bool triggerRisingEdgeTimeSet = bool (triggerRisingEdgeTime);
         bool duty = irAbsentPeriod > irPresentPeriod;
         auto lastStateCopy = lastState;
-        Result envelope = (triggerRisingEdgeTimeSet) ? (triggerFallingEdgeTime - *triggerRisingEdgeTime) : (0);
+        Result1us envelope = (triggerRisingEdgeTimeSet) ? (triggerFallingEdgeTime - *triggerRisingEdgeTime) : (0);
         __enable_irq ();
 
         // EVENT detection. Looking for correct envelope

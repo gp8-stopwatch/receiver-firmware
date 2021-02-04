@@ -121,7 +121,7 @@ void FastStateMachine::run (Event event)
 
         case RUNNING:
                 // Refresh the screen (shows the time is running). In an event of the stop_entryAction this will be re-set again.
-                display->setTime (stopWatch->getTime () - lastTime, getConfig ().getResolution ());
+                display->setTime (result1To10 (stopWatch->getTime () - lastTime), getConfig ().getResolution ());
 
                 if (isInternalTrigger (event) || isExternalTrigger (event)) {
                         if (getConfig ().getStopMode () == StopMode::stop) {
@@ -146,7 +146,7 @@ void FastStateMachine::run (Event event)
 
         case LOOP_RUNNING:
                 if (loopDisplayTimeout.isExpired ()) {
-                        display->setTime (stopWatch->getTime () - lastTime,
+                        display->setTime (result1To10 (stopWatch->getTime () - lastTime),
                                           getConfig ().getResolution ()); // Refresh the screen (shows the time is running)
                 }
 
@@ -236,15 +236,7 @@ void FastStateMachine::loopStop_entryAction (Event event)
         /* Local time stuff                                                         */
         /*--------------------------------------------------------------------------*/
 
-        Result result{};
-
-        // if (isCanBusEvent (event)) {
-        //         result = event.getTime ();
-        // }
-        // else {
-        result = lastTime - beforeLastTime;
-        // }
-
+        auto result = result1To10 (lastTime - beforeLastTime);
         display->setTime (result, getConfig ().getResolution ());
         loopDisplayTimeout.start (LOOP_DISPLAY_TIMEOUT);
 

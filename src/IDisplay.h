@@ -26,7 +26,7 @@ struct IDisplay {
         virtual uint8_t getIcons () const = 0;
         virtual void setIcons (uint8_t bitmask) = 0;
 
-        virtual void setTime (uint32_t, Resolution res) = 0;
+        virtual void setTime (Result10us, Resolution res) = 0;
         virtual void setText (const char *) = 0;
 
         /**
@@ -61,7 +61,7 @@ struct FakeDisplay : public IDisplay {
         uint8_t getIcons () const override { return 0; }
         void setIcons (uint8_t bitmask) override {}
 
-        void setTime (uint32_t /* a */, Resolution res) override {}
+        void setTime (Result10us /* a */, Resolution res) override {}
         void setText (const char * /* a */) override {}
 
         /**

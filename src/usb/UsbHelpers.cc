@@ -9,8 +9,8 @@
 #include "UsbHelpers.h"
 #include "Debug.h"
 
-void printResultS (Result time);
-void printResultMs (Result time);
+void printResultS (Result10us time);
+void printResultMs (Result10us time);
 
 /*****************************************************************************/
 
@@ -32,7 +32,7 @@ void print (unsigned int i)
 
 /****************************************************************************/
 
-void printResult (Result time, ResultDisplayStyle ra)
+void printResult (Result10us time, ResultDisplayStyle ra)
 {
         switch (ra) {
         case ResultDisplayStyle::secondFraction:
@@ -49,7 +49,7 @@ void printResult (Result time, ResultDisplayStyle ra)
 
 /****************************************************************************/
 
-void printResultS (Result time)
+void printResultS (Result10us time)
 {
         char buf[11];
         uint32_t sec100 = time % 100000;
@@ -74,7 +74,7 @@ void printResultS (Result time)
 
 /****************************************************************************/
 
-void printResultMs (Result time)
+void printResultMs (Result10us time)
 {
         char buf[11];
         uint32_t msecFrac = time % 100;

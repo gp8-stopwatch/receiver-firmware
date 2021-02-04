@@ -71,9 +71,9 @@ private:
         Timer beamNoiseTimer{NOISE_CLEAR_TIMEOUT_MS};
         Timer blindTimeout;
 
-        std::optional<Result> triggerRisingEdgeTime{};
-        Result triggerFallingEdgeTime{};
-        Result lastIrChangeTimePoint{};
+        std::optional<Result1us> triggerRisingEdgeTime{};
+        Result1us triggerFallingEdgeTime{};
+        Result1us lastIrChangeTimePoint{};
         uint32_t irPresentPeriod{};
         uint32_t irAbsentPeriod{};
 

@@ -18,7 +18,7 @@
 
 /*****************************************************************************/
 
-enum class Message : uint8_t { /* START, STOP, */ LOOP, NO_IR, INFO_REQ, INFO_RESP, NOISE };
+enum class Message : uint8_t { /* START, STOP, */ /* LOOP */ NO_IR, INFO_REQ, INFO_RESP, NOISE };
 
 /*****************************************************************************/
 
@@ -30,7 +30,7 @@ struct IProtocolCallback {
         IProtocolCallback &operator= (IProtocolCallback &&) = default;
         virtual ~IProtocolCallback () = default;
 
-        virtual void onMessage (Message msg, Result time) = 0;
+        virtual void onMessage (Message msg /* , Result1us time */) = 0;
 };
 
 /*****************************************************************************/

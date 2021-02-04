@@ -21,16 +21,16 @@ public:
         static constexpr size_t MAX_RESULTS_NUM = 64;
         explicit History (Rtc &r) : rtc{r} {}
 
-        void store (Result t);
+        void store (Result10us t);
         void run ();
 
         struct Entry {
                 RTC_DateTypeDef date;
                 Time time;
-                Result result;
+                Result10us result;
         };
 
-        Result getHiScore () const { return hiScore; }
+        Result10us getHiScore () const { return hiScore; }
         History::Entry getEntry (size_t index) const;
 
         void printHistory (ResultDisplayStyle ra = ResultDisplayStyle::secondFraction) const;
@@ -40,18 +40,18 @@ public:
         void setHiScoreStorage (IRandomAccessStorage *value)
         {
                 hiScoreStorage = value;
-                hiScore = *reinterpret_cast<Result const *> (hiScoreStorage->read (nullptr, sizeof (Result), 0));
+                hiScore = *reinterpret_cast<Result10us const *> (hiScoreStorage->read (nullptr, sizeof (Result10us), 0));
         }
 
         void clearHiScore ();
         void clearResults ();
 
 private:
-        void storeHiScoreIf (Result t);
+        void storeHiScoreIf (Result10us t);
 
-        Result hiScore = std::numeric_limits<Result>::max ();
+        Result10us hiScore = std::numeric_limits<Result10us>::max ();
         IRandomAccessStorage *hiScoreStorage = nullptr;
         ICircullarQueueStorage *historyStorage = nullptr;
-        etl::queue_spsc_locked<Result, FLASH_QUEUE_SIZE, etl::memory_model::MEMORY_MODEL_SMALL> flashQueue{lock, unlock};
+        etl::queue_spsc_locked<Result10us, FLASH_QUEUE_SIZE, etl::memory_model::MEMORY_MODEL_SMALL> flashQueue{lock, unlock};
         Rtc &rtc;
 };

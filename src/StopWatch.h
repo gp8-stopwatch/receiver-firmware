@@ -28,15 +28,16 @@ public:
 
         StopWatch ();
 
-        Result getTime () const
+        Result1us getTime () const
         {
-                auto t = TIM2->CNT;
+                // auto t = TIM2->CNT;
 
-                if (TIM3->CNT >= (10 / 2)) {
-                        ++t;
-                }
+                // if (TIM3->CNT >= (10 / 2)) {
+                //         ++t;
+                // }
 
-                return t;
+                // return t;
+                return TIM2->CNT * 10 + TIM3->CNT;
         }
 
 private:

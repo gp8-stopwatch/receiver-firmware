@@ -38,14 +38,14 @@ public:
                 irNoise
         };
 
-        Event (Type t, Result r = 0) : type{t}, time{r} {}
+        Event (Type t, Result1us r = 0) : type{t}, time{r} {}
 
         Type getType () const { return type; }
-        Result getTime () const { return time; }
+        Result1us getTime () const { return time; } /// TODO change name to timepoint
 
 private:
         Type type;
-        Result time;
+        Result1us time;
 };
 
 /**
@@ -96,8 +96,8 @@ private:
         Buzzer *buzzer{};
         History *history{};
         CanProtocol *protocol{};
-        Result lastTime{};
-        Result beforeLastTime{};
+        Result1us lastTime{};
+        Result1us beforeLastTime{};
 
         mutable Timer reqRespTimer;
         mutable bool infoRequestSent{};
@@ -110,7 +110,7 @@ private:
 class FastStateMachineProtocolCallback : public IProtocolCallback {
 public:
         FastStateMachineProtocolCallback (FastStateMachine &fs) : fastStateMachine{fs} {}
-        void onMessage (Message msg, Result time) override
+        void onMessage (Message msg /* , Result1us time */) override
         {
 
                 switch (msg) {
@@ -128,7 +128,7 @@ public:
 
 #ifdef WITH_CHECK_SENSOR_STATUS
                 case Message::NO_IR:
-                        fastStateMachine.run ({Event::Type::noIr, time});
+                        fastStateMachine.run ({Event::Type::noIr /* , time */});
                         break;
 #endif
 

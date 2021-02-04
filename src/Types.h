@@ -24,7 +24,10 @@
 #endif
 
 using String = etl::string<16>;
-using Result = uint32_t; /// Results are in 10µs units. Maybe someday I'll use std::chrono
+using Result1us = uint64_t;  /// 1µs units. Maybe someday I'll use std::chrono
+using Result10us = uint32_t; /// 10µs units.
+
+inline Result10us result1To10 (Result1us r) { return r / 10 + ((r % 10 < 5) ? (0) : (1)); }
 
 /**
  * How to display a result.
