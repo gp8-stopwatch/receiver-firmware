@@ -74,8 +74,8 @@ private:
         std::optional<Result1us> triggerRisingEdgeTime{};
         Result1us triggerFallingEdgeTime{};
         Result1us lastIrChangeTimePoint{};
-        uint32_t irPresentPeriod{};
-        uint32_t irAbsentPeriod{};
+        Result1us irPresentPeriod{};
+        Result1us irAbsentPeriod{};
 
         int noiseEventCounter{};
         Gpio &irTriggerPin;

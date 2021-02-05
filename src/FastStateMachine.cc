@@ -210,16 +210,6 @@ void FastStateMachine::ready_entryAction () { display->setTime (0, getConfig ().
 void FastStateMachine::running_entryAction (Event event)
 {
         /*--------------------------------------------------------------------------*/
-        /* CAN bus stuff                                                            */
-        /*--------------------------------------------------------------------------*/
-
-        // #ifdef WITH_CAN
-        //         if (protocol != nullptr && !isCanBusEvent (event)) {
-        //                 protocol->sendTrigger (Message::LOOP, lastTime); //?
-        //         }
-        // #endif
-
-        /*--------------------------------------------------------------------------*/
         /* Bookkeeping                                                              */
         /*--------------------------------------------------------------------------*/
 
@@ -239,16 +229,6 @@ void FastStateMachine::loopStop_entryAction (Event event)
         auto result = result1To10 (lastTime - beforeLastTime);
         display->setTime (result, getConfig ().getResolution ());
         loopDisplayTimeout.start (LOOP_DISPLAY_TIMEOUT);
-
-        /*--------------------------------------------------------------------------*/
-        /* CAN bus stuff                                                            */
-        /*--------------------------------------------------------------------------*/
-
-        // #ifdef WITH_CAN
-        //         if (!isCanBusEvent (event) && protocol != nullptr) {
-        //                 protocol->sendTrigger (Message::LOOP, result);
-        //         }
-        // #endif
 
         /*--------------------------------------------------------------------------*/
         /* Bookkeeping                                                              */

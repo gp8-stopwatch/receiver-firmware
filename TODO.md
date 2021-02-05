@@ -26,7 +26,7 @@
   * [ ] I reintroduced the problem rising the Result accuracy to 64 bits. 
 * [ ] There is wrong naming of absolute time (from the device start) and time durations (diff between two time points). Use std::chrono naming.
 * [ ] lvds pulses (on the output of the transceiver) are 10ms longer. Is 22ms, should be 12. Maybe it's nothing, but curious why.
-* [ ] I have LVDS, I can lower the CAN bus bitrate
+* [x] I have LVDS, I can lower the CAN bus bitrate
   * [x] I can lower the CAN bus IRQ priority. It still has 1, and a comment that it is low, when in fact it isn't. Dunno why. Lowered to 3.
 * [ ] Do not disable IRQs in InfraRedExti 
 * [x] After resetting the main (regulrar) stopwatch, connected micro can send a stop or loop signal which instantenously shows a result on the screen, even though there were no counting on the screen. This first result should be ignored. EDIT it is, because FastStateMachine is in ready state, and then it ransitions to the Loop state.

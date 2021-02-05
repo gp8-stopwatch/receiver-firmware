@@ -8,6 +8,7 @@
 
 #pragma once
 #include "Config.h"
+#include "Timer.h"
 #include <cstdint>
 #include <functional>
 #include <stm32f0xx_hal.h>
@@ -30,17 +31,33 @@ public:
 
         Result1us getTime () const
         {
-                // auto t = TIM2->CNT;
+                __disable_irq ();
+                Result1us now = TIM2->CNT * 10LL + TIM3->CNT;
 
-                // if (TIM3->CNT >= (10 / 2)) {
-                //         ++t;
-                // }
+                if (now < last) {
+                        ++timerEpoch;
+                }
 
-                // return t;
-                return TIM2->CNT * 10 + TIM3->CNT;
+                last = now;
+                auto ret = now + timerEpoch * (Result1us (std::numeric_limits<uint32_t>::max ()) + 1) * 10LL;
+                __enable_irq ();
+                return ret;
+        }
+
+        void run ()
+        {
+                if (runTimer.isExpired ()) {
+                        (void)getTime ();
+                        runTimer.start (RUN_INTERVAL_MS);
+                }
         }
 
 private:
         TIM_HandleTypeDef prescalerStopWatchTimHandle{};
         TIM_HandleTypeDef mainStopWatchTimHandle{};
+        mutable Result1us last{};
+        mutable uint16_t timerEpoch{};
+
+        static constexpr uint32_t RUN_INTERVAL_MS = 1000;
+        Timer runTimer{};
 };

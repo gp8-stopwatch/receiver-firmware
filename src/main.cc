@@ -584,6 +584,8 @@ int main ()
         menu.onEvent (menu::Event::timePassed); // Initial state.
 
         while (true) {
+                stopWatch->run ();
+
 #ifdef WITH_SOUND
                 buzzer.run ();
 #endif

@@ -133,10 +133,12 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
 
 void InfraRedBeamExti::run ()
 {
-        // TODO Do not disable ALL the IRQs!
+        // TODO Do not disable ALL the IRQs! But how to do it insetad? Some another IRQ with priority?
+        Result1us now = stopWatch->getTime ();
+
         // The whole state has to be retrieved atomically.
         __disable_irq ();
-        Result1us lastIrChangeDuration = stopWatch->getTime () - lastIrChangeTimePoint;
+        Result1us lastIrChangeDuration = now - lastIrChangeTimePoint;
         bool triggerRisingEdgeTimeSet = bool (triggerRisingEdgeTime);
         bool duty = irAbsentPeriod > irPresentPeriod;
         auto lastStateCopy = lastState;

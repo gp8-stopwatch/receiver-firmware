@@ -76,4 +76,6 @@ StopWatch::StopWatch ()
         if (HAL_TIM_Base_Start (&prescalerStopWatchTimHandle) != HAL_OK) {
                 Error_Handler ();
         }
+
+        TIM2->CNT = std::numeric_limits<uint32_t>::max () - 10 * 100000;
 }
