@@ -170,8 +170,8 @@ int main ()
         Gpio canGpio1 (CAN_PORT_1, CAN_PIN_1, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH, CAN_ALTERNATE);
         Gpio canGpio2 (CAN_PORT_2, CAN_PIN_2, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH, CAN_ALTERNATE);
 
-        // 24 - 125kbps
-        Can can (nullptr, 24, CAN_SJW_3TQ, CAN_BS1_12TQ, CAN_BS2_3TQ);
+        // 24 - 125kbps, 60 : 50kbps
+        Can can (nullptr, 60, CAN_SJW_3TQ, CAN_BS1_12TQ, CAN_BS2_3TQ);
         HAL_NVIC_SetPriority (CEC_CAN_IRQn, CAN_BUS_PRIORITY, 0);
         HAL_NVIC_EnableIRQ (CEC_CAN_IRQn);
 
