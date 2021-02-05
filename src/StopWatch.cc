@@ -77,5 +77,6 @@ StopWatch::StopWatch ()
                 Error_Handler ();
         }
 
-        TIM2->CNT = std::numeric_limits<uint32_t>::max () - 10 * 100000;
+        // This is for testing TIM3 overflow, which occurs every 11 hours.
+        // TIM2->CNT = std::numeric_limits<uint32_t>::max () - 10 * 100000;
 }

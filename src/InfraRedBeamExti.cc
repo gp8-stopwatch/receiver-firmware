@@ -37,7 +37,6 @@ void sendEvent (FastStateMachine *fStateMachine, Event ev)
        |     |                                       |           |
 -------+     +---------------------------------------+           +----  IrBeam::present
  */
-
 void InfraRedBeamExti::onExti (IrBeam state, bool external)
 {
         // For testing
@@ -133,10 +132,20 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
 
 void InfraRedBeamExti::run ()
 {
-        // TODO Do not disable ALL the IRQs! But how to do it insetad? Some another IRQ with priority?
+        if (!refreshTimer.isExpired ()) {
+                return;
+        }
+
+        refreshTimer.start (REFRESH_TIMEOUT_MS);
+
+        /*
+         * Do not disable ALL the IRQs! But how to do it insetad? Some another IRQ with priority?
+         * For now i lowered the frequency this methid is invoked with to 10Hz. This minimizes
+         * probability of the EXTI IRQ beeing delayed by this critical section blocks.
+         */
         Result1us now = stopWatch->getTime ();
 
-        // The whole state has to be retrieved atomically.
+        // The whole state has to be retrieved atomically. This is why those strange copies are taken.
         __disable_irq ();
         Result1us lastIrChangeDuration = now - lastIrChangeTimePoint;
         bool triggerRisingEdgeTimeSet = bool (triggerRisingEdgeTime);
@@ -159,7 +168,11 @@ void InfraRedBeamExti::run ()
                 if (envelope >= msToResult1 (MIN_TIME_BETWEEN_EVENTS_MS) && envelope < msToResult1 (DEFAULT_BLIND_TIME_MS) && duty
                     && blindTimeout.isExpired ()) {
 
-                        sendEvent (fStateMachine, {Event::Type::irTrigger, *triggerRisingEdgeTime});
+                        __disable_irq ();
+                        auto triggerRisingEdgeTimeCopy = *triggerRisingEdgeTime;
+                        __enable_irq ();
+
+                        sendEvent (fStateMachine, {Event::Type::irTrigger, triggerRisingEdgeTimeCopy});
                         blindTimeout.start (getConfig ().getBlindTime ());
                 }
 
@@ -167,9 +180,11 @@ void InfraRedBeamExti::run ()
                 extTriggerOutEnable.set (false);
                 EXTI->IMR |= EXT_TRIGGER_INPUT_PINS;
 
+                __disable_irq ();
                 // After correct event has been detected, we reset everything.
                 irPresentPeriod = irAbsentPeriod = triggerFallingEdgeTime = 0;
                 triggerRisingEdgeTime.reset ();
+                __enable_irq ();
         }
 
         // NOISE. This runs every NOISE_CLEAR_TIMEOUT_MS and checks if noise events number was exceeded. Then the counter is cleared.
@@ -178,7 +193,7 @@ void InfraRedBeamExti::run ()
                 beamNoiseTimer.start (NOISE_CLEAR_TIMEOUT_MS);
                 noiseEventCounter = 0;
 
-                if (lastState == IrBeam::noise) {
+                if (lastStateCopy == IrBeam::noise) {
 #ifdef WITH_DISPLAY
                         // TODO The priorites are inverted, but they are not inverted back when noise is back to normal
                         // HAL_NVIC_SetPriority (TIM15_IRQn, DISPLAY_TIMER_PRIORITY, 0);

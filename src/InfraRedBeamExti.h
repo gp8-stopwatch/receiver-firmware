@@ -70,6 +70,14 @@ private:
         Timer beamPresentTimer;
         Timer beamNoiseTimer{NOISE_CLEAR_TIMEOUT_MS};
         Timer blindTimeout;
+        Timer refreshTimer;
+
+        /*
+         * How often to check if trigger was captured (measurements are precise,
+         * only this check is done less frequently because IRQs are disabled during
+         * this period).
+         */
+        static constexpr int REFRESH_TIMEOUT_MS = 100;
 
         std::optional<Result1us> triggerRisingEdgeTime{};
         Result1us triggerFallingEdgeTime{};
