@@ -41,8 +41,8 @@ void FastStateMachine::run (Event event)
                         state = State::WAIT_FOR_BEAM;
                 }
 
-                if (eType == Event::Type::irTrigger ||   // Internal IR (or laser) sensor
-                    eType == Event::Type::testTrigger) { // External GPIO trigger
+                if (eType == Event::Type::irTrigger ||       // Internal IR (or laser) sensor
+                    eType == Event::Type::externalTrigger) { // External GPIO trigger
                         beforeLastTime = lastTime;
                         lastTime = event.getTime ();
                 }

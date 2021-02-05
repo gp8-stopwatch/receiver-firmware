@@ -27,9 +27,9 @@ struct IRandomAccessStorage;
 class Event {
 public:
         enum class Type {
-                timePassed,  /// Every 10ms / 1ms / 100µs
-                irTrigger,   /// IR beam interrupted
-                testTrigger, /// External trigger (M-LVDS) GPIO state changed. TODO change name to externalTrigger
+                timePassed,      /// Every 10ms / 1ms / 100µs
+                irTrigger,       /// IR beam interrupted
+                externalTrigger, /// External trigger (M-LVDS) GPIO state changed.
                 // canBusLoop,  /// Peripheral device reported the restart of the LOOP state.
                 pause,
                 reset, // Use for resume after pause
@@ -81,7 +81,7 @@ private:
 
         // void checkCanBusEvents (Event event);
         bool isInternalTrigger (Event event) const;
-        bool isExternalTrigger (Event event) const { return event.getType () == Event::Type::testTrigger; }
+        bool isExternalTrigger (Event event) const { return event.getType () == Event::Type::externalTrigger; }
 
         // bool isExternalTrigger (Event event) const;
         RemoteBeamState isRemoteBeamStateOk () const;

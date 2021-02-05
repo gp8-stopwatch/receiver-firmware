@@ -99,7 +99,7 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
                 }
                 else { // external event!
                        // We receive already filtered event, so there's no need to check the envelope.
-                        sendEvent (fStateMachine, {Event::Type::testTrigger, *triggerRisingEdgeTime});
+                        sendEvent (fStateMachine, {Event::Type::externalTrigger, *triggerRisingEdgeTime});
                         blindTimeout.start (getConfig ().getBlindTime ());
                         // Reset the state.
                         irPresentPeriod = irAbsentPeriod = triggerFallingEdgeTime = 0;
@@ -107,7 +107,7 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
                 }
 
                 // IR was restored, but the time it was off was too short, which means noise spike
-                if (lastIrChangeDuration < MIN_TIME_BETWEEN_EVENTS_MS * 1000) {
+                if (lastIrChangeDuration < msToResult1 (MIN_TIME_BETWEEN_EVENTS_MS)) {
 
                         // We simply ingnore spurious noise events if they don't occur too frequently.
                         if (++noiseEventCounter > NOISE_EVENTS_CRITICAL) {
@@ -143,7 +143,7 @@ void InfraRedBeamExti::run ()
         __enable_irq ();
 
         // EVENT detection. Looking for correct envelope
-        if (triggerRisingEdgeTimeSet && lastIrChangeDuration >= MIN_TIME_BETWEEN_EVENTS_MS * 100 && lastStateCopy == IrBeam::present) {
+        if (triggerRisingEdgeTimeSet && lastIrChangeDuration >= msToResult1 (MIN_TIME_BETWEEN_EVENTS_MS) && lastStateCopy == IrBeam::present) {
 
                 /*
                  * Numerous conditions has to be met to qualify noisy IR signal as a valid event:
@@ -153,7 +153,7 @@ void InfraRedBeamExti::run ()
                  * MIN_TIME_BETWEEN_EVENTS_MS.
                  * - IR has to be absent at least half of the envelope time.
                  */
-                if (envelope >= MIN_TIME_BETWEEN_EVENTS_MS * 100 && envelope < DEFAULT_BLIND_TIME_MS * 100 && duty
+                if (envelope >= msToResult1 (MIN_TIME_BETWEEN_EVENTS_MS) && envelope < msToResult1 (DEFAULT_BLIND_TIME_MS) && duty
                     && blindTimeout.isExpired ()) {
 
                         sendEvent (fStateMachine, {Event::Type::irTrigger, *triggerRisingEdgeTime});
