@@ -36,7 +36,7 @@
   * [x] Generally speaking setBlind does not seem to work. He sets, and then reads, and gets the old value.
   * [x] getFlip, setFlip - does not store values. Does the config work at all?
   * [ ] All the commands should be tested when 2 or more receivers are connected.
-* [ ] factory reset does not work
+* [x] factory reset does not work
 * [ ] Screen is flickering a little when there is nothing connected to the CAN. This is because the external trigger have higher priority than the screen.
 * [x] I can see 50Hz on the LVDS outputs (R pin connected to the MCU). However there are pretty long danggling wires connected to this port. Maybe pull low? Pulling low helped.
 * [ ] Does noise detection even work? Why it is not reporting an noise-error when the cable is dangling (spurious pulses can be seen using the analyser).

@@ -27,7 +27,7 @@ public:
                 stopMode = StopMode::restart;
                 autoDisplayResult = ResultDisplayStyle::none;
 
-                flip = true;
+                notFlipped = true;
                 irSensorOn = true;
                 buzzerOn = true;
                 blindTime = DEFAULT_BLIND_TIME_MS;
@@ -48,8 +48,8 @@ public:
         ResultDisplayStyle getAutoDisplayResult () const { return autoDisplayResult; }
         void setAutoDisplayResult (ResultDisplayStyle rs) { autoDisplayResult = rs; }
 
-        bool isFlip () const { return flip; }
-        void setFlip (bool d) { flip = d; }
+        bool isFlip () const { return !notFlipped; }
+        void setFlip (bool d) { notFlipped = !d; }
 
         bool isIrSensorOn () const { return irSensorOn; }
         void setIrSensorOn (bool i) { irSensorOn = i; }
@@ -67,7 +67,7 @@ private:
         StopMode stopMode : 1;
         ResultDisplayStyle autoDisplayResult : 2;
 
-        bool flip : 1;
+        bool notFlipped : 1;
         bool irSensorOn : 1;
         bool buzzerOn : 1;
 

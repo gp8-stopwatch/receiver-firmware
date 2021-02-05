@@ -227,7 +227,7 @@ int main ()
         /*--------------------------------------------------------------------------*/
 
         // IR on means the state is LOW. Beam interruption means transition from LOW to HI i.e. rising.
-        Gpio irTriggerInput (IR_PORT, IR_PINS, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
+        Gpio irTriggerInput (IR_PORT, IR_PINS, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL); // TODO GPIO_PULLDOWN
 
         // External trigger
         Gpio extTriggerInput (EXT_TRIGGER_INPUT_PORT, EXT_TRIGGER_INPUT_PINS, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLDOWN);
@@ -363,6 +363,7 @@ int main ()
                 cl::cmd (String ("factory"),
                          [&] {
                                  getConfigFlashEepromStorage ().clear ();
+                                 readConfigFromFlash ();
                                  refreshAll ();
                          }),
                 cl::cmd (String ("help"),
