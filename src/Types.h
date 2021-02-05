@@ -44,7 +44,7 @@ inline const char *VERSION = "1.0.6";
 
 constexpr int LOW_VOLTAGE_MV = 3000;
 constexpr int LOW_VOLTAGE_CRITICAL_MV = 2900;
-constexpr int RESPONSE_WAIT_TIME_MS = 100;
+constexpr int RESPONSE_WAIT_TIME_MS = 200;
 constexpr int CAN_SEND_TIMEOUT = 50;
 
 /**

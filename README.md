@@ -47,4 +47,4 @@ Test trigger PB3
 
 
 FAQ
-* Noise error : check terminator switches.
+* Noise error : check terminator switches. Check if cables are connected on both sides.

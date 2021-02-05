@@ -23,6 +23,7 @@
 * [x] loop / stop mode should be active according to local configuration, not the event type. This is because micro receiver does not have button to change the mode! The mode can be changed only on the regular. 
 * [x] Test if everything works when switching modes from stop to loop back and forth without powering off. Will it transition between modes seamlesly?
 * [x] Timer overflow problem! EDIT [it's ok](https://stackoverflow.com/questions/7221409/is-unsigned-integer-subtraction-defined-behavior)
+  * [ ] I reintroduced the problem rising the Result accuracy to 64 bits. 
 * [ ] There is wrong naming of absolute time (from the device start) and time durations (diff between two time points). Use std::chrono naming.
 * [ ] lvds pulses (on the output of the transceiver) are 10ms longer. Is 22ms, should be 12. Maybe it's nothing, but curious why.
 * [ ] I have LVDS, I can lower the CAN bus bitrate
@@ -39,8 +40,14 @@
 * [ ] Screen is flickering a little when there is nothing connected to the CAN. This is because the external trigger have higher priority than the screen.
 * [x] I can see 50Hz on the LVDS outputs (R pin connected to the MCU). However there are pretty long danggling wires connected to this port. Maybe pull low? Pulling low helped.
 * [ ] Does noise detection even work? Why it is not reporting an noise-error when the cable is dangling (spurious pulses can be seen using the analyser).
-* [ ] Increase Result type from uint32_t to 64. Store 1µs resolution. EDIT : no noticeable improvement was observed (in theory it should improve, but GPSDO would be necessary). 
-* [ ] Test signal integrity. I see spurious pulses when moving stuff around on the desk.
+* [x] Increase Result type from uint32_t to 64. Store 1µs resolution. Improvement is hard to observe, but something changed for sure. See attached images at the bottom of this paragraph. Compared are two lists of results where two devices were configured like in test A3, but with signal gen instead of IR.
+* [ ] Test signal integrity. I see spurious pulses when moving stuff around on the desk. And when turing appliances on or off. Desolder test wires!
+
+10µs resolution:
+![10µs resoulution](doc/result-10us-substractions_2021-02-04_23-38-01.png)
+
+1µs resolution:
+![1µs resolution](doc/result-1us-substractions_2021-02-04_23-38-01.png)
 
 # Hardware
 * [x] Boot pin easy accessible (for DFU).

@@ -107,7 +107,7 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
                 }
 
                 // IR was restored, but the time it was off was too short, which means noise spike
-                if (lastIrChangeDuration < MIN_TIME_BETWEEN_EVENTS_MS * 100) {
+                if (lastIrChangeDuration < MIN_TIME_BETWEEN_EVENTS_MS * 1000) {
 
                         // We simply ingnore spurious noise events if they don't occur too frequently.
                         if (++noiseEventCounter > NOISE_EVENTS_CRITICAL) {
@@ -178,8 +178,8 @@ void InfraRedBeamExti::run ()
                 if (lastState == IrBeam::noise) {
 #ifdef WITH_DISPLAY
                         // TODO The priorites are inverted, but they are not inverted back when noise is back to normal
-                        HAL_NVIC_SetPriority (TIM15_IRQn, DISPLAY_TIMER_PRIORITY, 0);
-                        HAL_NVIC_SetPriority (IR_IRQn, IR_EXTI_PRIORITY, 0);
+                        // HAL_NVIC_SetPriority (TIM15_IRQn, DISPLAY_TIMER_PRIORITY, 0);
+                        // HAL_NVIC_SetPriority (IR_IRQn, IR_EXTI_PRIORITY, 0);
 #endif
                         // reset
                         lastState = getPinState ();

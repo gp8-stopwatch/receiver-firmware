@@ -68,14 +68,6 @@ void CanProtocol::onCanError (uint32_t e) {}
 
 /*****************************************************************************/
 
-// void CanProtocol::sendTrigger (Message msg, Result time)
-// {
-//         auto *p = reinterpret_cast<uint8_t *> (&time);
-//         can.send (CanFrame{uid, true, 5, uint8_t (msg), *p, *(p + 1), *(p + 2), *(p + 3)}, CAN_SEND_TIMEOUT);
-// }
-
-/*****************************************************************************/
-
 void CanProtocol::sendInfoRequest ()
 {
         lastInfoResponseData.clear ();
