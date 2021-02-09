@@ -23,7 +23,7 @@
 * [x] loop / stop mode should be active according to local configuration, not the event type. This is because micro receiver does not have button to change the mode! The mode can be changed only on the regular. 
 * [x] Test if everything works when switching modes from stop to loop back and forth without powering off. Will it transition between modes seamlesly?
 * [x] Timer overflow problem! EDIT [it's ok](https://stackoverflow.com/questions/7221409/is-unsigned-integer-subtraction-defined-behavior)
-  * [ ] I reintroduced the problem rising the Result accuracy to 64 bits. 
+  * [x] I reintroduced the problem rising the Result accuracy to 64 bits. 
 * [ ] There is wrong naming of absolute time (from the device start) and time durations (diff between two time points). Use std::chrono naming.
 * [ ] lvds pulses (on the output of the transceiver) are 10ms longer. Is 22ms, should be 12. Maybe it's nothing, but curious why.
 * [x] I have LVDS, I can lower the CAN bus bitrate
@@ -86,7 +86,7 @@
   * [ ] Other means of battery protection (over-charge, over-current)
   * [x] Emi - I can see lots of noise in the CAN bus, and test-trigger can be easily fired by transients.
   * [x] The same goes to IR signal - I can see 20MHz / 60kHz - maybe screen is te cullprit. EDIT - with screen truned off I can see the same noise. **It was caused by faulty power supply of my LED lamps**
-  * [ ] Connect test trigger to the IR output pin, and make a solder jumper. 
+  * [x] Connect test trigger to the IR output pin, and make a solder jumper. 
 
 ## Huge display
 * [ ] czy nie potrzeba kondensatorów !? 
@@ -107,7 +107,7 @@
   * [x] Time display
 * [ ] USB menu should include all what on-display provides plus:
   * [x] Results (via command)
-  * [ ] Results as they go.
+  * [x] Results as they go.
 
 # Possible features
 * [x] µC in the transmitter
@@ -154,8 +154,8 @@
      * [ ] Bigger precission than Result type can provide. I have 2 HW timers, it would be wise to store state of both of them (?). yeah, I could use uint64_t instead of uint32_t as a result type. Then I could store 1µs or even 500ns. This would hopefully decrease errors caused by arithmetic (there are some substractions). Alternatively I could get rid of those substractions, but I think I introduced this during noise-cancelation implementation.
 
 # Bugs
-* [x] So it happened that it couldnt save results history when the page overflowed from 1 back to 0 (after 128 measurements). Probably it didn't cleared the flash.
-* [ ] Sometimes when the `reset` command is issued the display is not cleared (stop watch stops, but the last result is persisted on the screen).
+* [x] So it happened that it couldn't save results history when the page overflowed from 1 back to 0 (after 128 measurements). Probably it didn't cleared the flash.
+* [ ] Sometimes when the `reset` command is issued the display is not cleared (stopwatch stops, but the last result is persisted on the screen).
 * [x] Long press in tne "results/counter" mode crashes the firmware. Fix and do the reset then.
 * [x] ~~Clear command makes the next trigger event to be skipped / missed.~~ It does not. It stops the CPU for some period of time (few miliseconds) and thus `startTimeout` in the `FastStateMachine` measures more than 5000ms. My signal gen was set to 5010ms and this little difference (of only 10ms) was too small.
 * [x] USB - can't output more than 2048B at once. In case of overflow the rest of text is clipped.
@@ -189,11 +189,11 @@ Hi 00:00,00000
 
 # Piotr
 * [x] Zapis ustawień
-* [ ] Czas ślepnięcia jako ustawienie
+* [x] Czas ślepnięcia jako ustawienie
 * [x] iscounting
 * [x] current (aktualny wynik - to samo co last, więc może last)
 * [ ] Osłonka przeciwsłoneczna
-* [ ] Zewnętrzny czujnik
+* [x] Zewnętrzny czujnik
 * [x] Opcja tyrybu /zawody/trening. Opcje zawody to takie dzialanie jak jest teraz. Trening : Liczy, wyswietla czas przez 10s, w miedzyczasie liczy "drugie okrazenie, i znowu po przecieciu wiazki pokazuje czas przez 10s i jednoczesnie liczy czas do nastepnego.
   * [x] Z zewnętrznym czujnikiem.
   * [x] Loop na dwa czujniki i dwa nadajniki

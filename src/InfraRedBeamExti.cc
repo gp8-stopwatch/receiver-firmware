@@ -132,7 +132,7 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
 
 void InfraRedBeamExti::run ()
 {
-        if (!refreshTimer.isExpired ()) {
+        if (!refreshTimer.isExpired ()) { // Run this every 100ms or so.*
                 return;
         }
 
