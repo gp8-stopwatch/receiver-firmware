@@ -56,12 +56,6 @@ public:
         enum State { WAIT_FOR_BEAM, READY, RUNNING, STOP, LOOP_RUNNING, PAUSED };
         enum RemoteBeamState { wait, allOk, someNotOk, noResponse };
 
-        static FastStateMachine *singleton ()
-        {
-                static FastStateMachine s;
-                return &s;
-        }
-
         void run (Event event);
         bool isCounting () const { return state == State::RUNNING || state == State::LOOP_RUNNING; }
 

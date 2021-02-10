@@ -12,22 +12,14 @@
 #include "ErrorHandler.h"
 #include "FastStateMachine.h"
 #include "StopWatch.h"
-
 #include "UsbHelpers.h"
 
 /*****************************************************************************/
 
-void sendEvent (FastStateMachine *fStateMachine, Event ev)
-{
-#ifdef TEST_TRIGGER_MOD_2
-        static int i{};
-        if (++i % 2 == 1) {
-                fStateMachine->run (ev);
-        }
-#else
-        fStateMachine->run (ev);
-#endif
-}
+void printDebug (IrBeam state, bool external);
+void sendEvent (FastStateMachine *fStateMachine, Event ev);
+
+/*****************************************************************************/
 
 /*
        +-----+                                       +-----------+      IrBeam::absent
@@ -39,23 +31,6 @@ void sendEvent (FastStateMachine *fStateMachine, Event ev)
  */
 void InfraRedBeamExti::onExti (IrBeam state, bool external)
 {
-        // For testing
-        // if (external) {
-        //         if (state == IrBeam::absent) {
-        //                 print ("0");
-        //         }
-        //         else {
-        //                 print ("1");
-        //         }
-        // }
-        // else {
-        //         if (state == IrBeam::absent) {
-        //                 print ("a");
-        //         }
-        //         else {
-        //                 print ("p");
-        //         }
-        // }
 
         if ((!active && !external) || lastState == IrBeam::noise) {
                 return;
@@ -82,9 +57,9 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
 
                 beamPresentTimer.start (NO_IR_DETECTED_MS);
 
-                if (!external) {
-                        lastState = IrBeam::absent;
-                }
+                // if (!external) {
+                //         lastState = IrBeam::absent;
+                // }
         }
         else {
                 triggerFallingEdgeTime = now;
@@ -93,18 +68,18 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
                         irAbsentPeriod += lastIrChangeDuration;
                 }
 
-                if (!external) {
-                        lastState = IrBeam::present;
-                }
-                else if (blindTimeout.isExpired ()) { // external event!
-                                                      // We receive already filtered event, so there's no need to check the envelope.
+                // if (!external) {
+                //         lastState = IrBeam::present;
+                // }
+                // else if (blindTimeout.isExpired ()) { // external event!
+                //                                       // We receive already filtered event, so there's no need to check the envelope.
 
-                        sendEvent (fStateMachine, {Event::Type::externalTrigger, *triggerRisingEdgeTime});
-                        blindTimeout.start (getConfig ().getBlindTime ());
-                        // Reset the state.
-                        irPresentPeriod = irAbsentPeriod = triggerFallingEdgeTime = 0;
-                        triggerRisingEdgeTime.reset ();
-                }
+                //         sendEvent (fStateMachine, {Event::Type::externalTrigger, *triggerRisingEdgeTime});
+                //         blindTimeout.start (getConfig ().getBlindTime ());
+                //         // Reset the state.
+                //         irPresentPeriod = irAbsentPeriod = triggerFallingEdgeTime = 0;
+                //         triggerRisingEdgeTime.reset ();
+                // }
 
                 // IR was restored, but the time it was off was too short, which means noise spike
                 if (lastIrChangeDuration < msToResult1 (MIN_TIME_BETWEEN_EVENTS_MS)) {
@@ -126,13 +101,15 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
                         beamPresentTimer.start (0);
                 }
         }
+
+        lastState = state;
 }
 
 /*****************************************************************************/
 
 void InfraRedBeamExti::run ()
 {
-        if (!refreshTimer.isExpired ()) { // Run this every 100ms or so.*
+        if (!refreshTimer.isExpired ()) { // Run this every 100ms or so.
                 return;
         }
 
@@ -202,6 +179,43 @@ void InfraRedBeamExti::run ()
                         // reset
                         lastState = getPinState ();
                         beamPresentTimer.start (0);
+                }
+        }
+}
+
+/****************************************************************************/
+
+void sendEvent (FastStateMachine *fStateMachine, Event ev)
+{
+#ifdef TEST_TRIGGER_MOD_2
+        static int i{};
+        if (++i % 2 == 1) {
+                fStateMachine->run (ev);
+        }
+#else
+        fStateMachine->run (ev);
+#endif
+}
+
+/****************************************************************************/
+
+void printDebug (IrBeam state, bool external)
+{
+        // For testing
+        if (external) {
+                if (state == IrBeam::absent) {
+                        print ("0");
+                }
+                else {
+                        print ("1");
+                }
+        }
+        else {
+                if (state == IrBeam::absent) {
+                        print ("a");
+                }
+                else {
+                        print ("p");
                 }
         }
 }

@@ -21,12 +21,6 @@ struct IDisplay;
  */
 class StopWatch {
 public:
-        static StopWatch *singleton ()
-        {
-                static StopWatch st;
-                return &st;
-        }
-
         StopWatch ();
 
         /**

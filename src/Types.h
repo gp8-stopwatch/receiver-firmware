@@ -40,6 +40,7 @@ constexpr size_t CAN_BUS_PRIORITY = 3; // CAN bus is no longer used for time syn
 constexpr size_t BUTTON_EXTI_PRIORITY = 1;
 constexpr size_t IR_EXTI_PRIORITY = 1;
 constexpr size_t EXT_TRIGGER_INPUT_EXTI_PRIORITY = 1;
+constexpr size_t SYS_TICK_PRIORITY = 4;
 
 inline const char *VERSION = "1.0.6";
 

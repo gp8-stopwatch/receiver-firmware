@@ -138,6 +138,7 @@ IF (DEFINED DEVICE)
         "src/Config.cc"
         "src/Container.cc"
         "src/DisplayMenu.cc"
+        "src/UsbCli.cc"
 
         "${LIB_MICRO_ROOT}/src/ErrorHandler.c"
         "${LIB_MICRO_ROOT}/src/TimerF.cc"
