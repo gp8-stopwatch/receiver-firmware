@@ -66,6 +66,7 @@ auto &getCli ()
                                  getConfigFlashEepromStorage ().clear ();
                                  readConfigFromFlash ();
                                  refreshAll ();
+                                 // HAL_NVIC_SystemReset (); // TODO uncoment and test
                          }),
                 cl::cmd (String ("help"),
                          [] {

@@ -105,8 +105,9 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
         lastState = state;
 }
 
-/*****************************************************************************/
-
+/**
+ * This is run from an IRQ which has lower priority than what InfraRedBeamExti::onExti is run from.
+ */
 void InfraRedBeamExti::run ()
 {
         if (!refreshTimer.isExpired ()) { // Run this every 100ms or so.
@@ -123,13 +124,13 @@ void InfraRedBeamExti::run ()
         Result1us now = stopWatch->getTime ();
 
         // The whole state has to be retrieved atomically. This is why those strange copies are taken.
-        __disable_irq ();
+        // __disable_irq ();
         Result1us lastIrChangeDuration = now - lastIrChangeTimePoint;
         bool triggerRisingEdgeTimeSet = bool (triggerRisingEdgeTime);
         bool duty = irAbsentPeriod > irPresentPeriod;
         auto lastStateCopy = lastState;
         Result1us envelope = (triggerRisingEdgeTimeSet) ? (triggerFallingEdgeTime - *triggerRisingEdgeTime) : (0);
-        __enable_irq ();
+        // __enable_irq ();
 
         // EVENT detection. Looking for correct envelope
         if (triggerRisingEdgeTimeSet && lastIrChangeDuration >= msToResult1 (MIN_TIME_BETWEEN_EVENTS_MS) && lastStateCopy == IrBeam::present) {
@@ -145,9 +146,9 @@ void InfraRedBeamExti::run ()
                 if (envelope >= msToResult1 (MIN_TIME_BETWEEN_EVENTS_MS) && envelope < msToResult1 (DEFAULT_BLIND_TIME_MS) && duty
                     && blindTimeout.isExpired ()) {
 
-                        __disable_irq ();
+                        // __disable_irq ();
                         auto triggerRisingEdgeTimeCopy = *triggerRisingEdgeTime;
-                        __enable_irq ();
+                        // __enable_irq ();
 
                         sendEvent (fStateMachine, {Event::Type::irTrigger, triggerRisingEdgeTimeCopy});
                         blindTimeout.start (getConfig ().getBlindTime ());
@@ -157,11 +158,11 @@ void InfraRedBeamExti::run ()
                 extTriggerOutEnable.set (false);
                 EXTI->IMR |= EXT_TRIGGER_INPUT_PINS;
 
-                __disable_irq ();
+                // __disable_irq ();
                 // After correct event has been detected, we reset everything.
                 irPresentPeriod = irAbsentPeriod = triggerFallingEdgeTime = 0;
                 triggerRisingEdgeTime.reset ();
-                __enable_irq ();
+                // __enable_irq ();
         }
 
         // NOISE. This runs every NOISE_CLEAR_TIMEOUT_MS and checks if noise events number was exceeded. Then the counter is cleared.

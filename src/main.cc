@@ -13,7 +13,12 @@ static void SystemClock_Config ();
 
 /*****************************************************************************/
 
-extern "C" void SysTick_Handler () { HAL_IncTick (); }
+extern "C" void SysTick_Handler ()
+{
+        HAL_IncTick ();
+        getStopWatch ().run ();
+        getBeam ().run ();
+}
 
 /*****************************************************************************/
 
@@ -53,8 +58,6 @@ int main ()
         getMenu ().onEvent (menu::Event::timePassed); // Initial state.
 
         while (true) {
-                getStopWatch ().run ();
-
 #ifdef WITH_SOUND
                 getBuzzer ().run ();
 #endif
@@ -70,10 +73,6 @@ int main ()
 #ifdef WITH_POWER_MANAGER
                 getPowerManager ().run ();
 #endif
-
-                // #ifdef WITH_IR
-                getBeam ().run ();
-                // #endif
 
                 usbcli::run ();
 
