@@ -39,7 +39,7 @@ TEST_CASE ("Edge cases", "[detector]")
                  */
                 TestDetectorCallback tc;
                 // EdgeDetector triggerDetector{};
-                EdgeFilter edgeFilter{/* &triggerDetector */ nullptr, EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
 
                 edgeFilter.setCallback (&tc);
 
@@ -70,10 +70,7 @@ TEST_CASE ("Edge cases", "[detector]")
                  * 0    10ms   20ms     30ms
                  */
                 TestDetectorCallback tc;
-                EdgeDetector triggerDetector{};
-                triggerDetector.setCallback (&tc);
-
-                EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -104,10 +101,7 @@ TEST_CASE ("Edge cases", "[detector]")
                  * 0    10ms   20ms     30ms
                  */
                 TestDetectorCallback tc;
-                EdgeDetector triggerDetector{};
-                triggerDetector.setCallback (&tc);
-
-                EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -143,10 +137,7 @@ TEST_CASE ("Edge cases", "[detector]")
                  * 0    10ms   20ms     30ms
                  */
                 TestDetectorCallback tc;
-                EdgeDetector triggerDetector{};
-                triggerDetector.setCallback (&tc);
-
-                EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -182,10 +173,7 @@ TEST_CASE ("Edge cases", "[detector]")
                  * 0    10ms   20ms     30ms
                  */
                 TestDetectorCallback tc;
-                EdgeDetector triggerDetector{};
-                triggerDetector.setCallback (&tc);
-
-                EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -236,8 +224,7 @@ TEST_CASE ("Slightly less", "[detector]")
                  * 0    9999µ  2*9999µ 30ms
                  */
                 TestDetectorCallback tc;
-                // EdgeDetector triggerDetector{};
-                EdgeFilter edgeFilter{/* &triggerDetector */ nullptr, EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -265,7 +252,7 @@ TEST_CASE ("Slightly less", "[detector]")
                  * 0    10ms   20ms     29999µ
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{/* &triggerDetector */ nullptr, EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
                 edgeFilter.setCallback (&tc);
 
                 edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
@@ -291,10 +278,7 @@ TEST_CASE ("Slightly less", "[detector]")
                  * 0    10ms   19999µ  30ms
                  */
                 TestDetectorCallback tc;
-                EdgeDetector triggerDetector{};
-                triggerDetector.setCallback (&tc);
-
-                EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -320,10 +304,7 @@ TEST_CASE ("Slightly less", "[detector]")
                  * 0    10ms   20ms  29999µ
                  */
                 TestDetectorCallback tc;
-                EdgeDetector triggerDetector{};
-                triggerDetector.setCallback (&tc);
-
-                EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -350,9 +331,7 @@ TEST_CASE ("Slightly less", "[detector]")
                  * 0    10ms   19999ms     30ms
                  */
                 TestDetectorCallback tc;
-                EdgeDetector triggerDetector{};
-                triggerDetector.setCallback (&tc);
-                EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -386,10 +365,7 @@ TEST_CASE ("Slightly less", "[detector]")
                  * 0    10ms   20ms     29999µ
                  */
                 TestDetectorCallback tc;
-                EdgeDetector triggerDetector{};
-                triggerDetector.setCallback (&tc);
-
-                EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -423,10 +399,7 @@ TEST_CASE ("Slightly less", "[detector]")
                  * 0    10ms   19999µ   30ms
                  */
                 TestDetectorCallback tc;
-                EdgeDetector triggerDetector{};
-                triggerDetector.setCallback (&tc);
-
-                EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -460,10 +433,7 @@ TEST_CASE ("Slightly less", "[detector]")
                  * 0    10ms   20ms     29999µ
                  */
                 TestDetectorCallback tc;
-                EdgeDetector triggerDetector{};
-                triggerDetector.setCallback (&tc);
-
-                EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -503,9 +473,7 @@ TEST_CASE ("Advanced / slightly less", "[detector]")
                  * 0    10ms   19999µ   30ms
                  */
                 TestDetectorCallback tc;
-                EdgeDetector triggerDetector{};
-                triggerDetector.setCallback (&tc);
-                EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -546,9 +514,7 @@ TEST_CASE ("Advanced / slightly less", "[detector]")
                  * 0    10ms   20ms   25,25+100   34999 + 100
                  */
                 TestDetectorCallback tc;
-                EdgeDetector triggerDetector{};
-                triggerDetector.setCallback (&tc);
-                EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 

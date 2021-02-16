@@ -19,13 +19,8 @@ Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
 /*****************************************************************************/
 
 // TOOD change bool to void
-bool EdgeFilter::onEdge (Edge const &e)
+void EdgeFilter::onEdge (Edge const &e)
 {
-        // Adds the event to the queue, checks for trigger event
-        // if (!EdgeDetector::onEdge (e)) {
-        //         return false;
-        // }
-
         /*
          * This can happen when noise frequency is very high, and the µC can't keep up,
          * and its misses an EXTI event. This way we can end up with two consecutive edges
@@ -41,16 +36,6 @@ bool EdgeFilter::onEdge (Edge const &e)
         }
 
         queue.push (e);
-
-        // if (!queue.full ()) {
-        //         return false;
-        // }
-
-        // // Check the simplest case, where the signal is clean
-        // if (isTriggerEvent ()) {
-        //         callback->report (DetectorEventType::trigger, queue[0].timePoint);
-        //         return false;
-        // }
 
         /*--------------------------------------------------------------------------*/
 
@@ -81,35 +66,6 @@ bool EdgeFilter::onEdge (Edge const &e)
 
         /*--------------------------------------------------------------------------*/
 
-        bool highOk{};
-        bool lowOk{};
-
-        // if (queue.front ().polarity == EdgePolarity::rising /* && longHighEdge && longLowEdge */) {
-
-        //         // callback->report (DetectorEventType::trigger, queue[0].timePoint);
-
-        //         highOk = longHighEdge;
-        //         lowOk = longLowEdge;
-        // }
-
-        // if (highStateStart < lowStateStart) {
-        //         // bool longHighState = (lowStateStart - highStateStart) >= msToResult1 (minTreggerEventMs);
-        //         // bool longLowState = (e.timePoint - lowStateStart) >= msToResult1 (minTreggerEventMs);
-
-        //         // if (longHighState && longLowState) {
-        //         //         callback->report (DetectorEventType::trigger, highStateStart);
-        //         // }
-
-        //         highOk |= (lowStateStart - highStateStart) >= msToResult1 (minTreggerEventMs);
-        //         lowOk |= (e.timePoint - lowStateStart) >= msToResult1 (minTreggerEventMs);
-        // }
-
-        // if (highOk && lowOk) {
-        //         callback->report (DetectorEventType::trigger, highStateStart);
-        // }
-
-        /*--------------------------------------------------------------------------*/
-
         // Tu może nie złapać kiedy długo było low, a potem high przez 11ms. Duty będzie na low, a był event.
         if (hiDuration * 100 > cycleTreshold || // PWM of the slice is high
             longHighEdge) {                     // Or the high level was long itself
@@ -135,8 +91,6 @@ bool EdgeFilter::onEdge (Edge const &e)
                         highStateStart = lowStateStart; // To prevent reporting twice
                 }
         }
-
-        return true;
 }
 
 /****************************************************************************/
@@ -180,8 +134,4 @@ void EdgeFilter::run (Result1us const &now)
         //     && now - lowStateStart >= msToResult1 (minTreggerEventMs)) {
         //         callback->report (DetectorEventType::trigger, queue[0].timePoint);
         // }
-
-        if (next != nullptr) {
-                next->run (now);
-        }
 }
