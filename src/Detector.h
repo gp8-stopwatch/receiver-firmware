@@ -106,7 +106,19 @@ class EdgeFilter : public EdgeDetector {
 public:
         enum State { high, low };
 
-        EdgeFilter (EdgeDetector *next, State initialState) : next{next}, state{initialState} {}
+        EdgeFilter (EdgeDetector *next, State initialState) : next{next}, state{initialState}
+        {
+                if (state == State::low) {
+                        queue.push ({0, EdgePolarity::rising});
+                        queue.push ({0, EdgePolarity::falling});
+                }
+                else {
+                        // Possibly remove this, and assume that initial state is always low. Then initial checks in onEdge would assure that
+                        // edges are in correct order?
+                        queue.push ({0, EdgePolarity::falling});
+                        queue.push ({0, EdgePolarity::rising});
+                }
+        }
 
         /// IRQ context
         bool onEdge (Edge const &e) override;

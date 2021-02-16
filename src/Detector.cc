@@ -18,12 +18,39 @@ Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
 
 /*****************************************************************************/
 
+// TOOD change bool to void
 bool EdgeFilter::onEdge (Edge const &e)
 {
         // Adds the event to the queue, checks for trigger event
-        if (!EdgeDetector::onEdge (e)) {
-                return false;
+        // if (!EdgeDetector::onEdge (e)) {
+        //         return false;
+        // }
+
+        /*
+         * This can happen when noise frequency is very high, and the µC can't keep up,
+         * and its misses an EXTI event. This way we can end up with two consecutive edges
+         * with the same polarity.
+         */
+        if (!queue.empty () && queue.back ().polarity == e.polarity) {
+                // Reset queue so it's still full, but pulses are 0 width.
+                queue.push (e);
+                queue.push ({e.timePoint, (e.polarity == EdgePolarity::rising) ? (EdgePolarity::falling) : (EdgePolarity::rising)});
+
+                // TODO Increase noise counter
+                // TODO When noise counter is high, tirn of the EXTI, so the rest of the code has a chance to run.
         }
+
+        queue.push (e);
+
+        // if (!queue.full ()) {
+        //         return false;
+        // }
+
+        // // Check the simplest case, where the signal is clean
+        // if (isTriggerEvent ()) {
+        //         callback->report (DetectorEventType::trigger, queue[0].timePoint);
+        //         return false;
+        // }
 
         /*--------------------------------------------------------------------------*/
 
@@ -45,10 +72,29 @@ bool EdgeFilter::onEdge (Edge const &e)
                 std::swap (hiDuration, lowDuration);
         }
 
+        bool longHighEdge = hiDuration >= msToResult1 (minTreggerEventMs);
+        bool longLowEdge = lowDuration >= msToResult1 (minTreggerEventMs);
+
+        bool longHighState = (lowStateStart - highStateStart) >= msToResult1 (minTreggerEventMs);
+        bool longLowState = (e.timePoint - lowStateStart) >= msToResult1 (minTreggerEventMs);
+
         /*--------------------------------------------------------------------------*/
 
-        if (hiDuration * 100
-            >= cycleTreshold) { // Tu może nie złapać kiedy długo było low, a potem high przez 11ms. Duty będzie na low, a był event.
+        if (queue.front ().polarity == EdgePolarity::rising) {
+                if (longHighEdge && longLowEdge) {
+                        callback->report (DetectorEventType::trigger, queue[0].timePoint);
+                }
+
+                else if (longHighState && longLowState) {
+                        callback->report (DetectorEventType::trigger, highStateStart);
+                }
+        }
+
+        /*--------------------------------------------------------------------------*/
+
+        // Tu może nie złapać kiedy długo było low, a potem high przez 11ms. Duty będzie na low, a był event.
+        if (hiDuration * 100 >= cycleTreshold || // PWM of the slice is high
+            longHighEdge) {                      // Or the high level was long itself
                 if (state == State::high) {
                         return false;
                 }
@@ -60,12 +106,13 @@ bool EdgeFilter::onEdge (Edge const &e)
                 senseOn.set (true);
 #endif
 
-                if (next != nullptr) {
-                        // next->onEdge ({highStateStart, EdgePolarity::rising});
-                        return next->onEdge (*firstRising);
-                }
+                // if (next != nullptr) {
+                //         // next->onEdge ({highStateStart, EdgePolarity::rising});
+                //         return next->onEdge (*firstRising);
+                // }
         }
-        else if (lowDuration * 100 >= cycleTreshold) {
+        else if (lowDuration * 100 >= cycleTreshold || // PWM of the slice is low
+                 longLowEdge) {                        // Or the low level was long enogh itself
                 if (state == State::low) {
                         return false;
                 }
@@ -77,10 +124,10 @@ bool EdgeFilter::onEdge (Edge const &e)
                 senseOn.set (false);
 #endif
 
-                if (next != nullptr) {
-                        // next->onEdge ({lowStateStart, EdgePolarity::falling});
-                        return next->onEdge (*firstFalling);
-                }
+                // if (next != nullptr) {
+                //         // next->onEdge ({lowStateStart, EdgePolarity::falling});
+                //         return next->onEdge (*firstFalling);
+                // }
         }
 
         return true;
@@ -90,12 +137,12 @@ bool EdgeFilter::onEdge (Edge const &e)
 
 void EdgeFilter::run (Result1us const &now)
 {
-        // TODO critical
+        // TODO critical section
         if (queue.empty ()) {
                 return;
         }
 
-        // TODO critical
+        // TODO critical section
         auto &back = queue.back ();
 
         // if (now - getLastStateChange () /* lastStateChange */ >= msToResult1 (minTreggerEventMs)) {

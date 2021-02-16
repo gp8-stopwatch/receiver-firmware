@@ -38,8 +38,8 @@ TEST_CASE ("First test", "[detector]")
                  * 0    10ms   20ms     30ms
                  */
                 TestDetectorCallback tc;
-                EdgeDetector triggerDetector{};
-                EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State::low};
+                // EdgeDetector triggerDetector{};
+                EdgeFilter edgeFilter{/* &triggerDetector */ nullptr, EdgeFilter::State::low};
 
                 edgeFilter.setCallback (&tc);
 
