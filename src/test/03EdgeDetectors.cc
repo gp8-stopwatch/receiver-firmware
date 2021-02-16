@@ -53,6 +53,7 @@ TEST_CASE ("First test", "[detector]")
 
                 // edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
                 edgeFilter.run (30 * 1000);
+
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::trigger);
                 REQUIRE (events.front ().timePoint == 10 * 1000);
@@ -94,6 +95,45 @@ TEST_CASE ("First test", "[detector]")
         {
 
                 /*
+                 *        +--+---+
+                 *        |  |   |
+                 *        |  |   |
+                 *        |  |   |
+                 *        |  |   |
+                 * -------+  +   +-------+
+                 * 0    10ms   20ms     30ms
+                 */
+                TestDetectorCallback tc;
+                EdgeDetector triggerDetector{};
+                triggerDetector.setCallback (&tc);
+
+                EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                REQUIRE (events.empty ());
+
+                // Noise spike (negative)
+                edgeFilter.onEdge ({15 * 1000, EdgePolarity::falling});
+                REQUIRE (events.empty ());
+
+                edgeFilter.onEdge ({15 * 1000 + 100, EdgePolarity::rising});
+                REQUIRE (events.empty ());
+
+                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
+                REQUIRE (events.empty ());
+
+                edgeFilter.run (30 * 1000);
+
+                REQUIRE (events.size () == 1);
+                REQUIRE (events.front ().type == DetectorEventType::trigger);
+                REQUIRE (events.front ().timePoint == 10 * 1000);
+        }
+
+        {
+
+                /*
                  *        +--+---+       +
                  *        |  |   |       |
                  *        |  |   |       |
@@ -123,12 +163,54 @@ TEST_CASE ("First test", "[detector]")
                 edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
                 REQUIRE (events.empty ());
 
-                // Trzeba uwzględniać aktualną długość leveli zarówno w onEvent jaki w run. Jeżeli dłigość przekroczy min Event, to zmieniać
-                // automatycznie stan i ustawiać highStateStart i lowStateStaty
+                edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
 
-                // edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
-                // edgeFilter.onEdge ({30 * 1000 + 100, EdgePolarity::falling});
-                edgeFilter.run (30 * 1000);
+                REQUIRE (events.size () == 1);
+                REQUIRE (events.front ().type == DetectorEventType::trigger);
+                REQUIRE (events.front ().timePoint == 10 * 1000);
+        }
+
+        {
+
+                /*
+                 *        +--+---+    +
+                 *        |  |   |    |
+                 *        |  |   |    |
+                 *        |  |   |    |
+                 *        |  |   |    |
+                 * -------+  +   +----+--+
+                 * 0    10ms   20ms     30ms
+                 */
+                TestDetectorCallback tc;
+                EdgeDetector triggerDetector{};
+                triggerDetector.setCallback (&tc);
+
+                EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                // First rising @ 10ms
+                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                REQUIRE (events.empty ());
+
+                // Noise spike (negative) @ 15ms
+                edgeFilter.onEdge ({15 * 1000, EdgePolarity::falling});
+                REQUIRE (events.empty ());
+                edgeFilter.onEdge ({15 * 1000 + 100, EdgePolarity::rising});
+                REQUIRE (events.empty ());
+
+                // Falling @ 20ms
+                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
+                REQUIRE (events.empty ());
+
+                // Noise spike (positive) @ 25ms
+                edgeFilter.onEdge ({25 * 1000, EdgePolarity::rising});
+                REQUIRE (events.empty ());
+                edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::falling});
+                REQUIRE (events.empty ());
+
+                // Run after minTreggerEventMs from last edge
+                edgeFilter.run (35 * 1000 + 100);
 
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::trigger);

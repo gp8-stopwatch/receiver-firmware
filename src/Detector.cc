@@ -66,68 +66,74 @@ bool EdgeFilter::onEdge (Edge const &e)
         auto *firstRising = &queue[0]; // Pointers are smaller than Edge object
         auto *firstFalling = &queue[1];
 
+        bool longHighEdge{};
+        bool longLowEdge{};
+
         // 50% chance that above are correct. If our assumption wasn't right, we swap.
         if (firstRising->polarity != EdgePolarity::rising) {
                 std::swap (firstRising, firstFalling);
                 std::swap (hiDuration, lowDuration);
+                longHighEdge = hiDuration >= msToResult1 (minTreggerEventMs);
         }
-
-        bool longHighEdge = hiDuration >= msToResult1 (minTreggerEventMs);
-        bool longLowEdge = lowDuration >= msToResult1 (minTreggerEventMs);
-
-        bool longHighState = (lowStateStart - highStateStart) >= msToResult1 (minTreggerEventMs);
-        bool longLowState = (e.timePoint - lowStateStart) >= msToResult1 (minTreggerEventMs);
+        else {
+                longLowEdge = lowDuration >= msToResult1 (minTreggerEventMs);
+        }
 
         /*--------------------------------------------------------------------------*/
 
-        if (queue.front ().polarity == EdgePolarity::rising) {
-                if (longHighEdge && longLowEdge) {
-                        callback->report (DetectorEventType::trigger, queue[0].timePoint);
-                }
+        bool highOk{};
+        bool lowOk{};
 
-                else if (longHighState && longLowState) {
-                        callback->report (DetectorEventType::trigger, highStateStart);
-                }
-        }
+        // if (queue.front ().polarity == EdgePolarity::rising /* && longHighEdge && longLowEdge */) {
+
+        //         // callback->report (DetectorEventType::trigger, queue[0].timePoint);
+
+        //         highOk = longHighEdge;
+        //         lowOk = longLowEdge;
+        // }
+
+        // if (highStateStart < lowStateStart) {
+        //         // bool longHighState = (lowStateStart - highStateStart) >= msToResult1 (minTreggerEventMs);
+        //         // bool longLowState = (e.timePoint - lowStateStart) >= msToResult1 (minTreggerEventMs);
+
+        //         // if (longHighState && longLowState) {
+        //         //         callback->report (DetectorEventType::trigger, highStateStart);
+        //         // }
+
+        //         highOk |= (lowStateStart - highStateStart) >= msToResult1 (minTreggerEventMs);
+        //         lowOk |= (e.timePoint - lowStateStart) >= msToResult1 (minTreggerEventMs);
+        // }
+
+        // if (highOk && lowOk) {
+        //         callback->report (DetectorEventType::trigger, highStateStart);
+        // }
 
         /*--------------------------------------------------------------------------*/
 
         // Tu może nie złapać kiedy długo było low, a potem high przez 11ms. Duty będzie na low, a był event.
-        if (hiDuration * 100 >= cycleTreshold || // PWM of the slice is high
-            longHighEdge) {                      // Or the high level was long itself
-                if (state == State::high) {
-                        return false;
+        if (hiDuration * 100 > cycleTreshold || // PWM of the slice is high
+            longHighEdge) {                     // Or the high level was long itself
+                if (state != State::high) {
+                        state = State::high;
+                        highStateStart = firstRising->timePoint;
                 }
-
-                state = State::high;
-                highStateStart = firstRising->timePoint;
-                // lastStateChange = firstRising->timePoint;
-#ifndef UNIT_TEST
-                senseOn.set (true);
-#endif
-
-                // if (next != nullptr) {
-                //         // next->onEdge ({highStateStart, EdgePolarity::rising});
-                //         return next->onEdge (*firstRising);
-                // }
         }
         else if (lowDuration * 100 >= cycleTreshold || // PWM of the slice is low
                  longLowEdge) {                        // Or the low level was long enogh itself
-                if (state == State::low) {
-                        return false;
+                if (state != State::low) {
+                        state = State::low;
+                        lowStateStart = firstFalling->timePoint;
                 }
+        }
 
-                state = State::low;
-                lowStateStart = firstFalling->timePoint;
-                // lastStateChange = firstFalling->timePoint;
-#ifndef UNIT_TEST
-                senseOn.set (false);
-#endif
+        if (highStateStart < lowStateStart) {
+                bool longHighState = (lowStateStart - highStateStart) >= msToResult1 (minTreggerEventMs);
+                bool longLowState = (e.timePoint - lowStateStart) >= msToResult1 (minTreggerEventMs);
 
-                // if (next != nullptr) {
-                //         // next->onEdge ({lowStateStart, EdgePolarity::falling});
-                //         return next->onEdge (*firstFalling);
-                // }
+                if (longHighState && longLowState) {
+                        callback->report (DetectorEventType::trigger, highStateStart);
+                        highStateStart = lowStateStart; // To prevent reporting twice
+                }
         }
 
         return true;
@@ -149,6 +155,7 @@ void EdgeFilter::run (Result1us const &now)
         // if (state == State::high && queue.back().polarity == EdgePolarity::falling &&  now - getLastStateChange () /* lastStateChange */ >=
         // msToResult1 (minTreggerEventMs)) {
 
+        // If there's no noise at all, and the line stays silent, we force the check every minTreggerEventMs
         if (now - back.timePoint >= msToResult1 (minTreggerEventMs)) {
                 __disable_irq ();
 
