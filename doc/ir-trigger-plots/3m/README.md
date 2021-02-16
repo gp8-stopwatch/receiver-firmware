@@ -1,0 +1,1 @@
+A notebook swinged crossing the beam. Rx & tx 3m apart, LED ambient lights.

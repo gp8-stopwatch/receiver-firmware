@@ -1,0 +1,1 @@
+devices ~6m apart (room and corridor). LED lights. Waved a hand fast. Tx intensity the lowest.

@@ -87,6 +87,17 @@
   * [x] Emi - I can see lots of noise in the CAN bus, and test-trigger can be easily fired by transients.
   * [x] The same goes to IR signal - I can see 20MHz / 60kHz - maybe screen is te cullprit. EDIT - with screen truned off I can see the same noise. **It was caused by faulty power supply of my LED lamps**
   * [x] Connect test trigger to the IR output pin, and make a solder jumper. 
+* [ ] Trigger. 
+  * [ ] "Reductor" in the TX. For indoor use.
+  * [ ] Minimum event length should be configurable (now 10ms)
+  * [ ] Trigger low steady time should be the same as the minimum event length.
+  * [ ] Command for noise level reporintg.
+  * [ ] maybe duty cycle condition should depend on noise level?
+  * 2 types of disturbance in the signal : 
+    * Too intense IR + reflections (meaning it is hard to interrupt it) -> chopped during the event, clean otherwise. 
+    * Too weak IR -> haven't checked. 
+    * Exteral DC light -> both high and low states are littered with noise.
+
 
 ## Huge display
 * [ ] czy nie potrzeba kondensatorów !? 

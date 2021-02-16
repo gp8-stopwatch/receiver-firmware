@@ -92,6 +92,10 @@ void PendSV_Handler (void)
         /* USER CODE END PendSV_IRQn 1 */
 }
 
+void SysTick_Handler () { HAL_IncTick (); }
+
+/*****************************************************************************/
+
 #ifdef WITH_USB
 void USB_IRQHandler (void) { HAL_PCD_IRQHandler (&hpcd); }
 #endif

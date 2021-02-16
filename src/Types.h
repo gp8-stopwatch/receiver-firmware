@@ -27,8 +27,8 @@ using String = etl::string<16>;
 using Result1us = uint64_t;  /// 1µs units. Maybe someday I'll use std::chrono
 using Result10us = uint32_t; /// 10µs units.
 
-inline Result10us result1To10 (Result1us r) { return r / 10 + ((r % 10 < 5) ? (0) : (1)); }
-inline Result1us msToResult1 (uint32_t r) { return r * 1000; }
+constexpr Result10us result1To10 (Result1us r) { return r / 10 + ((r % 10 < 5) ? (0) : (1)); }
+constexpr Result1us msToResult1 (uint32_t r) { return r * 1000; }
 
 /**
  * How to display a result.
@@ -42,7 +42,7 @@ constexpr size_t IR_EXTI_PRIORITY = 1;
 constexpr size_t EXT_TRIGGER_INPUT_EXTI_PRIORITY = 1;
 constexpr size_t SYS_TICK_PRIORITY = 4;
 
-inline const char *VERSION = "1.0.6";
+inline const char *VERSION = "1.0.7";
 
 constexpr int LOW_VOLTAGE_MV = 3000;
 constexpr int LOW_VOLTAGE_CRITICAL_MV = 2900;
@@ -86,7 +86,9 @@ static constexpr int DEFAULT_BLIND_TIME_MS = 5000;
 static constexpr int NO_IR_DETECTED_MS = 5000;
 static constexpr int LOOP_DISPLAY_TIMEOUT = DEFAULT_BLIND_TIME_MS - 1000;
 
+#ifndef UNIT_TEST
 const etl::function_fv<__disable_irq> lock{};
 const etl::function_fv<__enable_irq> unlock{};
+#endif
 
 #endif // __cplusplus

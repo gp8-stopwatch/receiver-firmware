@@ -1,0 +1,1 @@
+devices 6m apart (room). LED lights. Waved a hand 20cm from the IR receiver (the fastest I can).

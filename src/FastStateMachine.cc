@@ -37,7 +37,7 @@ void FastStateMachine::run (Event event)
 
         // Global except for the PAUSED state
         if (state != PAUSED) {
-                if (ir->isActive () && ir->getBeamState () != IrBeam::present) {
+                if (ir->isActive () && ir->getBeamState () != IrBeam::triggerFalling) {
                         state = State::WAIT_FOR_BEAM;
                 }
 
@@ -78,7 +78,7 @@ void FastStateMachine::run (Event event)
                         //                         }
                         // #endif
                 }
-                else if (ir->isActive () && ir->getBeamState () == IrBeam::absent) {
+                else if (ir->isActive () && ir->getBeamState () == IrBeam::triggerRising) {
                         display->setText ("noi.r.  ");
 
 #ifdef WITH_CAN
@@ -98,7 +98,7 @@ void FastStateMachine::run (Event event)
 #endif
 
                 // The transition
-                if ((ir->isActive () && ir->getBeamState () == IrBeam::present) || remoteBeamState == RemoteBeamState::allOk) {
+                if ((ir->isActive () && ir->getBeamState () == IrBeam::triggerFalling) || remoteBeamState == RemoteBeamState::allOk) {
                         state = READY;
                 }
 
@@ -166,7 +166,7 @@ void FastStateMachine::run (Event event)
 
 bool FastStateMachine::isInternalTrigger (Event event) const
 {
-        return ((ir->getBeamState () == IrBeam::present && ir->isBeamInterrupted ()) || event.getType () == Event::Type::irTrigger);
+        return ((ir->getBeamState () == IrBeam::triggerFalling && ir->isBeamInterrupted ()) || event.getType () == Event::Type::irTrigger);
 }
 
 /*****************************************************************************/

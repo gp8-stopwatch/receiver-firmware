@@ -14,6 +14,7 @@
 #include "Config.h"
 #include "Container.h"
 #include "Debug.h"
+#include "Detector.h"
 #include "DisplayMenu.h"
 #include "ErrorHandler.h"
 #include "FastStateMachine.h"
@@ -68,3 +69,5 @@ extern StopWatch &getStopWatch ();
 extern FastStateMachine &getFastStateMachine ();
 extern Rtc &getRtc ();
 extern CanProtocol &getProtocol ();
+extern EdgeFilter &getIrDetector ();
+extern EdgeFilter &getExtDetector ();

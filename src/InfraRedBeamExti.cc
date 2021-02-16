@@ -14,6 +14,9 @@
 #include "StopWatch.h"
 #include "UsbHelpers.h"
 
+// #include <array>
+#include <etl/queue.h>
+
 /*****************************************************************************/
 
 void printDebug (IrBeam state, bool external);
@@ -22,16 +25,49 @@ void sendEvent (FastStateMachine *fStateMachine, Event ev);
 /*****************************************************************************/
 
 /*
-       +-----+                                       +-----------+      IrBeam::absent
-       |     |                                       |           |
-       |     |                                       |           |
-       |     |                                       |           |
-       |     |                                       |           |
--------+     +---------------------------------------+           +----  IrBeam::present
+ * 2 clean trigger events which would result in time beeing measured between A and B.
+ *
+ *        +-----+                                       +-----------+      IrBeam::triggerRising (high)
+ *        |     |                                       |           |
+ *        |     |                                       |           |
+ *        |     |                                       |           |
+ *        |     |                                       |           |
+ * -------+     +---------------------------------------+           +----  IrBeam::triggerFalling (low)
+ *        A                                             B
+ *
+ * Single event, a closeup. General view of what can happen in a noisy environment (the worst case):
+ *
+ *   +      +---+    +      +---+---+  +--+---+  +-+--+        +     +  + +   +
+ *   |      |   |    |      |   |   |  |  |   |  | |  |        |     |  | |   |
+ *   |      |   |    |      |   |   |  |  |   |  | |  |        |     |  | |   |
+ *   |      |   |    |      |   |   |  |  |   |  | |  |        |     |  | |   |
+ *   |      |   |    |      |   |   |  |  |   |  | |  |        |     |  | |   |
+ * --+------+   +----+------+   +   +--+  +   +--+ +  +--------+-----+--+-+---+----+
+ *   a      b   c           D   e   f  g              H                            I
+ *
+ * - a: Positive transient noise event resulting from a DC ambient light like sun or bright lamps.
+ * - b-c: Long positive noise event (rising and falling edges close to each other).
+ * - D: Trigger event rising edge
+ * - e: Negative transiuent noise event (sun, reflections, weak IR)
+ * - f-g: Long negative noise event
+ * - H: Trigger event falling edge.
+ * - I: Event complete .
+ *
+ * Definitions:
+ * Trigger event: Certain chain of consecutive signal edges.
+ *
+ * Noise event: an edge which occured in *n* ms after previous edge, where n is less than MIN_TRIGGER_EVENT_MS.
+ * If the edge is rising (like b), then the event is negative (event a-b). If the edge is falling (c), the
+ * nois event is positive (b-c).
+ *
+ * Noise sources:
+ * - Ambient light.
+ * - IR reflections.
+ * - Weak IR signal.
+ * - Transient voltages induced in PCB traces (and LVDS cable?). Those are the fastest.
  */
 void InfraRedBeamExti::onExti (IrBeam state, bool external)
 {
-
         if ((!active && !external) || lastState == IrBeam::noise) {
                 return;
         }
@@ -40,7 +76,7 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
         Result1us lastIrChangeDuration = now - lastIrChangeTimePoint;
         lastIrChangeTimePoint = now;
 
-        if (state == IrBeam::absent) {
+        if (state == IrBeam::triggerRising) {
                 if (!triggerRisingEdgeTime) {
                         triggerRisingEdgeTime = now;
                         triggerFallingEdgeTime = now;
@@ -106,7 +142,155 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
 }
 
 /**
+ * This is run from an IRQ with highest priority.
+ * Here word "event" means an edge in the IR or EXT signal.
+ * This function tracks the current state of the beam, and calculates
+ * (with minimal latency and maximum accuracy) other invariants. It cares so
+ * the follwoing are always up to date:
+ * - state
+ * - dutyCycle (how much the trigger signal was high in %).
+ *
+ */
+void InfraRedBeamExti::onExti2 (IrBeam event, bool external)
+{
+        if (!active) {
+                return;
+        }
+
+        Result1us now = stopWatch->getTime ();
+        Result1us lastIrChangeDuration = now - lastIrChangeTimePoint;
+        lastIrChangeTimePoint = now;
+
+        switch (state) {
+        case State::idle: // Waiting for an event. Only trigger rising is interesting after device turned on.
+                if (event == IrBeam::triggerRising) {
+                        triggerRisingEdgeTime = now;
+                        lastIrChangeTimePoint = now;
+                        state = (external) ? (State::extTriggerHigh) : (State::irTriggerHigh);
+                }
+                // else if (event == IrBeam::triggerFalling) {
+                //         triggerFallingEdgeTime = now;
+                //         state = (external) ? (State::extTriggerLow) : (State::irTriggerLow);
+                // }
+                break;
+
+        case State::irTriggerLow:
+                if (event == IrBeam::triggerRising && !external) {
+                        triggerRisingEdgeTime = now;
+                        triggerLowPeriod += lastIrChangeDuration;
+                        state = State::irTriggerHigh;
+                }
+                break;
+
+        case State::irTriggerHigh:
+                if (event == IrBeam::triggerFalling && !external) {
+                        triggerFallingEdgeTime = now;
+                        triggerHighPeriod += lastIrChangeDuration;
+                        state = State::irTriggerLow;
+                }
+                break;
+
+        case State::extTriggerLow:
+                if (event == IrBeam::triggerRising && external) {
+                        triggerRisingEdgeTime = now;
+                        triggerLowPeriod += lastIrChangeDuration;
+                        state = State::extTriggerHigh;
+                }
+                break;
+
+        case State::extTriggerHigh:
+                if (event == IrBeam::triggerFalling && external) {
+                        triggerFallingEdgeTime = now;
+                        triggerHighPeriod += lastIrChangeDuration;
+                        state = State::extTriggerLow;
+                }
+                break;
+
+        case State::noise:
+        case State::noBeam:
+        default:
+                break;
+        }
+}
+
+/**
  * This is run from an IRQ which has lower priority than what InfraRedBeamExti::onExti is run from.
+ * There is no preemption possible (it can be postponed until exti finishes its work though).
+ *
+ * Q: Why this has to be run from the main thread (non-IRQ)?
+ * A: IRQ routine cannot be preempted on this MCU, so instead reducing latency I increased it!
+ * Better quickly copy relevant balues in a critical section, and use them in a code that can be
+ * safely preempted.
+ */
+void InfraRedBeamExti::run2 ()
+{
+        if (!refreshTimer.isExpired ()) { // Run this every 100ms or so.
+                return;
+        }
+
+        refreshTimer.start (REFRESH_TIMEOUT_MS);
+        Result1us now = stopWatch->getTime ();
+        Result1us lastIrChangeDuration = now - lastIrChangeTimePoint; // For how long the trigger is low? (without any change)
+        Result1us envelope = triggerHighPeriod + triggerLowPeriod;    // Period between State::idle and last State::xxxTriggerFalling
+        float dutyCycle = float (triggerHighPeriod) / float (envelope);
+
+        /*
+         * Detecting correct start/stop event for the FastStateMachine.
+         * Trigger signal is low -> IR signal is present no object is crossing the barrier.
+         */
+        if ((state == State::irTriggerLow || state == State::extTriggerLow) && // State is correct for barrier interrupted event to be genrated
+            lastIrChangeDuration >= msToResult1 (MIN_TRIGGER_LOW_STEADY_TIME_MS)) { // Trigger signal was low for certain time
+
+                /*
+                 * So trigger was low and steady for a certain amount of time
+                 * and if the following additional conditions are met, we have
+                 * a correct barrier interrupted event.
+                 */
+                if (envelope >= msToResult1 (MIN_TIME_BETWEEN_EVENTS_MS) && // Envelope no too short
+                    envelope < msToResult1 (DEFAULT_BLIND_TIME_MS) &&       // Envelope not too long
+                    dutyCycle >= MIN_DUTY_CYCLE &&                          // Duty cycle higher than ...
+                    blindTimeout.isExpired ()) {                            // Blind time has to be taken into account as well.
+
+                        // Pass the event to the FastStateMachine
+                        sendEvent (fStateMachine, {Event::Type::irTrigger, *triggerRisingEdgeTime});
+                        blindTimeout.start (getConfig ().getBlindTime ());
+                }
+        }
+
+        /*
+         * Detecting the noIr event. The state machine has to be reset to work
+         * properly afterwards.
+         */
+        else if (envelope >= msToResult1 (NO_IR_DETECTED_MS)) {
+                state = State::noBeam;
+        }
+        /*
+         * Detecting and reporting noise. The state machine has to be reset to work
+         * properly afterwards.
+         */
+        else if (true) {
+                state = State::noise;
+        }
+}
+
+/*
+dead lock ! - próbuje wypisać result.
+
+HAL_GetTick@0x0800e072 (/HAL_GetTick.cdasm:2)
+HAL_Delay@0x0800e094 (/HAL_Delay.cdasm:11)
+usbWrite@0x0801203c (/usbWrite.cdasm:67)
+printResult(unsigned long, ResultDisplayStyle)@0x08012dc2 (Unknown Source:0)
+FastStateMachine::run(Event)@0x080035a4 (Unknown Source:0)
+InfraRedBeamExti::run()@0x08003b86 (Unknown Source:0)
+SysTick_Handler@0x080027bc (/SysTick_Handler.cdasm:45)
+<signal handler called>@0xfffffff9 (Unknown Source:0)
+getBuzzer()@0x080057d2 (Unknown Source:0)
+main@0x08002cc2 (/main.cdasm:198)
+*/
+
+/**
+ * This is run from an IRQ which has lower priority than what InfraRedBeamExti::onExti is run from.
+ * There is no preemption possible (it can be postponed until exti finishes its work though).
  */
 void InfraRedBeamExti::run ()
 {
@@ -133,7 +317,8 @@ void InfraRedBeamExti::run ()
         // __enable_irq ();
 
         // EVENT detection. Looking for correct envelope
-        if (triggerRisingEdgeTimeSet && lastIrChangeDuration >= msToResult1 (MIN_TIME_BETWEEN_EVENTS_MS) && lastStateCopy == IrBeam::present) {
+        if (triggerRisingEdgeTimeSet && lastIrChangeDuration >= msToResult1 (MIN_TIME_BETWEEN_EVENTS_MS)
+            && lastStateCopy == IrBeam::triggerFalling) {
 
                 /*
                  * Numerous conditions has to be met to qualify noisy IR signal as a valid event:
@@ -204,7 +389,7 @@ void printDebug (IrBeam state, bool external)
 {
         // For testing
         if (external) {
-                if (state == IrBeam::absent) {
+                if (state == IrBeam::triggerRising) {
                         print ("0");
                 }
                 else {
@@ -212,7 +397,7 @@ void printDebug (IrBeam state, bool external)
                 }
         }
         else {
-                if (state == IrBeam::absent) {
+                if (state == IrBeam::triggerRising) {
                         print ("a");
                 }
                 else {

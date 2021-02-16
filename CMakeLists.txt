@@ -22,16 +22,16 @@ INCLUDE_DIRECTORIES ("${LIB_MICRO_ROOT}/src")
 # Regular receiver with all the features
 set(WITH_SOUND ON CACHE BOOL "Compile buzzer support")
 set(WITH_DISPLAY ON CACHE BOOL "Compile 7 segment LED display support")
-set(WITH_MENU ON CACHE BOOL "Menu support. Disabling it considerably reduces binary size in debug mode.")
+set(WITH_MENU OFF CACHE BOOL "Menu support. Disabling it considerably reduces binary size in debug mode.")
 set(WITH_COMMON_ANODE OFF CACHE BOOL "ON means common anode 7 segments, OFF means common cathode")
-set(WITH_USB ON CACHE BOOL "USB serial smulation support")
+set(WITH_USB OFF CACHE BOOL "USB serial smulation support")
 set(WITH_FLASH ON CACHE BOOL "Store settings and results to flash")
 set(WITH_HISTORY ON CACHE BOOL "Store settings and results to flash")
 set(WITH_CAN ON CACHE BOOL "Complie CAN bus support")
 set(WITH_TEST_TRIGGER_MOD_2 OFF CACHE BOOL "When ON test trigger is deaf every second time. This is for testing synchornisation between 2 receivers.")
 set(FLASH_QUEUE_SIZE 4 CACHE STRING "Results are stored into protected queue from an ISR. This is the size of this queue.")
 set(WITH_RTC ON CACHE BOOL "Complie RTC support")
-set(WITH_POWER_MANAGER ON CACHE BOOL "Complie power sensing support")
+set(WITH_POWER_MANAGER OFF CACHE BOOL "Complie power sensing support")
 set(WITH_CHECK_SENSOR_STATUS ON CACHE BOOL "If on, the device checks for external sensors and queries their state")
 set(WITH_BUTTON ON CACHE BOOL "Compile button support")
 ADD_DEFINITIONS (-DPLATFORM_REGULAR)
@@ -134,6 +134,7 @@ IF (DEFINED DEVICE)
         "src/Button.cc"
         "src/FastStateMachine.cc"
         "src/InfraRedBeamExti.cc"
+        "src/Detector.cc"
         "src/StopWatch.cc"
         "src/Config.cc"
         "src/Container.cc"
@@ -241,6 +242,11 @@ IF (DEFINED DEVICE)
     ADD_CUSTOM_TARGET(${CMAKE_PROJECT_NAME}.dfu ALL DEPENDS ${CMAKE_PROJECT_NAME}.elf COMMAND ${ELF2DFUSE} ${CMAKE_PROJECT_NAME}.elf ${CMAKE_PROJECT_NAME}.dfu)
 ELSE()
     INCLUDE_DIRECTORIES("src/test")
+    INCLUDE_DIRECTORIES("src")
+    INCLUDE_DIRECTORIES("deps/etl/include/")
+    INCLUDE_DIRECTORIES("deps/GSL/include/")
+    
+    # SET(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Werror=return-type -Wno-register" CACHE INTERNAL "cxx compiler flags")
 
     SET (CATCH2_INCLUDE "deps/Catch2/single_include/catch2")
     INCLUDE_DIRECTORIES("${CATCH2_INCLUDE}")
@@ -251,6 +257,10 @@ ELSE()
     ADD_EXECUTABLE(test
         "src/test/00CatchInit.cc"
         "src/test/02Itoa.cc"
+        "src/test/03EdgeDetectors.cc"
+        "src/Detector.cc"
     )
+
+    target_compile_features(test PRIVATE cxx_std_17)
 
 ENDIF ()

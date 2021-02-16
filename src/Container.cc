@@ -226,10 +226,10 @@ Button &getButton ()
 
 PowerManagement &getPowerManager ()
 {
-#ifdef WITH_POWER_MANAGER
+        // #ifdef WITH_POWER_MANAGER
         static PowerManagement power{getDisplay (), getFastStateMachine ()};
         return power;
-#endif
+        // #endif
 }
 
 /****************************************************************************/
@@ -249,6 +249,20 @@ DisplayMenu &getMenu ()
 }
 
 /****************************************************************************/
+
+EdgeFilter &getIrDetector ()
+{
+        static EdgeDetector triggerDetector{};
+        static EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State (getIrTriggerInput ().get ())};
+        return edgeFilter;
+}
+
+EdgeFilter &getExtDetector ()
+{
+        static EdgeDetector triggerDetector{};
+        static EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State (getExtTriggerInput ().get ())};
+        return edgeFilter;
+}
 
 namespace container {
 
@@ -327,22 +341,32 @@ void init ()
         getFastStateMachine ();
 
         /*+-------------------------------------------------------------------------+*/
-        /*| Light barier beam                                                       |*/
+        /*| Light barrier beam                                                       |*/
         /*+-------------------------------------------------------------------------+*/
 
-        getIrTriggerInput ().setOnToggle ([] { getBeam ().onExti (getBeam ().getPinState (), false); });
-        getExtTriggerInput ().setOnToggle (
-                [] { getBeam ().onExti ((getExtTriggerInput ().get ()) ? (IrBeam::absent) : (IrBeam::present), true); });
+        // getIrTriggerInput ().setOnToggle ([] { getBeam ().onExti (getBeam ().getPinState (), false); });
+        // getExtTriggerInput ().setOnToggle (
+        //         [] { getBeam ().onExti ((getExtTriggerInput ().get ()) ? (IrBeam::triggerRising) : (IrBeam::triggerFalling), true); });
 
-        getProtocol ().setBeam (&getBeam ());
-        getBeam ().setFastStateMachine (&getFastStateMachine ());
-        getBeam ().setStopWatch (&getStopWatch ());
+        // getProtocol ().setBeam (&getBeam ());
+        // getBeam ().setFastStateMachine (&getFastStateMachine ());
+        // getBeam ().setStopWatch (&getStopWatch ());
+
+        getIrDetector ();
+        getExtDetector ();
+        getIrTriggerInput ().setOnToggle ([] {
+                getIrDetector ().onEdge ({getStopWatch ().getTime (), EdgePolarity (getIrTriggerInput ().get ())});
+        });
+
+        // getExtTriggerInput ().setOnToggle ([] {
+        //         getExtDetector ().onEdge ({getStopWatch ().getTime (), EdgePolarity (getExtTriggerInput ().get ())});
+        // });
 
 #ifdef WITH_CAN
         static FastStateMachineProtocolCallback callback{getFastStateMachine ()};
         getProtocol ().setCallback (&callback);
 #endif
-        getFastStateMachine ().setIr (&getBeam ());
+        // getFastStateMachine ().setIr (&getBeam ());
         getFastStateMachine ().setDisplay (&getDisplay ());
 
 #ifdef WITH_SOUND

@@ -15,6 +15,10 @@
 #include "Timer.h"
 #include <cstdint>
 
+#ifdef WITH_POWER_MANAGER
+/**
+ *
+ */
 class PowerManagement {
 public:
         enum class Channels { ambient, battery, /* temperature, */ vref };
@@ -42,3 +46,17 @@ private:
         FastStateMachine &machine;
         Timer batteryTimer;
 };
+#else // WITH_POWER_MANAGER
+/**
+ *
+ */
+class PowerManagement {
+public:
+        PowerManagement (IDisplay &, FastStateMachine &) {}
+        void run () {}
+        void sleep () {}
+        unsigned int getBatteryVoltage () const { return 0; }
+        unsigned int getBatteryPercent () const { return 0; }
+        unsigned int getAmbientLight () const { return 0; }
+};
+#endif // WITH_POWER_MANAGER

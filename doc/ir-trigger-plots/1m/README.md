@@ -1,0 +1,1 @@
+As curious as it seems, but these plots are legit. The point is, the TX was pointed downwards instead of directly into the RX. 

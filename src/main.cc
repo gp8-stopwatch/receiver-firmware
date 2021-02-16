@@ -13,15 +13,6 @@ static void SystemClock_Config ();
 
 /*****************************************************************************/
 
-extern "C" void SysTick_Handler ()
-{
-        HAL_IncTick ();
-        getStopWatch ().run ();
-        getBeam ().run ();
-}
-
-/*****************************************************************************/
-
 int main ()
 {
         __HAL_RCC_SYSCFG_CLK_ENABLE ();
@@ -74,10 +65,14 @@ int main ()
                 getPowerManager ().run ();
 #endif
 
+                getStopWatch ().run ();
+                // getBeam ().run ();
+                getIrDetector ().run (getStopWatch ().getTime ());
+
                 usbcli::run ();
 
                 if (displayTimer.isExpired ()) {
-                        getFastStateMachine ().run (Event::Type::timePassed);
+                        // getFastStateMachine ().run (Event::Type::timePassed);
                         displayTimer.start (refreshRate);
                 }
 

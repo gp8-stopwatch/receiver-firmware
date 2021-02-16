@@ -1,0 +1,2 @@
+devices ~1.7m apart (room). LED lights. Waved a hand 10cm from the IR LED (relatively fast).
+The rest of pllots in the parent directory are taken with different setup, so these aren't exactly comparable.

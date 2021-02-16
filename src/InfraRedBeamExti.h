@@ -26,8 +26,12 @@ class Gpio;
 class InfraRedBeamExti : public IInfraRedBeam {
 public:
         static constexpr int MIN_TIME_BETWEEN_EVENTS_MS = 10;
+        static constexpr int MIN_TRIGGER_LOW_STEADY_TIME_MS = 10;
         static constexpr int NOISE_CLEAR_TIMEOUT_MS = 1000;
         static constexpr int NOISE_EVENTS_CRITICAL = 100;
+        static constexpr float MIN_DUTY_CYCLE = 0.5F;
+
+        enum class State { idle, irTriggerLow, irTriggerHigh, extTriggerLow, extTriggerHigh, noise, noBeam };
 
         /// Based on what was the state at the time of powering on.
         // explicit InfraRedBeamExti (IrBeam initialState) : lastState{initialState} {}
@@ -37,7 +41,9 @@ public:
         }
 
         void onExti (IrBeam state, bool external);
+        void onExti2 (IrBeam state, bool external);
         void run ();
+        void run2 ();
 
         /// Returns false if the beam was interrupted for more than 3s. True otherwise.
         IrBeam getBeamState () const override
@@ -51,7 +57,7 @@ public:
                         return lastState;
                 }
 
-                return IrBeam::present;
+                return IrBeam::triggerFalling;
         }
 
         /// This metod does not make sense when using EXTI (this method is for polling)
@@ -64,7 +70,7 @@ public:
         void setStopWatch (StopWatch *s) { this->stopWatch = s; }
 
         // IR pin level, converted to IrState. No logic.
-        IrBeam getPinState () const { return (irTriggerPin.get ()) ? (IrBeam::absent) : (IrBeam::present); }
+        IrBeam getPinState () const { return (irTriggerPin.get ()) ? (IrBeam::triggerRising) : (IrBeam::triggerFalling); }
 
 private:
         Timer beamPresentTimer;
@@ -82,8 +88,16 @@ private:
         std::optional<Result1us> triggerRisingEdgeTime{};
         Result1us triggerFallingEdgeTime{};
         Result1us lastIrChangeTimePoint{};
+
         Result1us irPresentPeriod{};
         Result1us irAbsentPeriod{};
+
+        Result1us triggerHighPeriod{};
+        Result1us triggerLowPeriod{};
+
+        // int dutyCycle{}; // Actual dutyCycle in percent.
+
+        State state{};
 
         int noiseEventCounter{};
         Gpio &irTriggerPin;
