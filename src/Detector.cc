@@ -18,13 +18,11 @@ Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
 
 /*****************************************************************************/
 
-void EdgeFilter::onEdge (Edge const &e)
+bool EdgeFilter::onEdge (Edge const &e)
 {
         // Adds the event to the queue, checks for trigger event
-        EdgeDetector::onEdge (e);
-
-        if (!queue.full ()) {
-                return;
+        if (!EdgeDetector::onEdge (e)) {
+                return false;
         }
 
         /*--------------------------------------------------------------------------*/
@@ -49,9 +47,10 @@ void EdgeFilter::onEdge (Edge const &e)
 
         /*--------------------------------------------------------------------------*/
 
-        if (hiDuration * 100 >= cycleTreshold) {
+        if (hiDuration * 100
+            >= cycleTreshold) { // Tu może nie złapać kiedy długo było low, a potem high przez 11ms. Duty będzie na low, a był event.
                 if (state == State::high) {
-                        return;
+                        return false;
                 }
 
                 state = State::high;
@@ -63,12 +62,12 @@ void EdgeFilter::onEdge (Edge const &e)
 
                 if (next != nullptr) {
                         // next->onEdge ({highStateStart, EdgePolarity::rising});
-                        next->onEdge (*firstRising);
+                        return next->onEdge (*firstRising);
                 }
         }
         else if (lowDuration * 100 >= cycleTreshold) {
                 if (state == State::low) {
-                        return;
+                        return false;
                 }
 
                 state = State::low;
@@ -80,9 +79,11 @@ void EdgeFilter::onEdge (Edge const &e)
 
                 if (next != nullptr) {
                         // next->onEdge ({lowStateStart, EdgePolarity::falling});
-                        next->onEdge (*firstFalling);
+                        return next->onEdge (*firstFalling);
                 }
         }
+
+        return true;
 }
 
 /****************************************************************************/
@@ -103,15 +104,21 @@ void EdgeFilter::run (Result1us const &now)
 
         if (now - back.timePoint >= msToResult1 (minTreggerEventMs)) {
                 __disable_irq ();
-                if (state == State::high) {
-                        // if (back.polarity == EdgePolarity::rising) {
-                        onEdge ({now, EdgePolarity::falling});
-                        onEdge ({now, EdgePolarity::rising});
-                }
-                else {
+
+                if (back.polarity == EdgePolarity::falling) {
                         onEdge ({now, EdgePolarity::rising});
                         onEdge ({now, EdgePolarity::falling});
                 }
+
+                // if (state == State::high) {
+                //         // if (back.polarity == EdgePolarity::rising) {
+                //         onEdge ({now, EdgePolarity::falling});
+                //         onEdge ({now, EdgePolarity::rising});
+                // }
+                // else {
+                //         onEdge ({now, EdgePolarity::rising});
+                //         onEdge ({now, EdgePolarity::falling});
+                // }
                 __enable_irq ();
         }
 

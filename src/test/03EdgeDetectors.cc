@@ -123,8 +123,13 @@ TEST_CASE ("First test", "[detector]")
                 edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
                 REQUIRE (events.empty ());
 
-                edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({30 * 1000 + 100, EdgePolarity::falling});
+                // Trzeba uwzględniać aktualną długość leveli zarówno w onEvent jaki w run. Jeżeli dłigość przekroczy min Event, to zmieniać
+                // automatycznie stan i ustawiać highStateStart i lowStateStaty
+
+                // edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
+                // edgeFilter.onEdge ({30 * 1000 + 100, EdgePolarity::falling});
+                edgeFilter.run (30 * 1000);
+
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::trigger);
                 REQUIRE (events.front ().timePoint == 10 * 1000);

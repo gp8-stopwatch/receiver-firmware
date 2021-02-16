@@ -49,7 +49,7 @@ struct IEdgeDetectorCallback {
  */
 class EdgeDetector {
 public:
-        virtual void onEdge (Edge const &e)
+        virtual bool onEdge (Edge const &e)
         {
                 /*
                  * This can happen when noise frequency is very high, and the µC can't keep up,
@@ -59,7 +59,7 @@ public:
                 if (!queue.empty () && queue.back ().polarity == e.polarity) {
                         // TODO This is critical situation. Rethink. Maybe report noise?
                         // queue.clear (); //?
-                        return;
+                        return false;
                         // report Noise ?
 
                         // TODO rethink what to do in this situation. Can this be read from some registers? That we actually missed?
@@ -70,15 +70,16 @@ public:
                 queue.push (e);
 
                 if (!queue.full ()) {
-                        return;
+                        return false;
                 }
 
                 if (isTriggerEvent ()) {
                         callback->report (DetectorEventType::trigger, queue[0].timePoint);
-                        return;
+                        return false;
                 }
 
                 // This is always at the end of the chain, so no next->onEdge
+                return true;
         }
 
         virtual void run (Result1us const &now) {}
@@ -108,7 +109,7 @@ public:
         EdgeFilter (EdgeDetector *next, State initialState) : next{next}, state{initialState} {}
 
         /// IRQ context
-        void onEdge (Edge const &e) override;
+        bool onEdge (Edge const &e) override;
         /// "main" context. As frequently as possible.
         void run (Result1us const &now) override;
 
