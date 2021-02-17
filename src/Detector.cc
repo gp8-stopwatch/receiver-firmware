@@ -190,7 +190,16 @@ void EdgeFilter::run (Result1us const &now)
                 noiseCounter = 0;
                 __enable_irq ();
 
-                noiseLevel = 0xf * currentNoiseCounter * MIN_NOISE_SPIKE_1US / msToResult1us (NOISE_CALCULATION_PERIOD_MS);
+                if (currentNoiseCounter > 0) {
+                        noiseLevel = std::min<uint8_t> ((MAX_NOISE_LEVEL - 1) * currentNoiseCounter * MIN_NOISE_SPIKE_1US
+                                                                / msToResult1us (NOISE_CALCULATION_PERIOD_MS),
+                                                        (MAX_NOISE_LEVEL - 1))
+                                + 1;
+                }
+                else {
+                        // 0 is a special case where there is absolutely no noise. Levels 1-15 are proportional.
+                        noiseLevel = 0;
+                }
 
                 if (noiseState == NoiseState::noNoise && currentNoiseCounter >= noiseEventsPerTimeUnit_high) {
                         noiseState = NoiseState::noise;

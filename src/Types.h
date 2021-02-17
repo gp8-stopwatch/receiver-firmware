@@ -89,6 +89,7 @@ static constexpr int NO_IR_DETECTED_MS = 5000;
 static constexpr int LOOP_DISPLAY_TIMEOUT = DEFAULT_BLIND_TIME_MS - 1000;
 static constexpr uint16_t DEFAULT_NOISE_EVENTS_PER_TIME_UNIT_HIGH = 10;
 static constexpr uint16_t DEFAULT_NOISE_EVENTS_PER_TIME_UNIT_LOW = 2;
+static constexpr uint8_t MAX_NOISE_LEVEL = 15;
 
 #ifndef UNIT_TEST
 const etl::function_fv<__disable_irq> lock{};

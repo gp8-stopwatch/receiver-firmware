@@ -692,6 +692,34 @@ TEST_CASE ("Noise level", "[detector]")
 
         {
                 /*
+                 *        +-----+
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 * -------+     +-------+
+                 * 0    10ms   10ms+100µs  1s
+                 */
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                edgeFilter.run (10 * 1000);
+                REQUIRE (events.empty ());
+
+                edgeFilter.onEdge ({10100, EdgePolarity::falling});
+                edgeFilter.run (10100);
+                REQUIRE (events.empty ());
+
+                edgeFilter.run (1000'000);
+
+                REQUIRE (edgeFilter.getNoiseLevel () == 1);
+        }
+
+        {
+                /*
                  *   + + + + + + +
                  *   | | | | | | |
                  *   | | | | | | |
@@ -709,17 +737,15 @@ TEST_CASE ("Noise level", "[detector]")
                         Result1us timePoint = i * 20000; // Every 20ms
                         edgeFilter.onEdge ({timePoint, EdgePolarity::rising});
                         edgeFilter.onEdge ({timePoint + 1000, EdgePolarity::falling});
-                        edgeFilter.run (timePoint + 2000);
-                        edgeFilter.run (timePoint + 5000);
-                        edgeFilter.run (timePoint + 19000);
                 }
 
-                REQUIRE (edgeFilter.getNoiseLevel () == 0);
+                edgeFilter.run (1000'000);
+                REQUIRE (edgeFilter.getNoiseLevel () == 1);
         }
 
         {
                 /*
-                 * Maximum noise - edge case
+                 * Maximum noise - edge case - noise level not exceeding maximum
                  */
                 TestDetectorCallback tc;
                 EdgeFilter edgeFilter{EdgeFilter::State::low};
@@ -731,6 +757,28 @@ TEST_CASE ("Noise level", "[detector]")
                         edgeFilter.onEdge ({timePoint, EdgePolarity::rising});
                         edgeFilter.onEdge ({timePoint + EdgeFilter::MIN_NOISE_SPIKE_1US, EdgePolarity::falling});
                         edgeFilter.run (timePoint + EdgeFilter::MIN_NOISE_SPIKE_1US);
+                }
+
+                REQUIRE (edgeFilter.getNoiseLevel () == 15);
+        }
+
+        {
+                /*
+                 * Maximum noise - noise 2 times more intense than max measurable (shorter spikes
+                 * and more of them).
+                 */
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                auto noiseSpikeLen = EdgeFilter::MIN_NOISE_SPIKE_1US / 2;
+
+                for (int i = 0; i < msToResult1us (EdgeFilter::NOISE_CALCULATION_PERIOD_MS) / noiseSpikeLen + 10; ++i) {
+                        Result1us timePoint = i * noiseSpikeLen * 2; // Every 20ms
+                        edgeFilter.onEdge ({timePoint, EdgePolarity::rising});
+                        edgeFilter.onEdge ({timePoint + noiseSpikeLen, EdgePolarity::falling});
+                        edgeFilter.run (timePoint + noiseSpikeLen);
                 }
 
                 REQUIRE (edgeFilter.getNoiseLevel () == 15);
