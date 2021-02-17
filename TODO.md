@@ -11,7 +11,7 @@
   * [x] Test it somehow (it's tiny, and I don't have a footprint on PCB)
 * [x] There has to be a bug in the trigger algorithm. When the resolution was set to 10ms there have been off by 10ms errors on 4s runs (1 in 20 aprox). But when the resolution was set to 100µs, the error fluctuates between 300 and 600µs (-O0). When -O3 and 100µs resolution, the error is smaller like 200-400µs but it also fluctuates. 10ms = 10000µs. Divided by 20 gives 500µs, so it is almost like in the first scenario the errors accumulated somehow. 
 
-* [x] Timer TIM1 should be restarted (counting from 0) when the start event happens. EDIT: no. 2 participants had to use 2 timers then. 
+* [x] Timer TIM1 should be restarted (counting from 0) when the start event happens. EDIT: no. 2 participants implementation would have to use 2 timers then. 
   * [x] test
 * [x] Value of the counter should be taken into account when system stops. It's value should be rounded, not discarded like now.
   * [x] test
@@ -37,7 +37,7 @@
   * [x] getFlip, setFlip - does not store values. Does the config work at all?
   * [ ] All the commands should be tested when 2 or more receivers are connected.
 * [x] factory reset does not work
-* [ ] Screen is flickering a little when there is nothing connected to the CAN. This is because the external trigger have higher priority than the screen.
+* [ ] Screen is flickering a little when there is nothing connected to the CAN. This is because the external trigger have higher priority than the screen, and is picking up the CAN signals via cross talk. Those (very fast) edges fire up the ISR very frequently 
 * [x] I can see 50Hz on the LVDS outputs (R pin connected to the MCU). However there are pretty long danggling wires connected to this port. Maybe pull low? Pulling low helped.
 * [ ] Does noise detection even work? Why it is not reporting an noise-error when the cable is dangling (spurious pulses can be seen using the analyser).
 * [x] Increase Result type from uint32_t to 64. Store 1µs resolution. Improvement is hard to observe, but something changed for sure. See attached images at the bottom of this paragraph. Compared are two lists of results where two devices were configured like in test A3, but with signal gen instead of IR.
@@ -48,6 +48,26 @@
 
 1µs resolution:
 ![1µs resolution](doc/result-1us-substractions_2021-02-04_23-38-01.png)
+
+* [ ] Trigger. 
+  * [ ] Signal strength reduction (/2) switch in the TX. For indoor use.
+  * [ ] Minimum event length should be configurable (now 10ms)
+  * [x] Trigger low steady time should be the same as the minimum event length.
+  * [ ] Command for noise level reporintg.
+  * [ ] maybe duty cycle condition should depend on noise level?
+  * 2 types of disturbance in the signal : 
+    * Too intense IR + reflections (meaning it is hard to interrupt it) -> chopped during the event, clean otherwise. 
+    * Too weak IR -> haven't checked. 
+    * Exteral DC light -> both high and low states are littered with noise.
+  * [ ] Polish the trigger class (Detector)
+  * [ ] Check on the oscilloscope - I've seen curious state changes, and I don't know if they're OK.
+  * [x] Check how fast is the onEdge ISR without the screen running. EDIT : no noticeable change.
+  * [ ] Optimise onEdge
+    * [ ] Profile on a PC
+    * [ ] Depending on profiling data change circular buffer implementatiion?
+    * [ ] std::function in Gpio EXTI ISR - remove!
+  * [ ] Noise level live display on the main screen - this would aid aiming / setting up the RX/TX pair (but what when 1 or more micro-RX connected?).
+  * [ ] When cannot keep up with the ISR, turn it off for a period. There's no sense.
 
 # Hardware
 * [x] Boot pin easy accessible (for DFU).
@@ -87,16 +107,6 @@
   * [x] Emi - I can see lots of noise in the CAN bus, and test-trigger can be easily fired by transients.
   * [x] The same goes to IR signal - I can see 20MHz / 60kHz - maybe screen is te cullprit. EDIT - with screen truned off I can see the same noise. **It was caused by faulty power supply of my LED lamps**
   * [x] Connect test trigger to the IR output pin, and make a solder jumper. 
-* [ ] Trigger. 
-  * [ ] "Reductor" in the TX. For indoor use.
-  * [ ] Minimum event length should be configurable (now 10ms)
-  * [ ] Trigger low steady time should be the same as the minimum event length.
-  * [ ] Command for noise level reporintg.
-  * [ ] maybe duty cycle condition should depend on noise level?
-  * 2 types of disturbance in the signal : 
-    * Too intense IR + reflections (meaning it is hard to interrupt it) -> chopped during the event, clean otherwise. 
-    * Too weak IR -> haven't checked. 
-    * Exteral DC light -> both high and low states are littered with noise.
 
 
 ## Huge display

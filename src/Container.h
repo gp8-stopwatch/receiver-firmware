@@ -50,7 +50,7 @@ namespace container {
 extern void init ();
 } // namespace container
 
-extern Led7SegmentDisplay &getDisplay ();
+extern IDisplay &getDisplay ();
 extern cfg::Config &getConfig ();
 extern void readConfigFromFlash ();
 

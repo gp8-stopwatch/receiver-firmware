@@ -15,12 +15,16 @@
 
 // TODO refactor (config?)
 const uint16_t minTreggerEventMs = 10;
-// TODO rational  arithmetic ?.
+// TODO config
 const uint8_t dutyTresholdPercent = 50;
+// TODO config
+const uint16_t noiseEventsPerTimeUnit_high = 10;
+// TODO config
+const uint16_t noiseEventsPerTimeUnit_low = 2;
 
 /*****************************************************************************/
 
-enum class EdgePolarity { rising, falling };
+enum class EdgePolarity { falling = 0, rising = 1 };
 
 /**
  * Signal edge with polarity and time of occurence.
@@ -35,7 +39,7 @@ struct Edge {
  */
 using EdgeQueue = etl::circular_buffer<Edge, 3>;
 
-enum class DetectorEventType { trigger, noise, noBeam };
+enum class DetectorEventType { trigger, noise, noNoise, noBeam, beamRestored };
 
 /**
  *
@@ -104,7 +108,7 @@ struct IEdgeDetectorCallback {
 
 class EdgeFilter /* : public EdgeDetector */ {
 public:
-        enum State { high, low };
+        enum State { low = 0, high = 1 };
 
         EdgeFilter (/* EdgeDetector *next, */ State initialState) : /* next{next}, */ state{initialState}
         {
@@ -132,6 +136,8 @@ private:
         Result1us const &getLastStateChange () const { return std::max (highStateStart, lowStateStart); };
 
         /*--------------------------------------------------------------------------*/
+        /* Trigger calculations                                                     */
+        /*--------------------------------------------------------------------------*/
 
         EdgeQueue queue;
         IEdgeDetectorCallback *callback{};
@@ -139,4 +145,21 @@ private:
         State state;
         Result1us highStateStart{};
         Result1us lowStateStart{};
+
+        /*--------------------------------------------------------------------------*/
+        /* Noise calculations                                                       */
+        /*--------------------------------------------------------------------------*/
+        enum class NoiseState { noNoise, noise };
+        NoiseState noiseState{};
+        static constexpr unsigned int NOISE_CALCULATION_PERIOD_MS = 1000;
+        int noiseCounter{};
+        Result1us lastNoiseCalculation{};
+
+        /*--------------------------------------------------------------------------*/
+        /* NoBeam calculations                                                      */
+        /*--------------------------------------------------------------------------*/
+        enum class BeamState { present, absent };
+        BeamState beamState{};
+        // int noiseCounter{};
+        Result1us lastBeamStateCalculation{};
 };

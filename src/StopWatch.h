@@ -28,14 +28,13 @@ public:
          * - If it's present, there is a chance that some EXTI IRQ will be postponed.
          * - If it's not present, there is a chance that tis method would be preempted,
          * and variables corrupted. But this will only happen in the main thread, while
-         * in the EXTI IRQ this method won't get preempted, as EXTI has the highest priority.
+         * in the EXTI ISSR this method won't get preempted, as EXTI has the highest priority.
          */
-        Result1us getTime () const
+        Result1us getTimeFromIsr () const
         {
-                // __disable_irq ();
-
                 // This value is 32 bit, so this is why I introducet epochs.
                 Result1us now = TIM2->CNT * 10LL + TIM3->CNT;
+                // return now;
 
                 // When TIM2 overflows, I increase the epoch and thus I have 64 bit value.
                 if (now < last) {
@@ -44,8 +43,15 @@ public:
 
                 last = now;
                 auto ret = now + timerEpoch * (Result1us (std::numeric_limits<uint32_t>::max ()) + 1) * 10LL;
-                // __enable_irq ();
                 return ret;
+        }
+
+        Result1us getTime () const
+        {
+                __disable_irq ();
+                auto res = getTimeFromIsr ();
+                __enable_irq ();
+                return res;
         }
 
         void run ()

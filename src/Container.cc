@@ -18,7 +18,7 @@ bool showGreeting{};
 
 /****************************************************************************/
 
-Led7SegmentDisplay &getDisplay ()
+IDisplay &getDisplay ()
 {
 #ifdef WITH_DISPLAY
         static Gpio d1 (GPIOB, GPIO_PIN_11);
@@ -45,16 +45,16 @@ Led7SegmentDisplay &getDisplay ()
 
         while (true) {
         }
-#endif
+#endif // 0
 
 #ifdef PLATFORM_HUGE
         // TODO remove this when new PCBs for huge diplay are ordered
         static Led7SegmentDisplay display (sa, sb, sc, sd, se, sf, sg, sdp, d3, d2, d1, d4, d5, d6);
 #else
         static Led7SegmentDisplay display (sa, sb, sc, sd, se, sf, sg, sdp, d1, d2, d3, d4, d5, d6);
-#endif
+#endif // PLATFORM_HUGE
 
-#else
+#else // WITH_DISPLAY
         static FakeDisplay display;
 #endif
 
@@ -249,18 +249,27 @@ DisplayMenu &getMenu ()
 }
 
 /****************************************************************************/
+struct TestDetectorCallback : public IEdgeDetectorCallback {
+        void report (DetectorEventType type, Result1us timePoint) override
+        { /* events.push_back ({type, timePoint}); */
+        }
+};
 
 EdgeFilter &getIrDetector ()
 {
-        static EdgeDetector triggerDetector{};
-        static EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State (getIrTriggerInput ().get ())};
+        // static EdgeDetector triggerDetector{};
+        static TestDetectorCallback tc;
+        static EdgeFilter edgeFilter{/* &triggerDetector, */ EdgeFilter::State (getIrTriggerInput ().get ())};
+        edgeFilter.setCallback (&tc);
         return edgeFilter;
 }
 
 EdgeFilter &getExtDetector ()
 {
-        static EdgeDetector triggerDetector{};
-        static EdgeFilter edgeFilter{&triggerDetector, EdgeFilter::State (getExtTriggerInput ().get ())};
+        // static EdgeDetector triggerDetector{};
+        static TestDetectorCallback tc;
+        static EdgeFilter edgeFilter{/* &triggerDetector,  */ EdgeFilter::State (getExtTriggerInput ().get ())};
+        edgeFilter.setCallback (&tc);
         return edgeFilter;
 }
 
@@ -278,10 +287,12 @@ void init ()
         /*| Screen                                                                  |*/
         /*+-------------------------------------------------------------------------+*/
 
+#ifdef WITH_DISPLAY
         static HardwareTimer tim15 (TIM15, 48 - 1, 200 - 1); // Update 5kHz
         HAL_NVIC_SetPriority (TIM15_IRQn, DISPLAY_TIMER_PRIORITY, 0);
         HAL_NVIC_EnableIRQ (TIM15_IRQn);
         tim15.setOnUpdate ([] { getDisplay ().refresh (); });
+#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| Config                                                                  |*/
@@ -355,7 +366,7 @@ void init ()
         getIrDetector ();
         getExtDetector ();
         getIrTriggerInput ().setOnToggle ([] {
-                getIrDetector ().onEdge ({getStopWatch ().getTime (), EdgePolarity (getIrTriggerInput ().get ())});
+                getIrDetector ().onEdge ({getStopWatch ().getTimeFromIsr (), EdgePolarity (getIrTriggerInput ().get ())});
         });
 
         // getExtTriggerInput ().setOnToggle ([] {

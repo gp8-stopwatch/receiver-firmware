@@ -79,4 +79,6 @@ StopWatch::StopWatch ()
 
         // This is for testing TIM3 overflow, which occurs every 11 hours.
         // TIM2->CNT = std::numeric_limits<uint32_t>::max () - 10 * 100000;
+        TIM3->CNT = 0;
+        TIM2->CNT = 0;
 }

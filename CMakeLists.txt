@@ -21,7 +21,7 @@ INCLUDE_DIRECTORIES ("${LIB_MICRO_ROOT}/src")
 
 # Regular receiver with all the features
 set(WITH_SOUND ON CACHE BOOL "Compile buzzer support")
-set(WITH_DISPLAY ON CACHE BOOL "Compile 7 segment LED display support")
+set(WITH_DISPLAY OFF CACHE BOOL "Compile 7 segment LED display support")
 set(WITH_MENU OFF CACHE BOOL "Menu support. Disabling it considerably reduces binary size in debug mode.")
 set(WITH_COMMON_ANODE OFF CACHE BOOL "ON means common anode 7 segments, OFF means common cathode")
 set(WITH_USB OFF CACHE BOOL "USB serial smulation support")

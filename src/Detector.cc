@@ -11,6 +11,7 @@
 #ifndef UNIT_TEST
 #include "Gpio.h"
 Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
+#include "Container.h"
 #else
 #define __disable_irq(x) x
 #define __enable_irq(x) x
@@ -18,21 +19,22 @@ Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
 
 /*****************************************************************************/
 
-// TOOD change bool to void
 void EdgeFilter::onEdge (Edge const &e)
 {
         /*
          * This can happen when noise frequency is very high, and the µC can't keep up,
          * and its misses an EXTI event. This way we can end up with two consecutive edges
          * with the same polarity.
+         * When compiled with -O0 the fastest it can keep up with is 3.33kHz with 1/3 duty (300µs period 100µs spikes)
+         * When compiled with -O3 the fastest is 10kHz with 50% duty cycle, so IRQ called every 50µs
          */
         if (!queue.empty () && queue.back ().polarity == e.polarity) {
-                // Reset queue so it's still full, but pulses are 0 width.
-                queue.push (e);
-                queue.push ({e.timePoint, (e.polarity == EdgePolarity::rising) ? (EdgePolarity::falling) : (EdgePolarity::rising)});
+                // Reset queue so it's still full, but pulses are 0 width. This will automatically increase noiseCounter by 2
+                // queue.push (e);
+                // queue.push ({e.timePoint, (e.polarity == EdgePolarity::rising) ? (EdgePolarity::falling) : (EdgePolarity::rising)});
 
-                // TODO Increase noise counter
-                // TODO When noise counter is high, tirn of the EXTI, so the rest of the code has a chance to run.
+                while (true) {
+                }
         }
 
         queue.push (e);
@@ -58,12 +60,24 @@ void EdgeFilter::onEdge (Edge const &e)
         if (firstRising->polarity != EdgePolarity::rising) {
                 std::swap (firstRising, firstFalling);
                 std::swap (hiDuration, lowDuration);
+                // Take only recent level. If last level was high, check if its duration was long enough.
                 longHighEdge = hiDuration >= msToResult1 (minTreggerEventMs);
+
+                if (!longHighEdge) { // False means that a level was shorter than the trigger event.
+                        ++noiseCounter;
+                }
         }
         else {
+                // Take only recent level. If last level was low, check if its duration was long enough.
                 longLowEdge = lowDuration >= msToResult1 (minTreggerEventMs);
+
+                if (!longLowEdge) { // False means that a level was shorter than the trigger event.
+                        ++noiseCounter;
+                }
         }
 
+        /*--------------------------------------------------------------------------*/
+        /* State transitions depending on dutyCycle and recent level length.        */
         /*--------------------------------------------------------------------------*/
 
         // Tu może nie złapać kiedy długo było low, a potem high przez 11ms. Duty będzie na low, a był event.
@@ -71,6 +85,9 @@ void EdgeFilter::onEdge (Edge const &e)
             longHighEdge) {                     // Or the high level was long itself
                 if (state != State::high) {
                         state = State::high;
+#ifndef UNIT_TEST
+                        senseOn.set (true);
+#endif
                         highStateStart = firstRising->timePoint;
                 }
         }
@@ -78,9 +95,16 @@ void EdgeFilter::onEdge (Edge const &e)
                  longLowEdge) {                        // Or the low level was long enogh itself
                 if (state != State::low) {
                         state = State::low;
+#ifndef UNIT_TEST
+                        senseOn.set (false);
+#endif
                         lowStateStart = firstFalling->timePoint;
                 }
         }
+
+        /*--------------------------------------------------------------------------*/
+        /* Check trigger event conditions.                                          */
+        /*--------------------------------------------------------------------------*/
 
         if (highStateStart < lowStateStart) {
                 bool longHighState = (lowStateStart - highStateStart) >= msToResult1 (minTreggerEventMs);
@@ -97,41 +121,68 @@ void EdgeFilter::onEdge (Edge const &e)
 
 void EdgeFilter::run (Result1us const &now)
 {
-        // TODO critical section
+
+        __disable_irq ();
         if (queue.empty ()) {
                 return;
         }
 
-        // TODO critical section
         auto &back = queue.back ();
-
-        // if (now - getLastStateChange () /* lastStateChange */ >= msToResult1 (minTreggerEventMs)) {
-        // if (state == State::high && queue.back().polarity == EdgePolarity::falling &&  now - getLastStateChange () /* lastStateChange */ >=
-        // msToResult1 (minTreggerEventMs)) {
+        __enable_irq ();
 
         // If there's no noise at all, and the line stays silent, we force the check every minTreggerEventMs
-        if (now - back.timePoint >= msToResult1 (minTreggerEventMs)) {
-                __disable_irq ();
+        //         if (now - back.timePoint >= msToResult1 (minTreggerEventMs) && back.polarity == EdgePolarity::falling) {
+        //                 __disable_irq ();
 
-                if (back.polarity == EdgePolarity::falling) {
-                        onEdge ({now, EdgePolarity::rising});
-                        onEdge ({now, EdgePolarity::falling});
+        // #ifndef UNIT_TEST
+        //                 auto n = getStopWatch ().getTime ();
+        //                 onEdge ({n, EdgePolarity::rising});
+        //                 onEdge ({n, EdgePolarity::falling});
+        // #else
+        //                 onEdge ({now, EdgePolarity::rising});
+        //                 onEdge ({now, EdgePolarity::falling});
+        // #endif
+
+        //                 // The above 2 calls increases noise counter by 1. So I compensate for that.
+        //                 --noiseCounter;
+
+        //                 if (noiseCounter < 0) { // To be sure.
+        //                         noiseCounter = 0;
+        //                 }
+        //                 __enable_irq ();
+        //         }
+
+        // Noise detection + hysteresis
+        if (now - lastNoiseCalculation >= msToResult1 (NOISE_CALCULATION_PERIOD_MS)) {
+
+                if (noiseState == NoiseState::noNoise && noiseCounter >= noiseEventsPerTimeUnit_high) {
+                        noiseState = NoiseState::noise;
+                        // TODO When noise counter is high, turn of the EXTI, so the rest of the code has a chance to run. Then enable it after
+                        // 1s
+                        callback->report (DetectorEventType::noise, now);
+                }
+                else if (noiseState == NoiseState::noise && noiseCounter < noiseEventsPerTimeUnit_low) {
+                        noiseState = NoiseState::noNoise;
+                        callback->report (DetectorEventType::noNoise, now);
                 }
 
-                // if (state == State::high) {
-                //         // if (back.polarity == EdgePolarity::rising) {
-                //         onEdge ({now, EdgePolarity::falling});
-                //         onEdge ({now, EdgePolarity::rising});
-                // }
-                // else {
-                //         onEdge ({now, EdgePolarity::rising});
-                //         onEdge ({now, EdgePolarity::falling});
-                // }
-                __enable_irq ();
+                lastNoiseCalculation = now;
+                noiseCounter = 0;
         }
 
-        // if (highStateStart < lowStateStart && lowStateStart - highStateStart >= msToResult1 (minTreggerEventMs)
-        //     && now - lowStateStart >= msToResult1 (minTreggerEventMs)) {
-        //         callback->report (DetectorEventType::trigger, queue[0].timePoint);
+        // No beam detection + hysteresis
+        // if (now - lastBeamStateCalculation >= msToResult1 (minTreggerEventMs * 10)) {
+
+        //         if (beamState == BeamState::present &&) {
+        //                 beamState = BeamState::absent;
+        //                 callback->report (DetectorEventType::noBeam, now);
+        //         }
+        //         else if (beamState == BeamState::absent &&) {
+        //                 beamState = BeamState::present;
+        //                 callback->report (DetectorEventType::beamRestored, now);
+        //         }
+
+        //         lastBeamStateCalculation = now;
+        //         noiseCounter = 0;
         // }
 }
