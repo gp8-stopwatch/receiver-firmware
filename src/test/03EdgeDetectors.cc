@@ -163,13 +163,14 @@ TEST_CASE ("Edge cases", "[detector]")
         {
 
                 /*
+                 *           15ms (100µs)
                  *        +--+---+    +
                  *        |  |   |    |
                  *        |  |   |    |
                  *        |  |   |    |
                  *        |  |   |    |
-                 * -------+  +   +----+--+
-                 * 0    10ms   20ms     30ms
+                 * -------+  +   +----+------+
+                 * 0    10ms   20ms  25(100) 30ms
                  */
                 TestDetectorCallback tc;
                 EdgeFilter edgeFilter{EdgeFilter::State::low};
@@ -220,18 +221,18 @@ TEST_CASE ("Slightly less", "[detector]")
                  *        |     |
                  *        |     |
                  * -------+     +-------+
-                 * 0    9999µ  2*9999µ 30ms
+                 * 0    10000  19999µ 30ms
                  */
                 TestDetectorCallback tc;
                 EdgeFilter edgeFilter{EdgeFilter::State::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
-                edgeFilter.onEdge ({9999, EdgePolarity::rising});
+                edgeFilter.onEdge ({10000, EdgePolarity::rising});
                 REQUIRE (events.empty ());
 
                 // This high level is 1µs too short.
-                edgeFilter.onEdge ({9999 * 2, EdgePolarity::falling});
+                edgeFilter.onEdge ({19999, EdgePolarity::falling});
                 REQUIRE (events.empty ());
 
                 // edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});

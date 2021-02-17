@@ -113,6 +113,7 @@ void EdgeFilter::onEdge (Edge const &e)
                 if (longHighState && longLowState) {
                         callback->report (DetectorEventType::trigger, highStateStart);
                         highStateStart = lowStateStart; // To prevent reporting twice
+                        // longHighState = false;
                 }
         }
 }
@@ -121,6 +122,21 @@ void EdgeFilter::onEdge (Edge const &e)
 
 void EdgeFilter::run (Result1us const &now)
 {
+
+        //         __disable_irq ();
+        // #ifndef UNIT_TEST
+        //         auto n = getStopWatch ().getTimeFromIsr ();
+        //         bool longLowState = (n - lowStateStart) >= msToResult1 (minTreggerEventMs);
+        // #else
+        //         bool longLowState = (now - lowStateStart) >= msToResult1 (minTreggerEventMs);
+        // #endif
+
+        //         if (longHighState && longLowState) {
+        //                 callback->report (DetectorEventType::trigger, highStateStart);
+        //                 highStateStart = lowStateStart; // To prevent reporting twice
+        //                 longHighState = false;
+        //         }
+        //         __enable_irq ();
 
         __disable_irq ();
         if (queue.empty ()) {
@@ -131,11 +147,44 @@ void EdgeFilter::run (Result1us const &now)
         __enable_irq ();
 
         // If there's no noise at all, and the line stays silent, we force the check every minTreggerEventMs
-        //         if (now - back.timePoint >= msToResult1 (minTreggerEventMs) && back.polarity == EdgePolarity::falling) {
-        //                 __disable_irq ();
+        if (now - back.timePoint >= msToResult1 (minTreggerEventMs) && back.polarity == EdgePolarity::falling) {
+                __disable_irq ();
 
+                bool longHighState{};
+                bool longLowState{};
+
+                /*
+                 * This is case when we aer still in high state, because no PWM was calculated.
+                 * My previous impl. was inserting fake noise spikes to recalcutale the PWM and
+                 * thus state.
+                 */
+
+                if (state == State::high && back.timePoint > highStateStart) {
+                        longHighState = (back.timePoint - highStateStart) >= msToResult1 (minTreggerEventMs);
+                        longLowState = (now - back.timePoint) >= msToResult1 (minTreggerEventMs);
+                }
+
+                /*
+                 * And this condition is the same as in onEvent's case
+                 */
+                if (state == State::low && highStateStart < lowStateStart) {
+                        longHighState = (lowStateStart - highStateStart) >= msToResult1 (minTreggerEventMs);
+                        longLowState = (now - lowStateStart) >= msToResult1 (minTreggerEventMs);
+                }
+
+                if (longHighState && longLowState) {
+                        callback->report (DetectorEventType::trigger, highStateStart);
+                        highStateStart = lowStateStart; // To prevent reporting twice
+                        // longHighState = false;
+                }
+                __enable_irq ();
+        }
+
+        // longHighState = false;
+
+        //                 __disable_irq ();
         // #ifndef UNIT_TEST
-        //                 auto n = getStopWatch ().getTime ();
+        //                 auto n = getStopWatch ().getTimeFromIsr ();
         //                 onEdge ({n, EdgePolarity::rising});
         //                 onEdge ({n, EdgePolarity::falling});
         // #else
@@ -150,15 +199,14 @@ void EdgeFilter::run (Result1us const &now)
         //                         noiseCounter = 0;
         //                 }
         //                 __enable_irq ();
-        //         }
 
         // Noise detection + hysteresis
         if (now - lastNoiseCalculation >= msToResult1 (NOISE_CALCULATION_PERIOD_MS)) {
 
                 if (noiseState == NoiseState::noNoise && noiseCounter >= noiseEventsPerTimeUnit_high) {
                         noiseState = NoiseState::noise;
-                        // TODO When noise counter is high, turn of the EXTI, so the rest of the code has a chance to run. Then enable it after
-                        // 1s
+                        // TODO When noise counter is high, turn of the EXTI, so the rest of the code has a chance to run. Then enable it
+                        // after 1s
                         callback->report (DetectorEventType::noise, now);
                 }
                 else if (noiseState == NoiseState::noise && noiseCounter < noiseEventsPerTimeUnit_low) {

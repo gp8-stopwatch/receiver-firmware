@@ -145,6 +145,7 @@ private:
         State state;
         Result1us highStateStart{};
         Result1us lowStateStart{};
+        // bool longHighState{};
 
         /*--------------------------------------------------------------------------*/
         /* Noise calculations                                                       */
