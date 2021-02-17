@@ -113,7 +113,6 @@ void EdgeFilter::onEdge (Edge const &e)
                 if (longHighState && longLowState) {
                         callback->report (DetectorEventType::trigger, highStateStart);
                         highStateStart = lowStateStart; // To prevent reporting twice
-                        // longHighState = false;
                 }
         }
 }
@@ -122,33 +121,23 @@ void EdgeFilter::onEdge (Edge const &e)
 
 void EdgeFilter::run (Result1us const &now)
 {
-
-        //         __disable_irq ();
-        // #ifndef UNIT_TEST
-        //         auto n = getStopWatch ().getTimeFromIsr ();
-        //         bool longLowState = (n - lowStateStart) >= msToResult1 (minTreggerEventMs);
-        // #else
-        //         bool longLowState = (now - lowStateStart) >= msToResult1 (minTreggerEventMs);
-        // #endif
-
-        //         if (longHighState && longLowState) {
-        //                 callback->report (DetectorEventType::trigger, highStateStart);
-        //                 highStateStart = lowStateStart; // To prevent reporting twice
-        //                 longHighState = false;
-        //         }
-        //         __enable_irq ();
-
         __disable_irq ();
         if (queue.empty ()) {
                 return;
         }
 
-        auto &back = queue.back ();
+        auto back = queue.back ();
+        auto currentState = state;
+        auto currentHighStateStart = highStateStart;
+        auto currentLowStateStart = lowStateStart;
         __enable_irq ();
+
+        /*--------------------------------------------------------------------------*/
+        /* Steady state prevention                                                  */
+        /*--------------------------------------------------------------------------*/
 
         // If there's no noise at all, and the line stays silent, we force the check every minTreggerEventMs
         if (now - back.timePoint >= msToResult1 (minTreggerEventMs) && back.polarity == EdgePolarity::falling) {
-                __disable_irq ();
 
                 bool longHighState{};
                 bool longLowState{};
@@ -159,48 +148,30 @@ void EdgeFilter::run (Result1us const &now)
                  * thus state.
                  */
 
-                if (state == State::high && back.timePoint > highStateStart) {
-                        longHighState = (back.timePoint - highStateStart) >= msToResult1 (minTreggerEventMs);
+                if (currentState == State::high && back.timePoint > currentHighStateStart) {
+                        longHighState = (back.timePoint - currentHighStateStart) >= msToResult1 (minTreggerEventMs);
                         longLowState = (now - back.timePoint) >= msToResult1 (minTreggerEventMs);
                 }
 
                 /*
                  * And this condition is the same as in onEvent's case
                  */
-                if (state == State::low && highStateStart < lowStateStart) {
-                        longHighState = (lowStateStart - highStateStart) >= msToResult1 (minTreggerEventMs);
-                        longLowState = (now - lowStateStart) >= msToResult1 (minTreggerEventMs);
+                else if (currentState == State::low && currentHighStateStart < currentLowStateStart) {
+                        longHighState = (currentLowStateStart - currentHighStateStart) >= msToResult1 (minTreggerEventMs);
+                        longLowState = (now - currentLowStateStart) >= msToResult1 (minTreggerEventMs);
                 }
 
                 if (longHighState && longLowState) {
-                        callback->report (DetectorEventType::trigger, highStateStart);
-                        highStateStart = lowStateStart; // To prevent reporting twice
-                        // longHighState = false;
+                        callback->report (DetectorEventType::trigger, currentHighStateStart);
+                        __disable_irq ();
+                        highStateStart = currentLowStateStart; // To prevent reporting twice
+                        __enable_irq ();
                 }
-                __enable_irq ();
         }
 
-        // longHighState = false;
-
-        //                 __disable_irq ();
-        // #ifndef UNIT_TEST
-        //                 auto n = getStopWatch ().getTimeFromIsr ();
-        //                 onEdge ({n, EdgePolarity::rising});
-        //                 onEdge ({n, EdgePolarity::falling});
-        // #else
-        //                 onEdge ({now, EdgePolarity::rising});
-        //                 onEdge ({now, EdgePolarity::falling});
-        // #endif
-
-        //                 // The above 2 calls increases noise counter by 1. So I compensate for that.
-        //                 --noiseCounter;
-
-        //                 if (noiseCounter < 0) { // To be sure.
-        //                         noiseCounter = 0;
-        //                 }
-        //                 __enable_irq ();
-
-        // Noise detection + hysteresis
+        /*--------------------------------------------------------------------------*/
+        /* Noise detection + hysteresis                                             */
+        /*--------------------------------------------------------------------------*/
         if (now - lastNoiseCalculation >= msToResult1 (NOISE_CALCULATION_PERIOD_MS)) {
 
                 if (noiseState == NoiseState::noNoise && noiseCounter >= noiseEventsPerTimeUnit_high) {
@@ -218,7 +189,9 @@ void EdgeFilter::run (Result1us const &now)
                 noiseCounter = 0;
         }
 
-        // No beam detection + hysteresis
+        /*--------------------------------------------------------------------------*/
+        /* No beam detection + hysteresis                                           */
+        /*--------------------------------------------------------------------------*/
         // if (now - lastBeamStateCalculation >= msToResult1 (minTreggerEventMs * 10)) {
 
         //         if (beamState == BeamState::present &&) {
