@@ -36,8 +36,8 @@ public:
                 dutyTresholdPercent = DEFAULT_DUTY_TRESHOLD_PERCENT;
                 blindTime = DEFAULT_BLIND_TIME_MS;
                 minTreggerEventMs = DEFAULT_MIN_TRIGGER_EVENT_MS;
-                noiseEventsPerTimeUnitHigh = DEFAULT_NOISE_EVENTS_PER_TIME_UNIT_HIGH;
-                noiseEventsPerTimeUnitLow = DEFAULT_NOISE_EVENTS_PER_TIME_UNIT_LOW;
+                noiseLevelHigh = DEFAULT_NOISE_LEVEL_HIGH;
+                noiseLevelLow = DEFAULT_NOISE_LEVEL_LOW;
         }
 #endif
 
@@ -75,13 +75,13 @@ public:
         void setDutyTresholdPercent (uint8_t i);
 
         uint16_t getMinTreggerEventMs () const { return minTreggerEventMs; }
-        void setMinTreggerEventMs (uint16_t i);
+        void setMinTriggerEventMs (uint16_t i);
 
-        uint16_t getNoiseEventsPerTimeUnitHigh () const { return noiseEventsPerTimeUnitHigh; }
-        void setNoiseEventsPerTimeUnitHigh (uint16_t i);
+        uint8_t getNoiseLevelHigh () const { return noiseLevelHigh; }
+        void setNoiseLevelHigh (uint8_t i);
 
-        uint16_t getNoiseEventsPerTimeUnitLow () const { return noiseEventsPerTimeUnitLow; }
-        void setNoiseEventsPerTimeUnitLow (uint16_t i);
+        uint8_t getNoiseLevelLow () const { return noiseLevelLow; }
+        void setNoiseLevelLow (uint8_t i);
 
 private:
         Resolution resolution : 2;
@@ -98,8 +98,8 @@ private:
 
         uint16_t blindTime;
         uint16_t minTreggerEventMs;
-        uint16_t noiseEventsPerTimeUnitHigh; // This number or more to report noise condition
-        uint16_t noiseEventsPerTimeUnitLow;  // Less than this number to restore normal operation
+        uint8_t noiseLevelHigh; // This number or more to report noise condition
+        uint8_t noiseLevelLow;  // Less than this number to restore normal operation
 };
 
 extern bool &changed ();

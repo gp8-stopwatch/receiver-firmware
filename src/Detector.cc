@@ -56,7 +56,7 @@ void EdgeFilter::onEdge (Edge const &e)
 
         // Calculate duty cycle of present slice of the signal
         Result1us cycleTreshold = (queue.back ().timePoint - queue.front ().timePoint)
-                * dutyTresholdPercent;                                  // slice length times treshold. See equation in the docs.
+                * getConfig ().getDutyTresholdPercent ();               // slice length times treshold. See equation in the docs.
         Result1us hiDuration = queue[1].timePoint - queue[0].timePoint; // We assume for now, that queue[0] is rising
         Result1us lowDuration = queue[2].timePoint - queue[1].timePoint;
 
@@ -159,7 +159,6 @@ void EdgeFilter::run (Result1us const &now)
                  * My previous impl. was inserting fake noise spikes to recalcutale the PWM and
                  * thus state.
                  */
-
                 if (currentState == State::high && back.timePoint > currentHighStateStart) {
                         longHighState = (back.timePoint - currentHighStateStart) >= minTriggerEvent1Us;
                         longLowState = (now - back.timePoint) >= minTriggerEvent1Us;
@@ -191,6 +190,9 @@ void EdgeFilter::run (Result1us const &now)
                 __enable_irq ();
 
                 if (currentNoiseCounter > 0) {
+                        // This is typical case, where there is some noise present, and we normalize it from 1 to 15.
+                        // TODO this will have to be adjusted in direct sunlight in July or August.
+                        // TODO or find the 100W lightbulb I've lost. If it manages to achieve level 15, then it's OK.
                         noiseLevel = std::min<uint8_t> ((MAX_NOISE_LEVEL - 1) * currentNoiseCounter * MIN_NOISE_SPIKE_1US
                                                                 / msToResult1us (NOISE_CALCULATION_PERIOD_MS),
                                                         (MAX_NOISE_LEVEL - 1))
@@ -201,13 +203,13 @@ void EdgeFilter::run (Result1us const &now)
                         noiseLevel = 0;
                 }
 
-                if (noiseState == NoiseState::noNoise && currentNoiseCounter >= noiseEventsPerTimeUnit_high) {
+                if (noiseState == NoiseState::noNoise && noiseLevel >= getConfig ().getNoiseLevelHigh ()) {
                         noiseState = NoiseState::noise;
                         // TODO When noise counter is high, turn of the EXTI, so the rest of the code has a chance to run. Then enable it
                         // after 1s
                         callback->report (DetectorEventType::noise, now);
                 }
-                else if (noiseState == NoiseState::noise && currentNoiseCounter < noiseEventsPerTimeUnit_low) {
+                else if (noiseState == NoiseState::noise && noiseLevel <= getConfig ().getNoiseLevelLow ()) {
                         noiseState = NoiseState::noNoise;
                         callback->report (DetectorEventType::noNoise, now);
                 }

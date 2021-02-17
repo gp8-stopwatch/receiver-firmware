@@ -36,12 +36,13 @@ void Config::restoreDefaults ()
         blindTime = def (blindTime, DEFAULT_BLIND_TIME_MS);
         dutyTresholdPercent = def (dutyTresholdPercent, DEFAULT_DUTY_TRESHOLD_PERCENT);
         minTreggerEventMs = def (minTreggerEventMs, DEFAULT_MIN_TRIGGER_EVENT_MS);
-        noiseEventsPerTimeUnitHigh = def (noiseEventsPerTimeUnitHigh, DEFAULT_NOISE_EVENTS_PER_TIME_UNIT_HIGH);
-        noiseEventsPerTimeUnitLow = def (noiseEventsPerTimeUnitLow, DEFAULT_NOISE_EVENTS_PER_TIME_UNIT_LOW);
+        noiseLevelHigh = def (noiseLevelHigh, DEFAULT_NOISE_LEVEL_HIGH);
+        noiseLevelLow = def (noiseLevelLow, DEFAULT_NOISE_LEVEL_LOW);
 }
 
 /****************************************************************************/
 
+// This is to avoid re-setting to default values in Config::restoreDefaults
 template <typename T> T trim (T t)
 {
         constexpr int mxVal = std::numeric_limits<T>::max ();
@@ -56,9 +57,9 @@ template <typename T> T trim (T t)
 /****************************************************************************/
 
 void Config::setBlindTime (uint16_t b) { blindTime = trim (b); }
-void Config::setDutyTresholdPercent (uint8_t i) { dutyTresholdPercent = trim (i); }
-void Config::setMinTreggerEventMs (uint16_t i) { minTreggerEventMs = trim (i); }
-void Config::setNoiseEventsPerTimeUnitHigh (uint16_t i) { noiseEventsPerTimeUnitHigh = trim (i); }
-void Config::setNoiseEventsPerTimeUnitLow (uint16_t i) { noiseEventsPerTimeUnitLow = trim (i); }
+void Config::setDutyTresholdPercent (uint8_t i) { dutyTresholdPercent = std::min<uint8_t> (i, 100); }
+void Config::setMinTriggerEventMs (uint16_t i) { minTreggerEventMs = trim (i); }
+void Config::setNoiseLevelHigh (uint8_t i) { noiseLevelHigh = std::min<uint8_t> (i, MAX_NOISE_LEVEL); }
+void Config::setNoiseLevelLow (uint8_t i) { noiseLevelLow = std::min<uint8_t> (i, MAX_NOISE_LEVEL); }
 
 } // namespace cfg

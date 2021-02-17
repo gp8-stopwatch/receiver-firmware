@@ -13,17 +13,6 @@
 
 /*****************************************************************************/
 
-// TODO refactor (config?)
-// const uint16_t minTreggerEventMs = 10;
-// TODO config
-const uint8_t dutyTresholdPercent = 50;
-// TODO config
-const uint16_t noiseEventsPerTimeUnit_high = 10; // This number or more to report noise condition
-// TODO config
-const uint16_t noiseEventsPerTimeUnit_low = 2; // Less than this number to restore normal operation
-
-/*****************************************************************************/
-
 enum class EdgePolarity { falling = 0, rising = 1 };
 
 /**

@@ -565,7 +565,7 @@ TEST_CASE ("Noise detection", "[detector]")
                 edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
                 REQUIRE (events.empty ());
 
-                for (int i = 0; i < 5; ++i) {
+                for (int i = 0; i < 750; ++i) {
                         edgeFilter.onEdge ({static_cast<Result1us> (15 * 1000 + i * 2), EdgePolarity::falling});
                         edgeFilter.onEdge ({static_cast<Result1us> (15 * 1000 + i * 2 + 1), EdgePolarity::rising});
                 }
@@ -602,7 +602,7 @@ TEST_CASE ("Noise detection", "[detector]")
                 edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
                 REQUIRE (events.empty ());
 
-                for (int i = 0; i < 5; ++i) {
+                for (int i = 0; i < 750; ++i) {
                         edgeFilter.onEdge ({static_cast<Result1us> (15 * 1000 + i * 2), EdgePolarity::falling});
                         edgeFilter.onEdge ({static_cast<Result1us> (15 * 1000 + i * 2 + 1), EdgePolarity::rising});
                 }
