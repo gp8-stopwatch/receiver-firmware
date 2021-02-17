@@ -118,7 +118,7 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
                 // }
 
                 // IR was restored, but the time it was off was too short, which means noise spike
-                if (lastIrChangeDuration < msToResult1 (MIN_TIME_BETWEEN_EVENTS_MS)) {
+                if (lastIrChangeDuration < msToResult1us (MIN_TIME_BETWEEN_EVENTS_MS)) {
 
                         // We simply ingnore spurious noise events if they don't occur too frequently.
                         if (++noiseEventCounter > NOISE_EVENTS_CRITICAL) {
@@ -239,17 +239,17 @@ void InfraRedBeamExti::run2 ()
          * Trigger signal is low -> IR signal is present no object is crossing the barrier.
          */
         if ((state == State::irTriggerLow || state == State::extTriggerLow) && // State is correct for barrier interrupted event to be genrated
-            lastIrChangeDuration >= msToResult1 (MIN_TRIGGER_LOW_STEADY_TIME_MS)) { // Trigger signal was low for certain time
+            lastIrChangeDuration >= msToResult1us (MIN_TRIGGER_LOW_STEADY_TIME_MS)) { // Trigger signal was low for certain time
 
                 /*
                  * So trigger was low and steady for a certain amount of time
                  * and if the following additional conditions are met, we have
                  * a correct barrier interrupted event.
                  */
-                if (envelope >= msToResult1 (MIN_TIME_BETWEEN_EVENTS_MS) && // Envelope no too short
-                    envelope < msToResult1 (DEFAULT_BLIND_TIME_MS) &&       // Envelope not too long
-                    dutyCycle >= MIN_DUTY_CYCLE &&                          // Duty cycle higher than ...
-                    blindTimeout.isExpired ()) {                            // Blind time has to be taken into account as well.
+                if (envelope >= msToResult1us (MIN_TIME_BETWEEN_EVENTS_MS) && // Envelope no too short
+                    envelope < msToResult1us (DEFAULT_BLIND_TIME_MS) &&       // Envelope not too long
+                    dutyCycle >= MIN_DUTY_CYCLE &&                            // Duty cycle higher than ...
+                    blindTimeout.isExpired ()) {                              // Blind time has to be taken into account as well.
 
                         // Pass the event to the FastStateMachine
                         sendEvent (fStateMachine, {Event::Type::irTrigger, *triggerRisingEdgeTime});
@@ -261,7 +261,7 @@ void InfraRedBeamExti::run2 ()
          * Detecting the noIr event. The state machine has to be reset to work
          * properly afterwards.
          */
-        else if (envelope >= msToResult1 (NO_IR_DETECTED_MS)) {
+        else if (envelope >= msToResult1us (NO_IR_DETECTED_MS)) {
                 state = State::noBeam;
         }
         /*
@@ -317,7 +317,7 @@ void InfraRedBeamExti::run ()
         // __enable_irq ();
 
         // EVENT detection. Looking for correct envelope
-        if (triggerRisingEdgeTimeSet && lastIrChangeDuration >= msToResult1 (MIN_TIME_BETWEEN_EVENTS_MS)
+        if (triggerRisingEdgeTimeSet && lastIrChangeDuration >= msToResult1us (MIN_TIME_BETWEEN_EVENTS_MS)
             && lastStateCopy == IrBeam::triggerFalling) {
 
                 /*
@@ -328,7 +328,7 @@ void InfraRedBeamExti::run ()
                  * MIN_TIME_BETWEEN_EVENTS_MS.
                  * - IR has to be absent at least half of the envelope time.
                  */
-                if (envelope >= msToResult1 (MIN_TIME_BETWEEN_EVENTS_MS) && envelope < msToResult1 (DEFAULT_BLIND_TIME_MS) && duty
+                if (envelope >= msToResult1us (MIN_TIME_BETWEEN_EVENTS_MS) && envelope < msToResult1us (DEFAULT_BLIND_TIME_MS) && duty
                     && blindTimeout.isExpired ()) {
 
                         // __disable_irq ();

@@ -658,3 +658,81 @@ TEST_CASE ("Spikes", "[detector]")
                 REQUIRE (events.empty ());
         }
 }
+
+TEST_CASE ("Noise level", "[detector]")
+{
+        {
+                /*
+                 *        +-----+
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 * -------+     +-------+
+                 * 0    10ms   20ms     30ms
+                 */
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
+
+                edgeFilter.setCallback (&tc);
+
+                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                edgeFilter.run (10 * 1000);
+                REQUIRE (events.empty ());
+
+                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
+                edgeFilter.run (20 * 1000);
+                REQUIRE (events.empty ());
+
+                edgeFilter.run (30 * 1000);
+
+                REQUIRE (events.size () == 1);
+                REQUIRE (edgeFilter.getNoiseLevel () == 0);
+        }
+
+        {
+                /*
+                 *   + + + + + + +
+                 *   | | | | | | |
+                 *   | | | | | | |
+                 *   | | | | | | |
+                 *   | | | | | | |
+                 * --+-+-+-+-+-+-+-------------+
+                 * 0     every 20ms pulse 1ms
+                 */
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                for (int i = 0; i < 20; ++i) {
+                        Result1us timePoint = i * 20000; // Every 20ms
+                        edgeFilter.onEdge ({timePoint, EdgePolarity::rising});
+                        edgeFilter.onEdge ({timePoint + 1000, EdgePolarity::falling});
+                        edgeFilter.run (timePoint + 2000);
+                        edgeFilter.run (timePoint + 5000);
+                        edgeFilter.run (timePoint + 19000);
+                }
+
+                REQUIRE (edgeFilter.getNoiseLevel () == 0);
+        }
+
+        {
+                /*
+                 * Maximum noise - edge case
+                 */
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                for (int i = 0; i < msToResult1us (EdgeFilter::NOISE_CALCULATION_PERIOD_MS) / EdgeFilter::MIN_NOISE_SPIKE_1US + 10; ++i) {
+                        Result1us timePoint = i * EdgeFilter::MIN_NOISE_SPIKE_1US * 2; // Every 20ms
+                        edgeFilter.onEdge ({timePoint, EdgePolarity::rising});
+                        edgeFilter.onEdge ({timePoint + EdgeFilter::MIN_NOISE_SPIKE_1US, EdgePolarity::falling});
+                        edgeFilter.run (timePoint + EdgeFilter::MIN_NOISE_SPIKE_1US);
+                }
+
+                REQUIRE (edgeFilter.getNoiseLevel () == 15);
+        }
+}

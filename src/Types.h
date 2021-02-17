@@ -28,7 +28,7 @@ using Result1us = uint64_t;  /// 1µs units. Maybe someday I'll use std::chrono
 using Result10us = uint32_t; /// 10µs units.
 
 constexpr Result10us result1To10 (Result1us r) { return r / 10 + ((r % 10 < 5) ? (0) : (1)); }
-constexpr Result1us msToResult1 (uint32_t r) { return r * 1000; }
+constexpr Result1us msToResult1us (uint32_t r) { return r * 1000; }
 
 /**
  * How to display a result.
@@ -82,9 +82,13 @@ enum Brightness { level1 = 0, level2 = 1, level3 = 2, level4 = 3, level5 = 4, le
 enum ParticipantsNumber { one = 1, two = 0 };
 enum StopMode { stop = 1, restart = 0 }; // Loop
 
-static constexpr int DEFAULT_BLIND_TIME_MS = 5000;
+static constexpr uint16_t DEFAULT_BLIND_TIME_MS = 5000;
+static constexpr uint8_t DEFAULT_DUTY_TRESHOLD_PERCENT = 50;
+static constexpr uint16_t DEFAULT_MIN_TRIGGER_EVENT_MS = 10;
 static constexpr int NO_IR_DETECTED_MS = 5000;
 static constexpr int LOOP_DISPLAY_TIMEOUT = DEFAULT_BLIND_TIME_MS - 1000;
+static constexpr uint16_t DEFAULT_NOISE_EVENTS_PER_TIME_UNIT_HIGH = 10;
+static constexpr uint16_t DEFAULT_NOISE_EVENTS_PER_TIME_UNIT_LOW = 2;
 
 #ifndef UNIT_TEST
 const etl::function_fv<__disable_irq> lock{};

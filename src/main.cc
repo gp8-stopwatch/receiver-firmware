@@ -43,6 +43,8 @@ int main ()
                 getBuzzer ().setActive (getConfig ().isBuzzerOn ());
 #endif
                 getDisplay ().setResolution (getConfig ().getResolution ());
+                getIrDetector ().recalculateConstants ();
+                getExtDetector ().recalculateConstants ();
         };
 
         refreshSettings ();
