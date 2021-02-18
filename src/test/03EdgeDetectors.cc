@@ -38,7 +38,7 @@ TEST_CASE ("Edge cases", "[detector]")
                  * 0    10ms   20ms     30ms
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
 
                 edgeFilter.setCallback (&tc);
 
@@ -69,7 +69,7 @@ TEST_CASE ("Edge cases", "[detector]")
                  * 0    10ms   20ms     30ms
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -100,7 +100,7 @@ TEST_CASE ("Edge cases", "[detector]")
                  * 0    10ms   20ms     30ms
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -136,7 +136,7 @@ TEST_CASE ("Edge cases", "[detector]")
                  * 0    10ms   20ms     30ms
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -173,7 +173,7 @@ TEST_CASE ("Edge cases", "[detector]")
                  * 0    10ms   20ms  25(100) 30ms    50ms
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -204,9 +204,102 @@ TEST_CASE ("Edge cases", "[detector]")
                 REQUIRE (events.front ().type == DetectorEventType::trigger);
                 REQUIRE (events.front ().timePoint == 10 * 1000);
 
-                edgeFilter.onEdge ({50 * 1000, EdgePolarity::rising});
+                edgeFilter.run (50 * 1000);
                 REQUIRE (events.empty ());
         }
+
+        {
+
+                /*
+                 *           15ms (100µs)
+                 *        +--+---+    +      +      +
+                 *        |  |   |    |      |      |
+                 *        |  |   |    |      |      |
+                 *        |  |   |    |      |      |
+                 *        |  |   |    |      |      |
+                 * -------+  +   +----+------+------+
+                 * 0    10ms   20ms  25(100) 30ms    50ms
+                 */
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                // First rising @ 10ms
+                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                REQUIRE (events.empty ());
+
+                // Noise spike (negative) @ 15ms
+                edgeFilter.onEdge ({15 * 1000, EdgePolarity::falling});
+                REQUIRE (events.empty ());
+                edgeFilter.onEdge ({15 * 1000 + 100, EdgePolarity::rising});
+                REQUIRE (events.empty ());
+
+                // Falling @ 20ms
+                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
+                REQUIRE (events.empty ());
+
+                // Noise spike (positive) @ 25ms
+                edgeFilter.onEdge ({25 * 1000, EdgePolarity::rising});
+                REQUIRE (events.empty ());
+                edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::falling});
+                REQUIRE (events.empty ());
+
+                edgeFilter.onEdge ({30000, EdgePolarity::rising});
+                edgeFilter.onEdge ({30001, EdgePolarity::falling});
+
+                REQUIRE (events.size () == 1);
+                REQUIRE (events.front ().type == DetectorEventType::trigger);
+                REQUIRE (events.front ().timePoint == 10 * 1000);
+
+                edgeFilter.onEdge ({50000, EdgePolarity::rising});
+                REQUIRE (events.empty ());
+                edgeFilter.onEdge ({50001, EdgePolarity::falling});
+                REQUIRE (events.empty ());
+        }
+}
+
+TEST_CASE ("Low PWM in the middle", "[detector]")
+{
+        /*
+         * This is a situation which shouldn't occur much if at all?
+         * During long high period we have some disturbances. First comes
+         * a long (200µs) negative spike, then 100µs positive, then another
+         * short negative (100µs), and then the high state is restored.
+         * The problem is, that in point "A" PWM of the slice (last 3 edges)
+         * is LOW, and thus pwmState flips to low.
+         *
+         *           15ms
+         *        +------+  +-+ +--------+         +
+         *        |      |  | | |        |         |
+         *        |      |  | | |        |         |
+         *        |      |  | | |        |         |
+         *        |      |  | | |        |         |
+         * -------+      +--+ +-+        +---------+
+         * 0    10ms          A         25ms     35ms
+         */
+        TestDetectorCallback tc;
+        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        edgeFilter.setCallback (&tc);
+        events.clear ();
+
+        // First rising @ 10ms
+        edgeFilter.onEdge ({10000, EdgePolarity::rising});
+
+        // Noise spike
+        edgeFilter.onEdge ({15000, EdgePolarity::falling});
+        edgeFilter.onEdge ({15000 + 200, EdgePolarity::rising});
+        // Noise spike
+        edgeFilter.onEdge ({15000 + 300, EdgePolarity::falling});
+        edgeFilter.onEdge ({15000 + 400, EdgePolarity::rising});
+
+        edgeFilter.onEdge ({25000, EdgePolarity::falling});
+
+        edgeFilter.onEdge ({35000, EdgePolarity::rising});
+
+        REQUIRE (events.size () == 1);
+        REQUIRE (events.front ().type == DetectorEventType::trigger);
+        REQUIRE (events.front ().timePoint == 10 * 1000);
 }
 
 /**
@@ -227,7 +320,7 @@ TEST_CASE ("Slightly less", "[detector]")
                  * 0    10000  19999µ 30ms
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -255,7 +348,7 @@ TEST_CASE ("Slightly less", "[detector]")
                  * 0    10ms   20ms     29999µ
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
 
                 edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
@@ -281,7 +374,7 @@ TEST_CASE ("Slightly less", "[detector]")
                  * 0    10ms   19999µ  30ms
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -307,7 +400,7 @@ TEST_CASE ("Slightly less", "[detector]")
                  * 0    10ms   20ms  29999µ
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -334,7 +427,7 @@ TEST_CASE ("Slightly less", "[detector]")
                  * 0    10ms   19999ms     30ms
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -368,7 +461,7 @@ TEST_CASE ("Slightly less", "[detector]")
                  * 0    10ms   20ms     29999µ
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -402,7 +495,7 @@ TEST_CASE ("Slightly less", "[detector]")
                  * 0    10ms   19999µ   30ms
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -436,7 +529,7 @@ TEST_CASE ("Slightly less", "[detector]")
                  * 0    10ms   20ms     29999µ
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -476,7 +569,7 @@ TEST_CASE ("Advanced / slightly less", "[detector]")
                  * 0    10ms   19999µ   30ms
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -517,7 +610,7 @@ TEST_CASE ("Advanced / slightly less", "[detector]")
                  * 0    10ms   20ms   25,25+100   34999 + 100
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -561,7 +654,7 @@ TEST_CASE ("Noise detection", "[detector]")
                  * 0    10ms        20ms     1s     2s
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -598,7 +691,7 @@ TEST_CASE ("Noise detection", "[detector]")
                  * 0    10ms        20ms     1s     2s
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -645,7 +738,7 @@ TEST_CASE ("Spikes", "[detector]")
                  * 0
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -675,7 +768,7 @@ TEST_CASE ("Noise level", "[detector]")
                  * 0    10ms   20ms     30ms
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
 
                 edgeFilter.setCallback (&tc);
 
@@ -704,7 +797,7 @@ TEST_CASE ("Noise level", "[detector]")
                  * 0    10ms   10ms+100µs  1s
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -732,7 +825,7 @@ TEST_CASE ("Noise level", "[detector]")
                  * 0     every 20ms pulse 1ms
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -751,7 +844,7 @@ TEST_CASE ("Noise level", "[detector]")
                  * Maximum noise - edge case - noise level not exceeding maximum
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -771,7 +864,7 @@ TEST_CASE ("Noise level", "[detector]")
                  * and more of them).
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -804,7 +897,7 @@ TEST_CASE ("Duty cycle", "[detector]")
                 getConfig ().setDutyTresholdPercent (100);
 
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -838,7 +931,7 @@ TEST_CASE ("Duty cycle", "[detector]")
                 getConfig ().setDutyTresholdPercent (100);
 
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -874,7 +967,7 @@ TEST_CASE ("Duty cycle", "[detector]")
                 getConfig ().setDutyTresholdPercent (100);
 
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -905,7 +998,7 @@ TEST_CASE ("Duty cycle", "[detector]")
                 getConfig ().setDutyTresholdPercent (100);
 
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -934,7 +1027,7 @@ TEST_CASE ("Duty cycle", "[detector]")
                 getConfig ().setDutyTresholdPercent (100);
 
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -964,7 +1057,7 @@ TEST_CASE ("Duty cycle", "[detector]")
                 getConfig ().setDutyTresholdPercent (100);
 
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -997,7 +1090,7 @@ TEST_CASE ("No beam", "[detector]")
                  * 0    10ms   1s10ms   3s
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
