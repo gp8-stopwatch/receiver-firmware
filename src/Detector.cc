@@ -148,8 +148,10 @@ void EdgeFilter::run (Result1us const &now)
         /* Steady state prevention                                                  */
         /*--------------------------------------------------------------------------*/
 
+        auto tp = std::min (back.timePoint, currentLowStateStart);
+
         // If there's no noise at all, and the line stays silent, we force the check every minTreggerEventMs
-        if (now - back.timePoint >= minTriggerEvent1Us && back.polarity == EdgePolarity::falling) {
+        if (now - tp >= minTriggerEvent1Us && back.polarity == EdgePolarity::falling) {
 
                 bool longHighState{};
                 bool longLowState{};

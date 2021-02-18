@@ -169,8 +169,8 @@ TEST_CASE ("Edge cases", "[detector]")
                  *        |  |   |    |
                  *        |  |   |    |
                  *        |  |   |    |
-                 * -------+  +   +----+------+
-                 * 0    10ms   20ms  25(100) 30ms
+                 * -------+  +   +----+------+------+
+                 * 0    10ms   20ms  25(100) 30ms    50ms
                  */
                 TestDetectorCallback tc;
                 EdgeFilter edgeFilter{EdgeFilter::State::low};
@@ -198,11 +198,14 @@ TEST_CASE ("Edge cases", "[detector]")
                 REQUIRE (events.empty ());
 
                 // Run after minTreggerEventMs from last edge
-                edgeFilter.run (35 * 1000 + 100);
+                edgeFilter.run (30 * 1000);
 
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::trigger);
                 REQUIRE (events.front ().timePoint == 10 * 1000);
+
+                edgeFilter.onEdge ({50 * 1000, EdgePolarity::rising});
+                REQUIRE (events.empty ());
         }
 }
 
@@ -972,8 +975,10 @@ TEST_CASE ("Duty cycle", "[detector]")
                 edgeFilter.onEdge ({25 * 1000, EdgePolarity::falling});
                 edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::rising});
 
-                edgeFilter.onEdge ({50 * 1000, EdgePolarity::rising});
+                edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
+                REQUIRE (events.empty ());
 
+                edgeFilter.onEdge ({50 * 1000, EdgePolarity::rising});
                 REQUIRE (events.empty ());
         }
 }
