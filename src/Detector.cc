@@ -7,7 +7,6 @@
  ****************************************************************************/
 
 #include "Detector.h"
-#include "Config.h"
 
 #ifndef UNIT_TEST
 #include "Gpio.h"
@@ -16,11 +15,6 @@ Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
 #else
 #define __disable_irq(x) x
 #define __enable_irq(x) x
-auto &getConfig ()
-{
-        static cfg::Config config;
-        return config;
-}
 #endif
 
 /*****************************************************************************/
@@ -52,10 +46,14 @@ void EdgeFilter::onEdge (Edge const &e)
 
         queue.push (e);
 
+        if (!queue.full ()) {
+                return;
+        }
+
         /*--------------------------------------------------------------------------*/
 
         // Calculate duty cycle of present slice of the signal
-        Result1us cycleTreshold = (queue.back ().timePoint - queue.front ().timePoint)
+        Result1us cycleTresholdCalculated = (queue.back ().timePoint - queue.front ().timePoint)
                 * getConfig ().getDutyTresholdPercent ();               // slice length times treshold. See equation in the docs.
         Result1us hiDuration = queue[1].timePoint - queue[0].timePoint; // We assume for now, that queue[0] is rising
         Result1us lowDuration = queue[2].timePoint - queue[1].timePoint;
@@ -89,12 +87,14 @@ void EdgeFilter::onEdge (Edge const &e)
                 }
         }
 
+        highStateAveragePeriod += hiDuration;
+
         /*--------------------------------------------------------------------------*/
         /* State transitions depending on dutyCycle and recent level length.        */
         /*--------------------------------------------------------------------------*/
 
-        if (hiDuration * 100 > cycleTreshold || // PWM of the slice is high
-            longHighEdge) {                     // Or the high level was long itself
+        if (hiDuration * 100 > cycleTresholdCalculated || // PWM of the slice is high
+            longHighEdge) {                               // Or the high level was long itself
                 if (state != State::high) {
                         state = State::high;
 #ifndef UNIT_TEST
@@ -103,8 +103,8 @@ void EdgeFilter::onEdge (Edge const &e)
                         highStateStart = firstRising->timePoint;
                 }
         }
-        else if (lowDuration * 100 >= cycleTreshold || // PWM of the slice is low
-                 longLowEdge) {                        // Or the low level was long enogh itself
+        else if (lowDuration * 100 >= cycleTresholdCalculated || // PWM of the slice is low
+                 longLowEdge) {                                  // Or the low level was long enogh itself
                 if (state != State::low) {
                         state = State::low;
 #ifndef UNIT_TEST
@@ -134,7 +134,7 @@ void EdgeFilter::onEdge (Edge const &e)
 void EdgeFilter::run (Result1us const &now)
 {
         __disable_irq ();
-        if (queue.empty ()) {
+        if (!queue.full ()) {
                 return;
         }
 
@@ -155,15 +155,14 @@ void EdgeFilter::run (Result1us const &now)
                 bool longLowState{};
 
                 /*
-                 * This is case when we aer still in high state, because no PWM was calculated.
+                 * This is case when we are still in high state, because no PWM was calculated.
                  * My previous impl. was inserting fake noise spikes to recalcutale the PWM and
-                 * thus state.
+                 * thus state. This was inefficient.
                  */
                 if (currentState == State::high && back.timePoint > currentHighStateStart) {
                         longHighState = (back.timePoint - currentHighStateStart) >= minTriggerEvent1Us;
                         longLowState = (now - back.timePoint) >= minTriggerEvent1Us;
                 }
-
                 /*
                  * And this condition is the same as in onEvent's case
                  */
@@ -175,7 +174,8 @@ void EdgeFilter::run (Result1us const &now)
                 if (longHighState && longLowState) {
                         callback->report (DetectorEventType::trigger, currentHighStateStart);
                         __disable_irq ();
-                        highStateStart = currentLowStateStart; // To prevent reporting twice
+                        highStateStart = lowStateStart; // To prevent reporting twice
+                        // queue.clear ();
                         __enable_irq ();
                 }
         }
@@ -184,6 +184,8 @@ void EdgeFilter::run (Result1us const &now)
         /* Noise detection + hysteresis                                             */
         /*--------------------------------------------------------------------------*/
         if (now - lastNoiseCalculation >= msToResult1us (NOISE_CALCULATION_PERIOD_MS)) {
+                lastNoiseCalculation = now;
+
                 __disable_irq ();
                 auto currentNoiseCounter = noiseCounter;
                 noiseCounter = 0;
@@ -203,37 +205,66 @@ void EdgeFilter::run (Result1us const &now)
                         noiseLevel = 0;
                 }
 
+                bool stateChanged{};
+
                 if (noiseState == NoiseState::noNoise && noiseLevel >= getConfig ().getNoiseLevelHigh ()) {
                         noiseState = NoiseState::noise;
+                        stateChanged = true;
                         // TODO When noise counter is high, turn of the EXTI, so the rest of the code has a chance to run. Then enable it
                         // after 1s
                         callback->report (DetectorEventType::noise, now);
                 }
                 else if (noiseState == NoiseState::noise && noiseLevel <= getConfig ().getNoiseLevelLow ()) {
                         noiseState = NoiseState::noNoise;
+                        stateChanged = true;
                         callback->report (DetectorEventType::noNoise, now);
                 }
 
-                lastNoiseCalculation = now;
+                // if (stateChanged) { // No point of calculating trigger if there's no beam, or it was just restored.
+                //         __disable_irq ();
+                //         highStateStart = lowStateStart;
+                //         // queue.clear ();
+                //         __enable_irq ();
+                //         return;
+                // }
         }
 
         /*--------------------------------------------------------------------------*/
         /* No beam detection + hysteresis                                           */
         /*--------------------------------------------------------------------------*/
-        // if (now - lastBeamStateCalculation >= msToResult1 (minTreggerEventMs * 10)) {
+        // TODO what if trigger ms is bigger than msToResult1us (NO_BEAM_CALCULATION_PERIOD_MS)
+        if (now - lastBeamStateCalculation >= msToResult1us (NO_BEAM_CALCULATION_PERIOD_MS)) {
+                lastBeamStateCalculation = now;
 
-        //         if (beamState == BeamState::present &&) {
-        //                 beamState = BeamState::absent;
-        //                 callback->report (DetectorEventType::noBeam, now);
-        //         }
-        //         else if (beamState == BeamState::absent &&) {
-        //                 beamState = BeamState::present;
-        //                 callback->report (DetectorEventType::beamRestored, now);
-        //         }
+                __disable_irq ();
+                auto currentHighStateAveragePeriod = highStateAveragePeriod;
+                highStateAveragePeriod = 0;
+                __enable_irq ();
 
-        //         lastBeamStateCalculation = now;
-        //         noiseCounter = 0;
-        // }
+                uint8_t currentHighStateAveragePeriodPerccent
+                        = 100 * currentHighStateAveragePeriod / msToResult1us (NO_BEAM_CALCULATION_PERIOD_MS);
+
+                bool stateChanged{};
+
+                if (beamState == BeamState::present && currentHighStateAveragePeriodPerccent >= getConfig ().getDutyTresholdPercent ()) {
+                        beamState = BeamState::absent;
+                        stateChanged = true;
+                        callback->report (DetectorEventType::noBeam, now);
+                }
+                else if (beamState == BeamState::absent && currentHighStateAveragePeriodPerccent < getConfig ().getDutyTresholdPercent ()) {
+                        beamState = BeamState::present;
+                        stateChanged = true;
+                        callback->report (DetectorEventType::beamRestored, now);
+                }
+
+                // if (stateChanged) { // No point of calculating trigger if there's no beam, or it was just restored.
+                //         __disable_irq ();
+                //         highStateStart = lowStateStart;
+                //         queue.clear ();
+                //         __enable_irq ();
+                //         return;
+                // }
+        }
 }
 
 /****************************************************************************/

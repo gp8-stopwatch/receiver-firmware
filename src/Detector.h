@@ -7,9 +7,20 @@
  ****************************************************************************/
 
 #pragma once
+#include "Config.h"
 #include "Types.h"
 #include <cstdint>
 #include <etl/circular_buffer.h>
+
+/****************************************************************************/
+
+#ifdef UNIT_TEST
+inline auto &getConfig ()
+{
+        static cfg::Config config;
+        return config;
+}
+#endif
 
 /*****************************************************************************/
 
@@ -78,6 +89,7 @@ public:
 
         /// How often to calculate if noise state has changed.
         static constexpr uint32_t NOISE_CALCULATION_PERIOD_MS = 1000;
+        static constexpr uint32_t NO_BEAM_CALCULATION_PERIOD_MS = 1000;
 
         /*
          * Most severe (the shortest) noise spike we anticipate for.
@@ -120,6 +132,6 @@ private:
         /*--------------------------------------------------------------------------*/
         enum class BeamState { present, absent };
         BeamState beamState{};
-        // int noiseCounter{};
         Result1us lastBeamStateCalculation{};
+        Result1us highStateAveragePeriod{};
 };

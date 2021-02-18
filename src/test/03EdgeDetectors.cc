@@ -784,3 +784,233 @@ TEST_CASE ("Noise level", "[detector]")
                 REQUIRE (edgeFilter.getNoiseLevel () == 15);
         }
 }
+
+TEST_CASE ("Duty cycle", "[detector]")
+{
+
+        {
+                /*
+                 *        +-----+
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 * -------+     +-------+
+                 * 0    10ms   20ms     30ms
+                 */
+                getConfig ().setDutyTresholdPercent (100);
+
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                edgeFilter.run (10 * 1000);
+                REQUIRE (events.empty ());
+
+                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
+                edgeFilter.run (20 * 1000);
+                REQUIRE (events.empty ());
+
+                // edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
+                edgeFilter.run (30 * 1000);
+
+                REQUIRE (events.size () == 1);
+                REQUIRE (events.front ().type == DetectorEventType::trigger);
+                REQUIRE (events.front ().timePoint == 10 * 1000);
+        }
+
+        {
+
+                /*
+                 *        +--+---+
+                 *        |  |   |
+                 *        |  |   |
+                 *        |  |   |
+                 *        |  |   |
+                 * -------+  +   +-------+
+                 * 0    10ms   20ms     30ms
+                 */
+                getConfig ().setDutyTresholdPercent (100);
+
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                REQUIRE (events.empty ());
+
+                // Noise spike (negative)
+                edgeFilter.onEdge ({15 * 1000, EdgePolarity::falling});
+                REQUIRE (events.empty ());
+
+                edgeFilter.onEdge ({15 * 1000 + 1, EdgePolarity::rising});
+                REQUIRE (events.empty ());
+
+                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
+                REQUIRE (events.empty ());
+
+                edgeFilter.run (30 * 1000);
+
+                REQUIRE (events.empty ());
+        }
+
+        {
+
+                /*
+                 *        +------+       +
+                 *        |      |       |
+                 *        |      |       |
+                 *        |      |       |
+                 *        |      |       |
+                 * -------+      +-------+
+                 * 0    10ms   20ms     30ms
+                 */
+                getConfig ().setDutyTresholdPercent (100);
+
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                // // Noise spike (negative)
+                // edgeFilter.onEdge ({15 * 1000, EdgePolarity::falling});
+                // edgeFilter.onEdge ({15 * 1000 + 100, EdgePolarity::rising});
+
+                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
+                edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
+
+                REQUIRE (events.size () == 1);
+                REQUIRE (events.front ().type == DetectorEventType::trigger);
+                REQUIRE (events.front ().timePoint == 10 * 1000);
+        }
+
+        {
+
+                /*
+                 *        +--+---+       +
+                 *        |  |   |       |
+                 *        |  |   |       |
+                 *        |  |   |       |
+                 *        |  |   |       |
+                 * -------+  +   +-------+
+                 * 0    10ms   20ms     30ms
+                 */
+                getConfig ().setDutyTresholdPercent (100);
+
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                // Noise spike (negative)
+                edgeFilter.onEdge ({15 * 1000, EdgePolarity::falling});
+                edgeFilter.onEdge ({15 * 1000 + 100, EdgePolarity::rising});
+
+                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
+                edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
+
+                REQUIRE (events.empty ());
+        }
+
+        {
+
+                /*
+                 *        +------+   +   +
+                 *        |      |   |   |
+                 *        |      |   |   |
+                 *        |      |   |   |
+                 *        |      |   |   |
+                 * -------+      +---+---+
+                 * 0    10ms   20ms     30ms
+                 */
+                getConfig ().setDutyTresholdPercent (100);
+
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
+
+                // Noise spike (positive)
+                edgeFilter.onEdge ({25 * 1000, EdgePolarity::falling});
+                edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::rising});
+
+                edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
+
+                REQUIRE (events.empty ());
+        }
+
+        {
+
+                /*
+                 *        +------+   +            +
+                 *        |      |   |            |
+                 *        |      |   |            |
+                 *        |      |   |            |
+                 *        |      |   |            |
+                 * -------+      +---+------------+
+                 * 0    10ms   20ms              50ms
+                 */
+                getConfig ().setDutyTresholdPercent (100);
+
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
+
+                // Noise spike (positive)
+                edgeFilter.onEdge ({25 * 1000, EdgePolarity::falling});
+                edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::rising});
+
+                edgeFilter.onEdge ({50 * 1000, EdgePolarity::rising});
+
+                REQUIRE (events.empty ());
+        }
+}
+
+TEST_CASE ("No beam", "[detector]")
+{
+
+        {
+                /*
+                 *        +-----+
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 * -------+     +-------+
+                 * 0    10ms   1s10ms   3s
+                 */
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::State::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                REQUIRE (events.empty ());
+
+                edgeFilter.onEdge ({1010000, EdgePolarity::falling});
+                REQUIRE (events.empty ());
+
+                // edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
+                edgeFilter.run (1010000);
+                REQUIRE (events.size () == 1);
+                REQUIRE (events.front ().type == DetectorEventType::noBeam);
+
+                edgeFilter.run (3000000);
+                edgeFilter.run (3000001);
+                // TODO there's a trigger event inbetween, which isn't
+                REQUIRE (events.size () == 2);
+                REQUIRE (events.back ().type == DetectorEventType::beamRestored);
+        }
+}
