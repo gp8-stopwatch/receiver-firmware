@@ -52,7 +52,7 @@ struct IEdgeDetectorCallback {
 
 class EdgeFilter {
 public:
-        enum class PwmState { low = 0, high = 1 };
+        enum class PwmState { low = 0, high = 1, middle };
         enum class TriggerLevelState { idle, high, /*  low */ };
 
         EdgeFilter (PwmState initialState) : pwmState{initialState}
@@ -119,6 +119,7 @@ private:
         TriggerLevelState triggerLevelState{TriggerLevelState::idle};
         Result1us highStateStart{};
         Result1us lowStateStart{};
+        Result1us middleStateStart{};
 
         /*--------------------------------------------------------------------------*/
         /* Noise calculations                                                       */

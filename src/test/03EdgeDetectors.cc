@@ -1065,10 +1065,11 @@ TEST_CASE ("Duty cycle", "[detector]")
                 edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
 
                 // Noise spike (positive)
-                edgeFilter.onEdge ({25 * 1000, EdgePolarity::falling});
-                edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::rising});
+                edgeFilter.onEdge ({25 * 1000, EdgePolarity::rising});
+                edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::falling});
 
                 edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
+                edgeFilter.onEdge ({30 * 1000 + 50, EdgePolarity::falling});
                 REQUIRE (events.empty ());
 
                 edgeFilter.onEdge ({50 * 1000, EdgePolarity::rising});
