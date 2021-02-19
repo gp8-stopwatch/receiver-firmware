@@ -131,7 +131,7 @@
   * [x] Results (via command)
   * [x] Results as they go.
 
-# Possible features
+# Possible features 
 * [x] µC in the transmitter
   * [x] Battery sensing in the transmitter
 * [x] ~~Hardware battery protection in both devices~~ I went with software one.
@@ -139,6 +139,8 @@
 * [ ] Speed trap. Receivers connected together would measure the speed.
 * [x] Result resolution setting (100µs)
 * [ ] Chronograph https://en.wikipedia.org/wiki/Gun_chronograph
+* [ ] Laser transmitter / receiver. Complex (sub µs) pattern would act as a noise correction. It would at least prevent DC light problems. It would not prevent erros coming from reflections and weak signal. But I still don't know (I'm not sure) about the rest of noise and it's nature. How fast would it be? I think that if we want to achieve 1µs resolution, then we should cope with 1µs spikes. 1µs is too fast to do it in ISR.
+* [ ] Test rig with a stepper motor and a wheel with a notch for IR testing.
 
 # Firmware
 * [x] Settings memory (screen flip & sound on/off should be persisted)

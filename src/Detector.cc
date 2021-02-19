@@ -46,10 +46,6 @@ void EdgeFilter::onEdge (Edge const &e)
 
         queue.push (e);
 
-        if (!queue.full ()) {
-                return;
-        }
-
         /*--------------------------------------------------------------------------*/
 
         // Calculate duty cycle of present slice of the signal
@@ -57,8 +53,6 @@ void EdgeFilter::onEdge (Edge const &e)
                 * getConfig ().getDutyTresholdPercent ();               // slice length times treshold. See equation in the docs.
         Result1us hiDuration = queue[1].timePoint - queue[0].timePoint; // We assume for now, that queue[0] is rising
         Result1us lowDuration = queue[2].timePoint - queue[1].timePoint;
-
-        /*--------------------------------------------------------------------------*/
 
         // Find out which edge in the queue is rising, which falling.
         auto *firstRising = &queue[0]; // Pointers are smaller than Edge object
@@ -90,13 +84,13 @@ void EdgeFilter::onEdge (Edge const &e)
         highStateAveragePeriod += hiDuration;
 
         /*--------------------------------------------------------------------------*/
-        /* State transitions depending on dutyCycle and recent level length.        */
+        /* PWM State transitions depending on dutyCycle and recent level length.    */
         /*--------------------------------------------------------------------------*/
 
         if (hiDuration * 100 > cycleTresholdCalculated || // PWM of the slice is high
             longHighEdge) {                               // Or the high level was long itself
-                if (state != State::high) {
-                        state = State::high;
+                if (pwmState != PwmState::high) {
+                        pwmState = PwmState::high;
 #ifndef UNIT_TEST
                         senseOn.set (true);
 #endif
@@ -105,14 +99,31 @@ void EdgeFilter::onEdge (Edge const &e)
         }
         else if (lowDuration * 100 >= cycleTresholdCalculated || // PWM of the slice is low
                  longLowEdge) {                                  // Or the low level was long enogh itself
-                if (state != State::low) {
-                        state = State::low;
+                if (pwmState != PwmState::low) {
+                        pwmState = PwmState::low;
 #ifndef UNIT_TEST
                         senseOn.set (false);
 #endif
                         lowStateStart = firstFalling->timePoint;
                 }
         }
+
+        /*--------------------------------------------------------------------------*/
+        /* Trigger level state transitions. Kind of an intermediate step.           */
+        /*--------------------------------------------------------------------------*/
+
+#if 0
+        if (pwmState == PwmState::high && e.timePoint - highStateStart >= minTriggerEvent1Us && // Duty cycle is high for at least minTriggerMs
+            triggerLevelState == TriggerLevelState::idle) {                                     // triggerState is idle
+                triggerLevelState = TriggerLevelState::high;
+        }
+        else if (pwmState == PwmState::low && e.timePoint - lowStateStart >= minTriggerEvent1Us && // Duty is low for at least minTriggerMs
+                 triggerLevelState == TriggerLevelState::high) {                                   // triggerState is correct
+                // triggerLevelState = TriggerLevelState::low;
+                callback->report (DetectorEventType::trigger, highStateStart);
+                triggerLevelState = TriggerLevelState::idle;
+        }
+#endif
 
         /*--------------------------------------------------------------------------*/
         /* Check trigger event conditions.                                          */
@@ -134,12 +145,12 @@ void EdgeFilter::onEdge (Edge const &e)
 void EdgeFilter::run (Result1us const &now)
 {
         __disable_irq ();
-        if (!queue.full ()) {
+        if (queue.empty ()) {
                 return;
         }
 
         auto back = queue.back ();
-        auto currentState = state;
+        auto currentState = pwmState;
         auto currentHighStateStart = highStateStart;
         auto currentLowStateStart = lowStateStart;
         __enable_irq ();
@@ -151,7 +162,7 @@ void EdgeFilter::run (Result1us const &now)
         auto tp = std::min (back.timePoint, currentLowStateStart);
 
         // If there's no noise at all, and the line stays silent, we force the check every minTreggerEventMs
-        if (now - tp >= minTriggerEvent1Us && back.polarity == EdgePolarity::falling) {
+        if (now - tp >= minTriggerEvent1Us && back.polarity == EdgePolarity::falling /* && triggerLevelState == TriggerLevelState::high */) {
 
                 bool longHighState{};
                 bool longLowState{};
@@ -161,23 +172,23 @@ void EdgeFilter::run (Result1us const &now)
                  * My previous impl. was inserting fake noise spikes to recalcutale the PWM and
                  * thus state. This was inefficient.
                  */
-                if (currentState == State::high && back.timePoint > currentHighStateStart) {
+                if (currentState == PwmState::high && back.timePoint > currentHighStateStart) {
                         longHighState = (back.timePoint - currentHighStateStart) >= minTriggerEvent1Us;
                         longLowState = (now - back.timePoint) >= minTriggerEvent1Us;
                 }
                 /*
                  * And this condition is the same as in onEvent's case
                  */
-                else if (currentState == State::low && currentHighStateStart < currentLowStateStart) {
+                else if (currentState == PwmState::low && currentHighStateStart < currentLowStateStart) {
                         longHighState = (currentLowStateStart - currentHighStateStart) >= minTriggerEvent1Us;
                         longLowState = (now - currentLowStateStart) >= minTriggerEvent1Us;
                 }
 
                 if (longHighState && longLowState) {
                         callback->report (DetectorEventType::trigger, currentHighStateStart);
+                        // triggerLevelState = TriggerLevelState::idle;
                         __disable_irq ();
                         highStateStart = lowStateStart; // To prevent reporting twice
-                        // queue.clear ();
                         __enable_irq ();
                 }
         }
@@ -225,7 +236,6 @@ void EdgeFilter::run (Result1us const &now)
                 // if (stateChanged) { // No point of calculating trigger if there's no beam, or it was just restored.
                 //         __disable_irq ();
                 //         highStateStart = lowStateStart;
-                //         // queue.clear ();
                 //         __enable_irq ();
                 //         return;
                 // }
@@ -262,7 +272,6 @@ void EdgeFilter::run (Result1us const &now)
                 // if (stateChanged) { // No point of calculating trigger if there's no beam, or it was just restored.
                 //         __disable_irq ();
                 //         highStateStart = lowStateStart;
-                //         queue.clear ();
                 //         __enable_irq ();
                 //         return;
                 // }

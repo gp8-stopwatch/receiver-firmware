@@ -52,13 +52,14 @@ struct IEdgeDetectorCallback {
 
 class EdgeFilter {
 public:
-        enum State { low = 0, high = 1 };
+        enum class PwmState { low = 0, high = 1 };
+        enum class TriggerLevelState { idle, high, /*  low */ };
 
-        EdgeFilter (State initialState) : state{initialState}
+        EdgeFilter (PwmState initialState) : pwmState{initialState}
         {
                 recalculateConstants ();
 
-                if (state == State::low) {
+                if (pwmState == PwmState::low) {
                         queue.push ({0, EdgePolarity::rising});
                         queue.push ({0, EdgePolarity::falling});
                 }
@@ -114,7 +115,8 @@ private:
         EdgeQueue queue;
         IEdgeDetectorCallback *callback{};
 
-        State state;
+        PwmState pwmState;
+        TriggerLevelState triggerLevelState{TriggerLevelState::idle};
         Result1us highStateStart{};
         Result1us lowStateStart{};
 

@@ -205,7 +205,7 @@ TEST_CASE ("Edge cases", "[detector]")
                 REQUIRE (events.front ().timePoint == 10 * 1000);
 
                 edgeFilter.run (50 * 1000);
-                REQUIRE (events.empty ());
+                REQUIRE (events.size () == 1);
         }
 
         {
@@ -253,9 +253,9 @@ TEST_CASE ("Edge cases", "[detector]")
                 REQUIRE (events.front ().timePoint == 10 * 1000);
 
                 edgeFilter.onEdge ({50000, EdgePolarity::rising});
-                REQUIRE (events.empty ());
+                REQUIRE (events.size () == 1);
                 edgeFilter.onEdge ({50001, EdgePolarity::falling});
-                REQUIRE (events.empty ());
+                REQUIRE (events.size () == 1);
         }
 }
 
