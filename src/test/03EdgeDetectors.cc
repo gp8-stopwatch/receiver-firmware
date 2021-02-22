@@ -1234,9 +1234,11 @@ TEST_CASE ("No beam", "[detector]")
                 REQUIRE (events.front ().type == DetectorEventType::noBeam);
 
                 edgeFilter.run (3000000);
-                edgeFilter.run (3000001);
                 // TODO there's a trigger event inbetween, which isn't
                 REQUIRE (events.size () == 2);
                 REQUIRE (events.back ().type == DetectorEventType::beamRestored);
+
+                edgeFilter.run (3000001);
+                REQUIRE (events.size () == 2);
         }
 }

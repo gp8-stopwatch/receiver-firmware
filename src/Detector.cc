@@ -163,45 +163,6 @@ void EdgeFilter::run (Result1us const &now)
         __enable_irq ();
 
         /*--------------------------------------------------------------------------*/
-        /* Steady state prevention                                                  */
-        /*--------------------------------------------------------------------------*/
-
-        auto tp = std::min (back.timePoint, currentLowStateStart);
-
-        // If there's no noise at all, and the line stays silent, we force the check every minTreggerEventMs
-        if (now - tp >= minTriggerEvent1Us && back.polarity == EdgePolarity::falling /* && triggerLevelState == TriggerLevelState::high */) {
-
-                bool longHighState{};
-                bool longLowState{};
-
-                /*
-                 * This is case when we are still in high state, because no PWM was calculated.
-                 * My previous impl. was inserting fake noise spikes to recalcutale the PWM and
-                 * thus state. This was inefficient.
-                 */
-                if (currentState == PwmState::high && back.timePoint > currentHighStateStart) {
-                        longHighState = (back.timePoint - currentHighStateStart) >= minTriggerEvent1Us;
-                        longLowState = (now - back.timePoint) >= minTriggerEvent1Us;
-                }
-                /*
-                 * And this condition is the same as in onEvent's case
-                 */
-                else if (currentState == PwmState::low && currentHighStateStart < currentLowStateStart
-                         && currentMiddleStateStart < currentHighStateStart) {
-                        longHighState = (currentLowStateStart - currentHighStateStart) >= minTriggerEvent1Us;
-                        longLowState = (now - currentLowStateStart) >= minTriggerEvent1Us;
-                }
-
-                if (longHighState && longLowState) {
-                        callback->report (DetectorEventType::trigger, currentHighStateStart);
-                        // triggerLevelState = TriggerLevelState::idle;
-                        __disable_irq ();
-                        highStateStart = middleStateStart = lowStateStart; // To prevent reporting twice
-                        __enable_irq ();
-                }
-        }
-
-        /*--------------------------------------------------------------------------*/
         /* Noise detection + hysteresis                                             */
         /*--------------------------------------------------------------------------*/
         if (now - lastNoiseCalculation >= msToResult1us (NOISE_CALCULATION_PERIOD_MS)) {
@@ -241,12 +202,13 @@ void EdgeFilter::run (Result1us const &now)
                         callback->report (DetectorEventType::noNoise, now);
                 }
 
-                // if (stateChanged) { // No point of calculating trigger if there's no beam, or it was just restored.
-                //         __disable_irq ();
-                //         highStateStart = middleStateStart = lowStateStart;
-                //         __enable_irq ();
-                //         return;
-                // }
+                if (stateChanged) { // No point of calculating trigger if there's no beam, or it was just restored.
+                        __disable_irq ();
+                        highStateStart = middleStateStart = lowStateStart;
+                        // pwmState = PwmState::middle;
+                        __enable_irq ();
+                        return;
+                }
         }
 
         /*--------------------------------------------------------------------------*/
@@ -277,12 +239,52 @@ void EdgeFilter::run (Result1us const &now)
                         callback->report (DetectorEventType::beamRestored, now);
                 }
 
-                // if (stateChanged) { // No point of calculating trigger if there's no beam, or it was just restored.
-                //         __disable_irq ();
-                //         highStateStart = middleStateStart = lowStateStart;
-                //         __enable_irq ();
-                //         return;
-                // }
+                if (stateChanged) { // No point of calculating trigger if there's no beam, or it was just restored.
+                        __disable_irq ();
+                        highStateStart = middleStateStart = lowStateStart;
+                        // pwmState = PwmState::middle;
+                        __enable_irq ();
+                        return;
+                }
+        }
+
+        /*--------------------------------------------------------------------------*/
+        /* Steady state prevention                                                  */
+        /*--------------------------------------------------------------------------*/
+
+        auto tp = std::min (back.timePoint, currentLowStateStart);
+
+        // If there's no noise at all, and the line stays silent, we force the check every minTreggerEventMs
+        if (now - tp >= minTriggerEvent1Us && back.polarity == EdgePolarity::falling /* && triggerLevelState == TriggerLevelState::high */) {
+
+                bool longHighState{};
+                bool longLowState{};
+
+                /*
+                 * This is case when we are still in high state, because no PWM was calculated.
+                 * My previous impl. was inserting fake noise spikes to recalcutale the PWM and
+                 * thus state. This was inefficient.
+                 */
+                if (currentState == PwmState::high && back.timePoint > currentHighStateStart) {
+                        longHighState = (back.timePoint - currentHighStateStart) >= minTriggerEvent1Us;
+                        longLowState = (now - back.timePoint) >= minTriggerEvent1Us;
+                }
+                /*
+                 * And this condition is the same as in onEvent's case
+                 */
+                else if (currentState == PwmState::low && currentHighStateStart < currentLowStateStart
+                         && currentMiddleStateStart < currentHighStateStart) {
+                        longHighState = (currentLowStateStart - currentHighStateStart) >= minTriggerEvent1Us;
+                        longLowState = (now - currentLowStateStart) >= minTriggerEvent1Us;
+                }
+
+                if (longHighState && longLowState) {
+                        callback->report (DetectorEventType::trigger, currentHighStateStart);
+                        // triggerLevelState = TriggerLevelState::idle;
+                        __disable_irq ();
+                        highStateStart = middleStateStart = lowStateStart; // To prevent reporting twice
+                        __enable_irq ();
+                }
         }
 }
 
