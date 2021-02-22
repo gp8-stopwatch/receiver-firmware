@@ -132,8 +132,6 @@ public:
         static constexpr uint32_t MIN_NOISE_SPIKE_1US = 100;
 
 private:
-        Result1us const &getLastStateChange () const { return std::max (highStateStart, lowStateStart); };
-
         Result1us minTriggerEvent1Us{};
 
         /*--------------------------------------------------------------------------*/

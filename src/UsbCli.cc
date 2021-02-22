@@ -65,6 +65,7 @@ auto &getCli ()
                          [&] {
                                  getConfigFlashEepromStorage ().clear ();
                                  readConfigFromFlash ();
+                                 getConfig ().restoreDefaults ();
                                  refreshAll ();
                                  // HAL_NVIC_SystemReset (); // TODO uncoment and test
                          }),

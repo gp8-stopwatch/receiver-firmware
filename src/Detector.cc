@@ -27,8 +27,12 @@ void EdgeFilter::onEdge (Edge const &e)
          * with the same polarity.
          * When compiled with -O0 the fastest it can keep up with is :
          * - 3.33kHz with 1/3 duty (300µs period 100µs spikes)
-         * - 7.5kHz (150µs period) with duty changing between ~30-70%. Rate of this change is 200Hz. This pattern is stored on my s.gen.
+         * - 6.66kHz (150µs period) with duty changing between ~30-70%. Rate of this change is 200Hz. This pattern is stored on my s.gen.
          * When compiled with -O3 the fastest is 10kHz with 50% duty cycle, so IRQ called every 50µs
+         * - 7.7 / 40%
+         *
+         * Release:
+         * 14.3kHz / 40% / 200Hz (42µs + 28µs)
          */
         if (!queue.empty () && queue.back ().polarity == e.polarity) {
                 // Reset queue so it's still full, but pulses are 0 width. This will automatically increase noiseCounter by 2

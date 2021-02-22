@@ -74,7 +74,7 @@ public:
         uint8_t getDutyTresholdPercent () const { return dutyTresholdPercent; }
         void setDutyTresholdPercent (uint8_t i);
 
-        uint16_t getMinTreggerEventMs () const { return minTreggerEventMs; }
+        uint16_t getMinTreggerEventMs () const { return minTriggerEventMs; }
         void setMinTriggerEventMs (uint16_t i);
 
         uint8_t getNoiseLevelHigh () const { return noiseLevelHigh; }
@@ -97,7 +97,7 @@ private:
         uint8_t dutyTresholdPercent;
 
         uint16_t blindTime;
-        uint16_t minTreggerEventMs;
+        uint16_t minTriggerEventMs;
         uint8_t noiseLevelHigh; // This number or more to report noise condition
         uint8_t noiseLevelLow;  // Less than this number to restore normal operation
 };
@@ -105,6 +105,6 @@ private:
 extern bool &changed ();
 
 // static_assert (sizeof (Config) == 4);
-static_assert (sizeof (Config) == 12);
+static_assert (sizeof (Config) == 10);
 
 } // namespace cfg

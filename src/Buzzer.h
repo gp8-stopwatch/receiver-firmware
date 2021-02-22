@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <stm32f0xx_hal.h>
 
+#ifdef WITH_SOUND
 class Buzzer {
 public:
         Buzzer (Gpio &pin) : pin (pin) { pin = false; }
@@ -24,13 +25,7 @@ public:
         void setActive (bool b) { active = b; }
 
 private:
-        void on ()
-        {
-#ifdef WITH_SOUND
-                pin = true;
-#endif
-        }
-
+        void on () { pin = true; }
         void off () { pin = false; }
 
         /*--------------------------------------------------------------------------*/
@@ -44,5 +39,13 @@ private:
         bool soundState = true;
         bool active = true;
 };
-
+#else
+class Buzzer {
+public:
+        void beep (uint16_t periodOn, uint16_t periodOff, uint8_t times) {}
+        void run () {}
+        bool isActive () const { return false; }
+        void setActive (bool b) {}
+};
+#endif
 #endif // BUZZER_H

@@ -95,7 +95,7 @@ cfg::Config &getConfig ()
 #ifdef WITH_FLASH
 ConfigFlashEepromStorage &getConfigFlashEepromStorage ()
 {
-        static ConfigFlashEepromStorage o (4, 1, size_t (&_config_storage_address));
+        static ConfigFlashEepromStorage o (sizeof (cfg::Config), 1, size_t (&_config_storage_address));
         // o.init ();
         return o;
 }
@@ -190,8 +190,10 @@ Buzzer &getBuzzer ()
                 buzzer.beep (20, 0, 1);
         }
 
-        return buzzer;
+#else
+        static Buzzer buzzer;
 #endif
+        return buzzer;
 }
 
 /****************************************************************************/
@@ -259,7 +261,7 @@ EdgeFilter &getIrDetector ()
 {
         // static EdgeDetector triggerDetector{};
         static TestDetectorCallback tc;
-        static EdgeFilter edgeFilter{/* &triggerDetector, */ EdgeFilter::State (getIrTriggerInput ().get ())};
+        static EdgeFilter edgeFilter{/* &triggerDetector, */ EdgeFilter::PwmState (getIrTriggerInput ().get ())};
         edgeFilter.setCallback (&tc);
         return edgeFilter;
 }
@@ -268,7 +270,7 @@ EdgeFilter &getExtDetector ()
 {
         // static EdgeDetector triggerDetector{};
         static TestDetectorCallback tc;
-        static EdgeFilter edgeFilter{/* &triggerDetector,  */ EdgeFilter::State (getExtTriggerInput ().get ())};
+        static EdgeFilter edgeFilter{/* &triggerDetector,  */ EdgeFilter::PwmState (getExtTriggerInput ().get ())};
         edgeFilter.setCallback (&tc);
         return edgeFilter;
 }
@@ -301,7 +303,9 @@ void init ()
         getConfig ();
 #ifdef WITH_FLASH
         getConfigFlashEepromStorage ().init (); // TODO use RAII
+        // getConfigFlashEepromStorage ().clear ();
         readConfigFromFlash ();
+        getConfig ().restoreDefaults ();
 #endif
 
         /*+-------------------------------------------------------------------------+*/
