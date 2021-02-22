@@ -264,4 +264,11 @@ ELSE()
 
     target_compile_features(test PRIVATE cxx_std_17)
 
+    ADD_EXECUTABLE(profile
+        "src/test/DetectorProfile.cc"
+        "src/Detector.cc"
+        "src/Config.cc"
+    )
+
+    target_compile_features(profile PRIVATE cxx_std_17)
 ENDIF ()

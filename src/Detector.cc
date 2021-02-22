@@ -50,13 +50,13 @@ void EdgeFilter::onEdge (Edge const &e)
 
         // Calculate duty cycle of present slice of the signal
         Result1us cycleTresholdCalculated = (queue.back ().timePoint - queue.front ().timePoint)
-                * getConfig ().getDutyTresholdPercent ();               // slice length times treshold. See equation in the docs.
-        Result1us hiDuration = queue[1].timePoint - queue[0].timePoint; // We assume for now, that queue[0] is rising
-        Result1us lowDuration = queue[2].timePoint - queue[1].timePoint;
+                * getConfig ().getDutyTresholdPercent ();                           // slice length times treshold. See equation in the docs.
+        Result1us hiDuration = queue.getE1 ().timePoint - queue.getE0 ().timePoint; // We assume for now, that queue.getE0() is rising
+        Result1us lowDuration = queue.getE2 ().timePoint - queue.getE1 ().timePoint;
 
         // Find out which edge in the queue is rising, which falling.
-        auto *firstRising = &queue[0]; // Pointers are smaller than Edge object
-        auto *firstFalling = &queue[1];
+        auto *firstRising = &queue.getE0 (); // Pointers are smaller than Edge object
+        auto *firstFalling = &queue.getE1 ();
 
         bool longHighEdge{};
         bool longLowEdge{};
@@ -112,23 +112,6 @@ void EdgeFilter::onEdge (Edge const &e)
                 pwmState = PwmState::middle;
                 middleStateStart = firstFalling->timePoint;
         }
-
-        /*--------------------------------------------------------------------------*/
-        /* Trigger level state transitions. Kind of an intermediate step.           */
-        /*--------------------------------------------------------------------------*/
-
-        /*
-                if (pwmState == PwmState::high && e.timePoint - highStateStart >= minTriggerEvent1Us && // Duty cycle is high for at least
-           minTriggerMs triggerLevelState == TriggerLevelState::idle) {                                     // triggerState is idle
-                        triggerLevelState = TriggerLevelState::high;
-                }
-                else if (pwmState == PwmState::low && e.timePoint - lowStateStart >= minTriggerEvent1Us && // Duty is low for at least
-           minTriggerMs triggerLevelState == TriggerLevelState::high) {                                   // triggerState is correct
-                        // triggerLevelState = TriggerLevelState::low;
-                        callback->report (DetectorEventType::trigger, highStateStart);
-                        triggerLevelState = TriggerLevelState::idle;
-                }
-        */
 
         /*--------------------------------------------------------------------------*/
         /* Check trigger event conditions.                                          */
@@ -214,8 +197,9 @@ void EdgeFilter::run (Result1us const &now)
         /*--------------------------------------------------------------------------*/
         /* No beam detection + hysteresis                                           */
         /*--------------------------------------------------------------------------*/
-        // TODO what if trigger ms is bigger than msToResult1us (NO_BEAM_CALCULATION_PERIOD_MS)
-        if (now - lastBeamStateCalculation >= msToResult1us (NO_BEAM_CALCULATION_PERIOD_MS)) {
+        auto noBeamTimeout = std::max (NO_BEAM_CALCULATION_PERIOD_MS, getConfig ().getMinTreggerEventMs ());
+
+        if (now - lastBeamStateCalculation >= msToResult1us (noBeamTimeout)) {
                 lastBeamStateCalculation = now;
 
                 __disable_irq ();
@@ -242,7 +226,7 @@ void EdgeFilter::run (Result1us const &now)
                 if (stateChanged) { // No point of calculating trigger if there's no beam, or it was just restored.
                         __disable_irq ();
                         highStateStart = middleStateStart = lowStateStart;
-                        // pwmState = PwmState::middle;
+                        pwmState = PwmState::middle;
                         __enable_irq ();
                         return;
                 }
@@ -283,6 +267,7 @@ void EdgeFilter::run (Result1us const &now)
                         // triggerLevelState = TriggerLevelState::idle;
                         __disable_irq ();
                         highStateStart = middleStateStart = lowStateStart; // To prevent reporting twice
+                        pwmState = PwmState::middle;
                         __enable_irq ();
                 }
         }

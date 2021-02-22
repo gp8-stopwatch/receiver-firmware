@@ -37,7 +37,35 @@ struct Edge {
 /**
  * A slice of a rectangular signal, 3 edges. Sometimes called simply the "slice"
  */
-using EdgeQueue = etl::circular_buffer<Edge, 3>;
+// using EdgeQueue = etl::circular_buffer<Edge, 3>;
+
+/**
+ * A slice of a rectangular signal, 3 edges. Sometimes called simply the "slice"
+ */
+class EdgeQueue {
+public:
+        bool empty () const { return _empty; }
+        Edge &back () { return e2; }
+        Edge &front () { return e0; }
+
+        Edge &getE0 () { return e0; }
+        Edge &getE1 () { return e1; }
+        Edge &getE2 () { return e2; }
+
+        void push (Edge const &e)
+        {
+                e0 = e1;
+                e1 = e2;
+                e2 = e;
+                _empty = false;
+        }
+
+private:
+        bool _empty{true};
+        Edge e0;
+        Edge e1;
+        Edge e2;
+};
 
 enum class DetectorEventType { trigger, noise, noNoise, noBeam, beamRestored };
 
@@ -90,7 +118,7 @@ public:
 
         /// How often to calculate if noise state has changed.
         static constexpr uint32_t NOISE_CALCULATION_PERIOD_MS = 1000;
-        static constexpr uint32_t NO_BEAM_CALCULATION_PERIOD_MS = 1000;
+        static constexpr uint16_t NO_BEAM_CALCULATION_PERIOD_MS = 1000;
 
         /*
          * Most severe (the shortest) noise spike we anticipate for.
