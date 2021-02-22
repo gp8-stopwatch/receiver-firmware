@@ -159,6 +159,7 @@ void EdgeFilter::run (Result1us const &now)
         auto currentState = pwmState;
         auto currentHighStateStart = highStateStart;
         auto currentLowStateStart = lowStateStart;
+        auto currentMiddleStateStart = middleStateStart;
         __enable_irq ();
 
         /*--------------------------------------------------------------------------*/
@@ -185,7 +186,8 @@ void EdgeFilter::run (Result1us const &now)
                 /*
                  * And this condition is the same as in onEvent's case
                  */
-                else if (currentState == PwmState::low && currentHighStateStart < currentLowStateStart) {
+                else if (currentState == PwmState::low && currentHighStateStart < currentLowStateStart
+                         && currentMiddleStateStart < currentHighStateStart) {
                         longHighState = (currentLowStateStart - currentHighStateStart) >= minTriggerEvent1Us;
                         longLowState = (now - currentLowStateStart) >= minTriggerEvent1Us;
                 }

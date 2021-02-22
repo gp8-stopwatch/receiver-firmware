@@ -1046,13 +1046,13 @@ TEST_CASE ("Duty cycle", "[detector]")
         {
 
                 /*
-                 *        +------+   +            +
-                 *        |      |   |            |
-                 *        |      |   |            |
-                 *        |      |   |            |
-                 *        |      |   |            |
-                 * -------+      +---+------------+
-                 * 0    10ms   20ms              50ms
+                 *        +------+   +     +       +
+                 *        |      |   |     |       |
+                 *        |      |   |     |       |
+                 *        |      |   |     |       |
+                 *        |      |   |     |       |
+                 * -------+      +---+-----+-------+
+                 * 0    10ms   20ms        31ms    50ms
                  */
                 getConfig ().setDutyTresholdPercent (100);
 
@@ -1068,9 +1068,136 @@ TEST_CASE ("Duty cycle", "[detector]")
                 edgeFilter.onEdge ({25 * 1000, EdgePolarity::rising});
                 edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::falling});
 
-                edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({30 * 1000 + 50, EdgePolarity::falling});
+                edgeFilter.onEdge ({31 * 1000, EdgePolarity::rising});
+                edgeFilter.onEdge ({31 * 1000 + 50, EdgePolarity::falling});
                 REQUIRE (events.empty ());
+
+                edgeFilter.onEdge ({50 * 1000, EdgePolarity::rising});
+                REQUIRE (events.empty ());
+        }
+
+        {
+
+                /*
+                 *        +------+   +         +
+                 *        |      |   |         |
+                 *        |      |   |         |
+                 *        |      |   |         |
+                 *        |      |   |         |
+                 * -------+      +---+----++---+----+
+                 * 0    10ms   20ms            35ms
+                 *                      30,31ms     50ms
+                 */
+                getConfig ().setDutyTresholdPercent (100);
+
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
+
+                // Noise spike (positive)
+                edgeFilter.onEdge ({25 * 1000, EdgePolarity::rising});
+                edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::falling});
+
+                edgeFilter.run (30 * 1000);
+                REQUIRE (events.empty ());
+
+                edgeFilter.run (31 * 1000);
+                REQUIRE (events.empty ());
+
+                // Noise spike (positive)
+                edgeFilter.onEdge ({35 * 1000 + 100, EdgePolarity::rising});
+                edgeFilter.onEdge ({35 * 1000 + 200, EdgePolarity::falling});
+
+                edgeFilter.run (50 * 1000);
+                REQUIRE (events.empty ());
+        }
+}
+
+TEST_CASE ("Duty cycle less", "[detector]")
+{
+        {
+
+                /*
+                 *        +------+   ++         +
+                 *        |      |   ||         |
+                 *        |      |   ||         |
+                 *        |      |   ||         |
+                 *        |      |   ||         |
+                 * -------+      +---++----++---+----+
+                 * 0    10ms   20ms            35ms
+                 *                      30,31ms     50ms
+                 */
+                getConfig ().setDutyTresholdPercent (95);
+
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
+
+                // Noise spike (positive)
+                edgeFilter.onEdge ({25 * 1000, EdgePolarity::rising});
+                edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::falling});
+                edgeFilter.onEdge ({25 * 1000 + 200, EdgePolarity::rising});
+                edgeFilter.onEdge ({25 * 1000 + 300, EdgePolarity::falling});
+
+                edgeFilter.run (30 * 1000);
+                REQUIRE (events.empty ());
+
+                edgeFilter.run (31 * 1000);
+                REQUIRE (events.empty ());
+
+                // Noise spike (positive)
+                edgeFilter.onEdge ({36 * 1000, EdgePolarity::rising});
+                edgeFilter.onEdge ({36 * 1000, EdgePolarity::falling});
+
+                edgeFilter.run (50 * 1000);
+                REQUIRE (events.empty ());
+        }
+
+        {
+
+                /*
+                 *        +------+   ++         +    +
+                 *        |      |   ||         |    |
+                 *        |      |   ||         |    |
+                 *        |      |   ||         |    |
+                 *        |      |   ||         |    |
+                 * -------+      +---++----++---+----+
+                 * 0    10ms   20ms            35ms
+                 *                      30,31ms     50ms
+                 */
+                getConfig ().setDutyTresholdPercent (95);
+
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
+
+                // Noise spike (positive)
+                edgeFilter.onEdge ({25 * 1000, EdgePolarity::rising});
+                edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::falling});
+                edgeFilter.onEdge ({25 * 1000 + 200, EdgePolarity::rising});
+                edgeFilter.onEdge ({25 * 1000 + 300, EdgePolarity::falling});
+
+                edgeFilter.run (30 * 1000);
+                REQUIRE (events.empty ());
+
+                edgeFilter.run (31 * 1000);
+                REQUIRE (events.empty ());
+
+                // Noise spike (positive)
+                edgeFilter.onEdge ({36 * 1000, EdgePolarity::rising});
+                edgeFilter.onEdge ({36 * 1000, EdgePolarity::falling});
 
                 edgeFilter.onEdge ({50 * 1000, EdgePolarity::rising});
                 REQUIRE (events.empty ());

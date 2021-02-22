@@ -57,7 +57,13 @@ template <typename T> T trim (T t)
 /****************************************************************************/
 
 void Config::setBlindTime (uint16_t b) { blindTime = trim (b); }
-void Config::setDutyTresholdPercent (uint8_t i) { dutyTresholdPercent = std::min<uint8_t> (i, 100); }
+
+void Config::setDutyTresholdPercent (uint8_t i)
+{
+        dutyTresholdPercent = std::min<uint8_t> (i, 100);
+        dutyTresholdPercent = std::max<uint8_t> (i, 50);
+}
+
 void Config::setMinTriggerEventMs (uint16_t i) { minTreggerEventMs = trim (i); }
 void Config::setNoiseLevelHigh (uint8_t i) { noiseLevelHigh = std::min<uint8_t> (i, MAX_NOISE_LEVEL); }
 void Config::setNoiseLevelLow (uint8_t i) { noiseLevelLow = std::min<uint8_t> (i, MAX_NOISE_LEVEL); }
