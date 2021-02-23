@@ -103,7 +103,7 @@ ConfigFlashEepromStorage &getConfigFlashEepromStorage ()
 
 /****************************************************************************/
 
-auto &getIrTriggerInput ()
+Gpio &getIrTriggerInput ()
 {
         // IR on means the state is LOW. Beam interruption means transition from LOW to HI i.e. rising.
         static Gpio irTriggerInput (IR_PORT, IR_PINS, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL); // TODO GPIO_PULLDOWN & test
@@ -112,7 +112,7 @@ auto &getIrTriggerInput ()
 
 /****************************************************************************/
 
-auto &getExtTriggerInput ()
+Gpio &getExtTriggerInput ()
 {
         // External trigger
         static Gpio extTriggerInput (EXT_TRIGGER_INPUT_PORT, EXT_TRIGGER_INPUT_PINS, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLDOWN);
@@ -251,6 +251,7 @@ DisplayMenu &getMenu ()
 }
 
 /****************************************************************************/
+
 struct TestDetectorCallback : public IEdgeDetectorCallback {
         void report (DetectorEventType type, Result1us timePoint) override
         { /* events.push_back ({type, timePoint}); */
@@ -369,9 +370,9 @@ void init ()
 
         getIrDetector ();
         getExtDetector ();
-        getIrTriggerInput ().setOnToggle ([] {
-                getIrDetector ().onEdge ({getStopWatch ().getTimeFromIsr (), EdgePolarity (getIrTriggerInput ().get ())});
-        });
+        // getIrTriggerInput ().setOnToggle ([] {
+        //         getIrDetector ().onEdge ({getStopWatch ().getTimeFromIsr (), EdgePolarity (getIrTriggerInput ().get ())});
+        // });
 
         // getExtTriggerInput ().setOnToggle ([] {
         //         getExtDetector ().onEdge ({getStopWatch ().getTime (), EdgePolarity (getExtTriggerInput ().get ())});

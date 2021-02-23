@@ -35,7 +35,7 @@ public:
 
                 dutyTresholdPercent = DEFAULT_DUTY_TRESHOLD_PERCENT;
                 blindTime = DEFAULT_BLIND_TIME_MS;
-                minTreggerEventMs = DEFAULT_MIN_TRIGGER_EVENT_MS;
+                minTriggerEventMs = DEFAULT_MIN_TRIGGER_EVENT_MS;
                 noiseLevelHigh = DEFAULT_NOISE_LEVEL_HIGH;
                 noiseLevelLow = DEFAULT_NOISE_LEVEL_LOW;
         }
@@ -105,6 +105,7 @@ private:
 extern bool &changed ();
 
 // static_assert (sizeof (Config) == 4);
-static_assert (sizeof (Config) == 10);
+// static_assert (sizeof (Config) == 10);
+static_assert (sizeof (Config) == 12);
 
 } // namespace cfg

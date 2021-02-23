@@ -10,7 +10,7 @@
 
 Button::Button (Gpio &pin) : pin (pin)
 {
-        pin.setOnToggle ([this] { onToggle (); });
+        // pin.setOnToggle ([this] { onToggle (); });
 }
 
 /*****************************************************************************/

@@ -198,7 +198,7 @@ TEST_CASE ("Edge cases", "[detector]")
                 REQUIRE (events.empty ());
 
                 // Run after minTreggerEventMs from last edge
-                edgeFilter.run (30 * 1000);
+                edgeFilter.run (30 * 1000 + 100);
 
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::trigger);

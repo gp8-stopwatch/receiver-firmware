@@ -6,29 +6,21 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
-#pragma once
-#include "Gpio.h"
-#include "Hal.h"
-#include "Timer.h"
-#include <cstdint>
+#include "Container.h"
+#include "Regular.h"
 
-class Button {
-public:
-        explicit Button (Gpio &pin);
+/****************************************************************************/
 
-        bool getPressClear () const;
-        bool getLongPressClear () const;
-        void run ();
+extern "C" void EXTI4_15_IRQHandler ()
+{
+        while (true) { // TODO
+        }
+}
 
-        void onToggle ();
+/****************************************************************************/
 
-private:
-        Gpio &pin;
-
-        mutable bool pressedEvent = false;
-        mutable bool longPressedEvent = false;
-        mutable bool pressed = false;
-
-        Timer longPressTimer;
-        Timer debounceTimer;
-};
+extern "C" void EXTI2_3_IRQHandler ()
+{
+        while (true) { // TODO
+        }
+}

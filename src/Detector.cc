@@ -11,10 +11,12 @@
 #ifndef UNIT_TEST
 #include "Gpio.h"
 Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
+#define debugPin(x) senseOn.set (x)
 #include "Container.h"
 #else
 #define __disable_irq(x) x
 #define __enable_irq(x) x
+#define debugPin(x)
 #endif
 
 /*****************************************************************************/
@@ -33,6 +35,7 @@ void EdgeFilter::onEdge (Edge const &e)
          *
          * Release:
          * 14.3kHz / 40% / 200Hz (42µs + 28µs)
+         * 16.6kHz
          */
         if (!queue.empty () && queue.back ().polarity == e.polarity) {
                 // Reset queue so it's still full, but pulses are 0 width. This will automatically increase noiseCounter by 2
@@ -96,25 +99,22 @@ void EdgeFilter::onEdge (Edge const &e)
         {
                 if (pwmState != PwmState::high) {
                         pwmState = PwmState::high;
-#ifndef UNIT_TEST
-                        senseOn.set (true);
-#endif
                         highStateStart = firstRising->timePoint;
+                        debugPin (true);
                 }
         }
         else if (lowDuration * 100 >= cycleTresholdCalculated || // PWM of the slice is low
                  longLowEdge) {                                  // Or the low level was long enogh itself
                 if (pwmState != PwmState::low) {
                         pwmState = PwmState::low;
-#ifndef UNIT_TEST
-                        senseOn.set (false);
-#endif
                         lowStateStart = firstFalling->timePoint;
+                        debugPin (false);
                 }
         }
         else if (pwmState != PwmState::middle) { // Previous conditions for level durations weren't satisfied
                 pwmState = PwmState::middle;
                 middleStateStart = firstFalling->timePoint;
+                debugPin (false);
         }
 
         /*--------------------------------------------------------------------------*/
@@ -192,7 +192,7 @@ void EdgeFilter::run (Result1us const &now)
                 if (stateChanged) { // No point of calculating trigger if there's no beam, or it was just restored.
                         __disable_irq ();
                         highStateStart = middleStateStart = lowStateStart;
-                        // pwmState = PwmState::middle;
+                        // pwmState = PwmState::middle; // TODO uncomment and run unit tetss
                         __enable_irq ();
                         return;
                 }
@@ -240,11 +240,24 @@ void EdgeFilter::run (Result1us const &now)
         /* Steady state prevention                                                  */
         /*--------------------------------------------------------------------------*/
 
-        auto tp = std::min (back.timePoint, currentLowStateStart);
+        Result1us tp;
 
-        // If there's no noise at all, and the line stays silent, we force the check every minTreggerEventMs
-        if (now - tp >= minTriggerEvent1Us && back.polarity == EdgePolarity::falling /* && triggerLevelState == TriggerLevelState::high */) {
+        /*
+         * This additional condition (forst branch) is for situations, when for certain period of time
+         * after correct (long) high state we have a period of low PWM duty cycle (with some positive noise),
+         * but not long enough to be qualified as a correct (long) low state.
+         */
+        if (currentLowStateStart > currentHighStateStart) {
+                tp = std::min (back.timePoint, currentLowStateStart);
+        }
+        else { // This is valid when after high duty there is absolutely no noise.
+                tp = back.timePoint;
+        }
 
+        // If there's no noise which would trigger onEdge and thus force a check.
+        if (now - tp >= minTriggerEvent1Us && back.polarity == EdgePolarity::falling) {
+
+                debugPin (false);
                 bool longHighState{};
                 bool longLowState{};
 
@@ -271,7 +284,7 @@ void EdgeFilter::run (Result1us const &now)
                         // triggerLevelState = TriggerLevelState::idle;
                         __disable_irq ();
                         highStateStart = middleStateStart = lowStateStart; // To prevent reporting twice
-                        pwmState = PwmState::middle;
+                        pwmState = PwmState::middle;                       // TODO mistake - this shoulc be in noise section
                         __enable_irq ();
                 }
         }

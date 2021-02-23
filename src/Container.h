@@ -71,3 +71,5 @@ extern Rtc &getRtc ();
 extern CanProtocol &getProtocol ();
 extern EdgeFilter &getIrDetector ();
 extern EdgeFilter &getExtDetector ();
+extern Gpio &getIrTriggerInput ();
+extern Gpio &getExtTriggerInput ();

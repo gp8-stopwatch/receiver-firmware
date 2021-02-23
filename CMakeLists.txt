@@ -34,7 +34,7 @@ set(WITH_RTC ON CACHE BOOL "Complie RTC support")
 set(WITH_POWER_MANAGER OFF CACHE BOOL "Complie power sensing support")
 set(WITH_CHECK_SENSOR_STATUS ON CACHE BOOL "If on, the device checks for external sensors and queries their state")
 set(WITH_BUTTON ON CACHE BOOL "Compile button support")
-ADD_DEFINITIONS (-DPLATFORM_REGULAR)
+set(PLATFORM_REGULAR ON CACHE BOOL "")
 
 # Micro receiver
 # set(WITH_SOUND OFF CACHE BOOL "Compile buzzer support")
@@ -51,7 +51,7 @@ ADD_DEFINITIONS (-DPLATFORM_REGULAR)
 # set(WITH_POWER_MANAGER OFF CACHE BOOL "Complie power sensing support")
 # set(WITH_CHECK_SENSOR_STATUS OFF CACHE BOOL "If on, the device checks for external sensors and queries their state")
 # set(WITH_BUTTON ON CACHE BOOL "Compile button support")
-# ADD_DEFINITIONS (-DPLATFORM_MICRO)
+# set(PLATFORM_MICRO ON CACHE BOOL "")
 
 # Huge display without built in receiver
 # set(WITH_SOUND ON CACHE BOOL "Compile buzzer support")
@@ -68,7 +68,7 @@ ADD_DEFINITIONS (-DPLATFORM_REGULAR)
 # set(WITH_POWER_MANAGER ON CACHE BOOL "Complie power sensing support")
 # set(WITH_CHECK_SENSOR_STATUS ON CACHE BOOL "If on, the device checks for external sensors and queries their state")
 # set(WITH_BUTTON ON CACHE BOOL "Compile button support")
-# ADD_DEFINITIONS (-DPLATFORM_HUGE)
+# set(PLATFORM_HUGE ON CACHE BOOL "")
 
 IF (WITH_SOUND)
     ADD_DEFINITIONS (-DWITH_SOUND=1)
@@ -126,6 +126,19 @@ IF (WITH_BUTTON)
     ADD_DEFINITIONS (-DWITH_BUTTON=1)
 ENDIF ()
 
+## platforms
+
+IF (PLATFORM_REGULAR)
+    ADD_DEFINITIONS (-DPLATFORM_REGULAR)
+ENDIF ()
+
+IF (PLATFORM_MICRO)
+    ADD_DEFINITIONS (-DPLATFORM_MICRO)
+ENDIF ()
+
+IF (PLATFORM_HUGE)
+    ADD_DEFINITIONS (-DPLATFORM_HUGE)
+ENDIF ()
 
 # DEVICE is defined in the toolchain file, so if it's present, we assume that the firmware is beeing built.
 IF (DEFINED DEVICE)
@@ -145,7 +158,7 @@ IF (DEFINED DEVICE)
         "${LIB_MICRO_ROOT}/src/TimerF.cc"
         "${LIB_MICRO_ROOT}/src/Debug.cc"
         "${LIB_MICRO_ROOT}/src/GpioF.cc"
-        "${LIB_MICRO_ROOT}/src/GpioF0.cc"
+        # "${LIB_MICRO_ROOT}/src/GpioF0.cc"
         "${LIB_MICRO_ROOT}/src/UsartF.cc"
         "${LIB_MICRO_ROOT}/src/UsartF0.cc"
 
@@ -228,6 +241,18 @@ IF (DEFINED DEVICE)
         LIST (APPEND SOURCES
         "src/PowerManagement.cc"
         )
+    ENDIF ()
+
+    IF (PLATFORM_REGULAR)
+        LIST (APPEND SOURCES "src/platform/Regular.cc")
+    ENDIF ()
+
+    IF (PLATFORM_MICRO)
+        LIST (APPEND SOURCES "src/platform/Micro.cc")
+    ENDIF ()
+
+    IF (PLATFORM_HUGE)
+        LIST (APPEND SOURCES "src/platform/Huge.cc")
     ENDIF ()
 
     ADD_EXECUTABLE(${CMAKE_PROJECT_NAME}.elf ${SOURCES})

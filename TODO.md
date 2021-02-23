@@ -69,6 +69,7 @@
   * [ ] Noise level live display on the main screen - this would aid aiming / setting up the RX/TX pair (but what when 1 or more micro-RX connected?).
   * [ ] When cannot keep up with the ISR, turn it off for a period. There's no sense.
   * [ ] Trigger config to flash
+* [ ] Config behavious is undefined after layout change.
 
 # Hardware
 * [x] Boot pin easy accessible (for DFU).
