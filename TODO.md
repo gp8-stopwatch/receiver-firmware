@@ -49,33 +49,46 @@
 1µs resolution:
 ![1µs resolution](doc/result-1us-substractions_2021-02-04_23-38-01.png)
 
-* [ ] Trigger. 
-  * [ ] Signal strength reduction (/2) switch in the TX. For indoor use.
-  * [ ] Minimum event length should be configurable (now 10ms)
-  * [x] Trigger low steady time should be the same as the minimum event length.
-  * [ ] Command for noise level reporintg.
-  * [ ] maybe duty cycle condition should depend on noise level?
-  * 2 types of disturbance in the signal : 
-    * Too intense IR + reflections (meaning it is hard to interrupt it) -> chopped during the event, clean otherwise. 
-    * Too weak IR -> haven't checked. 
-    * Exteral DC light -> both high and low states are littered with noise.
-  * [ ] Polish the trigger class (Detector)
-  * [ ] Check on the oscilloscope - I've seen curious state changes, and I don't know if they're OK.
-  * [x] Check how fast is the onEdge ISR without the screen running. EDIT : no noticeable change.
-  * [ ] Optimise onEdge
-    * [ ] Profile on a PC
-    * [ ] Depending on profiling data change circular buffer implementatiion?
-    * [ ] std::function in Gpio EXTI ISR - remove!
-  * [ ] Noise level live display on the main screen - this would aid aiming / setting up the RX/TX pair (but what when 1 or more micro-RX connected?).
-  * [ ] When cannot keep up with the ISR, turn it off for a period. There's no sense.
-  * [ ] Trigger config to flash
-* [ ] Config behavious is undefined after layout change.
+# Trigger (nose filtering)
+* [ ] ~~Signal strength reduction (/2) switch in the TX. For indoor use.~~ EDIT : adjust resistors and leave the switch as it is. Middle position will be what is current lowest, and the new lowest will be even lower.
+* [x] Minimum event length should be configurable (now 10ms)
+* [x] Trigger low steady time should be the same as the minimum event length.
+* [ ] Command for noise level reporintg.
+* [ ] maybe duty cycle condition should depend on noise level?
+* 2 types of disturbance in the signal : 
+  * Too intense IR + reflections (meaning it is hard to interrupt it) -> chopped during the event, clean otherwise. 
+  * Too weak IR -> haven't checked. 
+  * Exteral DC light -> both high and low states are littered with noise.
+* [x] Polish the trigger class (Detector)
+* [x] Check on the oscilloscope - I've seen curious state changes, and I don't know if they're OK.
+* [x] Check how fast is the onEdge ISR without the screen running. EDIT : no noticeable change.
+* [x] Optimise onEdge
+  * [x] Profile on a PC
+  * [x] Depending on profiling data change circular buffer implementatiion?
+  * [x] std::function in Gpio EXTI ISR - remove!
+* [ ] Noise level live display on the main screen - this would aid aiming / setting up the RX/TX pair (but what when 1 or more micro-RX connected?).
+* [ ] ~~When cannot keep up with the ISR, turn it off for a period. There's no sense.~~
+* [ ] Trigger config to flash
+* [ ] Czas w 32 bitach bo i tak mierzymy względne odstępy a nie absolutne. Typ result1us jako klasa z dwiema 32 bitowymi polami lub po prostu do ir bierzemy młodsze 32. EDIT : **kiedyś**.
+* [x] Stan nieustalony jako 3 stan PWM. Triger tevt dopuszcza mały kawałek stanu ś nieustalonego pomiędzy wysokim a niskim
+* [ ] ~~Slice PWM z 5 elementami załatwi problem z testu LO w PWM im rhe middle.~~ EDIT : czy warto?
+* [ ] ~~Można spróbować liczyć PWM tylko co 3/5 lub więcej krawędzi. To spowoduje że isr exti będzie wykonywano skomplikowane obliczenia tylko raz na 3/5 razy. To zmniejszy prawdopodobieństwo mised isr 3/5 krotnie.~~ EDIT : zmnijesza dokładność, bo początek triggera może wypaść pośrodku.
+* [x] Można uprościć circular buffer
+* [x] Jeden event na raz. Teraz po beamRestored wrzuca jeszcze trigger, bo nie czyści stanu wewnętrznego.
+* [ ] Noise liczba spikow na długą i niezależna od ustawień jednostkę czasu np 1s. Ten okres powinien być zależny od charakteru typowych zakłóceń. Dzielimy sygnał na sekundowe odcinki. Histereza. Działa cały czas nawet gdy blind.
+  * [ ] Wykrywanie szumu musi być jakoś powiązane z aktualnym dutu cycle level. Jeśli nie będzie to możemy mieć sytuację że pokazuje się niski poziom szumu, ale z powodu wysokiego progu duty nie łapiemy trigeroe. No i to będzie wyglądało jak błąd!
+* [ ] No signal dzielimy sygnał na odcinku. Uzależnione od ustawień. Blond timer i min event . A może jednak nie uzależniać od blind timer?  Jak ktoś ustawy blind na 10 sekund to słabo będzie działać. Może jednak 1s tak samo jak z noise, ale w czasie blind time po prostu nie wykrywany ani trigeroe ani blind Jeżeli w odcinku czasu ty hiduty większe niż tteshold (ten sam co przy triger) to zgłaszamy. Żeby odwołać histereza
+* [ ] Draw a diagram of all of this.
+* [ ] Test minimum event length in unit tests.
+  * [ ] Test when minimum event lenght is longer than blind period.
+* [ ] Blind time.
+
 
 # Hardware
 * [x] Boot pin easy accessible (for DFU).
 * [x] Crystal oscillator footprint suitable for modern TCXOs, not this THT crap.
 * [x] ~~Reduce holes for CAN socket supports (thise 2 plastic one sticking out)~~ The case is holding the socket in place. Too much effort.
-* [x] Ldo for etc should be 3v3 not 1v8. Voltage difference would be smaller.
+* [x] Ldo for RTC should be 3v3 not 1v8. Voltage difference would be smaller.
 * [x] Przetestować RTC z tym małym LDO.
 * [x] Battery protection in software (for overdischarge)
   * [x] When powered off no software is running. What is the current draw of ldo plus rtc? 0.5µA (includeing RTC + low Q LDO)
@@ -177,6 +190,8 @@
    * [ ] Trigger rising and falling correction
      * [ ] Sending this correction via CAN bus as well
      * [ ] Bigger precission than Result type can provide. I have 2 HW timers, it would be wise to store state of both of them (?). yeah, I could use uint64_t instead of uint32_t as a result type. Then I could store 1µs or even 500ns. This would hopefully decrease errors caused by arithmetic (there are some substractions). Alternatively I could get rid of those substractions, but I think I introduced this during noise-cancelation implementation.
+* [ ] Config behavious is undefined after layout change.
+
 
 # Bugs
 * [x] So it happened that it couldn't save results history when the page overflowed from 1 back to 0 (after 128 measurements). Probably it didn't cleared the flash.

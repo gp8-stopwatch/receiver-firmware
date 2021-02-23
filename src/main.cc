@@ -38,7 +38,7 @@ int main ()
         // Refresh stopwatch state to reflect the config.
         auto refreshSettings = [&] {
                 getDisplay ().setFlip (getConfig ().isFlip ());
-                getBeam ().setActive (getConfig ().isIrSensorOn ());
+                // getIrDetector ().setActive (getConfig ().isIrSensorOn ());
 #ifdef WITH_SOUND
                 getBuzzer ().setActive (getConfig ().isBuzzerOn ());
 #endif
@@ -74,7 +74,20 @@ int main ()
                 usbcli::run ();
 
                 if (displayTimer.isExpired ()) {
-                        // getFastStateMachine ().run (Event::Type::timePassed);
+
+                        /*
+                         * Des not have to be invoked more frequently than the screen refresh rate. Nobody
+                         * would notice anyway.
+                         */
+                        Event evt;
+                        __disable_irq ();
+                        if (!eventQueue.empty ()) {
+                                evt = eventQueue.front ();
+                                eventQueue.pop ();
+                        }
+                        __enable_irq ();
+
+                        getFastStateMachine ().run (Event::Type::timePassed);
                         displayTimer.start (refreshRate);
                 }
 

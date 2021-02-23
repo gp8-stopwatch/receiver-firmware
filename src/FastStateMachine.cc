@@ -47,7 +47,7 @@ void FastStateMachine::run (Event event)
                         lastTime = event.getTime ();
                 }
                 // Event possible only if WITH_CHECK_SENSOR_STATUS is set
-                else if (eType == Event::Type::noIr || eType == Event::Type::irNoise) {
+                else if (eType == Event::Type::noBeam || eType == Event::Type::noise) {
                         state = State::WAIT_FOR_BEAM;
                 }
         }

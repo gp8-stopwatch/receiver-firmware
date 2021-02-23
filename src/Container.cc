@@ -121,13 +121,13 @@ Gpio &getExtTriggerInput ()
 
 /****************************************************************************/
 
-InfraRedBeamExti &getBeam ()
-{
-        static Gpio extTriggerOutput (EXT_TRIGGER_OUTPUT_PORT, EXT_TRIGGER_OUTPUT_PINS, GPIO_MODE_OUTPUT_PP);
-        static Gpio extTriggerOutEnable (EXT_TRIGGER_OUT_ENABLE_PORT, EXT_TRIGGER_OUT_ENABLE_PINS, GPIO_MODE_OUTPUT_PP);
-        static InfraRedBeamExti beam{getIrTriggerInput (), extTriggerOutput, extTriggerOutEnable};
-        return beam;
-}
+// InfraRedBeamExti &getBeam ()
+// {
+//         static Gpio extTriggerOutput (EXT_TRIGGER_OUTPUT_PORT, EXT_TRIGGER_OUTPUT_PINS, GPIO_MODE_OUTPUT_PP);
+//         static Gpio extTriggerOutEnable (EXT_TRIGGER_OUT_ENABLE_PORT, EXT_TRIGGER_OUT_ENABLE_PINS, GPIO_MODE_OUTPUT_PP);
+//         static InfraRedBeamExti beam{getIrTriggerInput (), extTriggerOutput, extTriggerOutEnable};
+//         return beam;
+// }
 
 /****************************************************************************/
 
@@ -215,6 +215,34 @@ FastStateMachine &getFastStateMachine ()
 
 /****************************************************************************/
 
+EventQueue eventQueue;
+
+struct DetectorCallback : public IEdgeDetectorCallback {
+        void report (DetectorEventType type, Result1us timePoint) override { eventQueue.push ({detectorEventToFSMEvent (type), timePoint}); }
+        static inline Event::Type detectorEventToFSMEvent (DetectorEventType evt) { return Event::Type (evt); }
+};
+
+EdgeFilter &getIrDetector ()
+{
+        // static EdgeDetector triggerDetector{};
+        static DetectorCallback tc;
+        static EdgeFilter edgeFilter{/* &triggerDetector, */ EdgeFilter::PwmState (getIrTriggerInput ().get ())};
+        edgeFilter.setCallback (&tc);
+        return edgeFilter;
+}
+
+EdgeFilter &getExtDetector ()
+{
+        // static EdgeDetector triggerDetector{};
+        static DetectorCallback tc;
+        // TODO different detector.
+        static EdgeFilter edgeFilter{/* &triggerDetector,  */ EdgeFilter::PwmState (getExtTriggerInput ().get ())};
+        edgeFilter.setCallback (&tc);
+        return edgeFilter;
+}
+
+/****************************************************************************/
+
 Button &getButton ()
 {
 #ifdef WITH_BUTTON
@@ -248,32 +276,6 @@ DisplayMenu &getMenu ()
         menu.setRtc (&getRtc ());
 #endif
         return menu;
-}
-
-/****************************************************************************/
-
-struct TestDetectorCallback : public IEdgeDetectorCallback {
-        void report (DetectorEventType type, Result1us timePoint) override
-        { /* events.push_back ({type, timePoint}); */
-        }
-};
-
-EdgeFilter &getIrDetector ()
-{
-        // static EdgeDetector triggerDetector{};
-        static TestDetectorCallback tc;
-        static EdgeFilter edgeFilter{/* &triggerDetector, */ EdgeFilter::PwmState (getIrTriggerInput ().get ())};
-        edgeFilter.setCallback (&tc);
-        return edgeFilter;
-}
-
-EdgeFilter &getExtDetector ()
-{
-        // static EdgeDetector triggerDetector{};
-        static TestDetectorCallback tc;
-        static EdgeFilter edgeFilter{/* &triggerDetector,  */ EdgeFilter::PwmState (getExtTriggerInput ().get ())};
-        edgeFilter.setCallback (&tc);
-        return edgeFilter;
 }
 
 namespace container {

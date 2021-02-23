@@ -67,7 +67,8 @@ private:
         Edge e2;
 };
 
-enum class DetectorEventType { trigger, noise, noNoise, noBeam, beamRestored };
+// Warning! Due to optimization reasons, the values below has to be in sync with enum Event
+enum class DetectorEventType { trigger = 0, noise = 1, noNoise = 2, noBeam = 3, beamRestored = 4 };
 
 /**
  *
@@ -132,6 +133,7 @@ public:
         static constexpr uint32_t MIN_NOISE_SPIKE_1US = 100;
 
 private:
+        bool active{};
         Result1us minTriggerEvent1Us{};
 
         /*--------------------------------------------------------------------------*/

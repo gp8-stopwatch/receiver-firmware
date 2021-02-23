@@ -23,6 +23,10 @@ Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
 
 void EdgeFilter::onEdge (Edge const &e)
 {
+        if (!active) {
+                return;
+        }
+
         /*
          * This can happen when noise frequency is very high, and the µC can't keep up,
          * and its misses an EXTI event. This way we can end up with two consecutive edges
@@ -138,7 +142,7 @@ void EdgeFilter::onEdge (Edge const &e)
 void EdgeFilter::run (Result1us const &now)
 {
         __disable_irq ();
-        if (queue.empty ()) {
+        if (!active || queue.empty ()) {
                 return;
         }
 
@@ -181,18 +185,22 @@ void EdgeFilter::run (Result1us const &now)
                         stateChanged = true;
                         // TODO When noise counter is high, turn of the EXTI, so the rest of the code has a chance to run. Then enable it
                         // after 1s
+                        __disable_irq ();
                         callback->report (DetectorEventType::noise, now);
+                        __enable_irq ();
                 }
                 else if (noiseState == NoiseState::noise && noiseLevel <= getConfig ().getNoiseLevelLow ()) {
                         noiseState = NoiseState::noNoise;
                         stateChanged = true;
+                        __disable_irq ();
                         callback->report (DetectorEventType::noNoise, now);
+                        __enable_irq ();
                 }
 
                 if (stateChanged) { // No point of calculating trigger if there's no beam, or it was just restored.
                         __disable_irq ();
                         highStateStart = middleStateStart = lowStateStart;
-                        // pwmState = PwmState::middle; // TODO uncomment and run unit tetss
+                        pwmState = PwmState::middle;
                         __enable_irq ();
                         return;
                 }
@@ -219,12 +227,16 @@ void EdgeFilter::run (Result1us const &now)
                 if (beamState == BeamState::present && currentHighStateAveragePeriodPerccent >= getConfig ().getDutyTresholdPercent ()) {
                         beamState = BeamState::absent;
                         stateChanged = true;
+                        __disable_irq ();
                         callback->report (DetectorEventType::noBeam, now);
+                        __enable_irq ();
                 }
                 else if (beamState == BeamState::absent && currentHighStateAveragePeriodPerccent < getConfig ().getDutyTresholdPercent ()) {
                         beamState = BeamState::present;
                         stateChanged = true;
+                        __disable_irq ();
                         callback->report (DetectorEventType::beamRestored, now);
+                        __enable_irq ();
                 }
 
                 if (stateChanged) { // No point of calculating trigger if there's no beam, or it was just restored.
@@ -280,11 +292,9 @@ void EdgeFilter::run (Result1us const &now)
                 }
 
                 if (longHighState && longLowState) {
-                        callback->report (DetectorEventType::trigger, currentHighStateStart);
-                        // triggerLevelState = TriggerLevelState::idle;
                         __disable_irq ();
+                        callback->report (DetectorEventType::trigger, currentHighStateStart);
                         highStateStart = middleStateStart = lowStateStart; // To prevent reporting twice
-                        pwmState = PwmState::middle;                       // TODO mistake - this shoulc be in noise section
                         __enable_irq ();
                 }
         }
@@ -296,5 +306,6 @@ void EdgeFilter::recalculateConstants ()
 {
         __disable_irq ();
         minTriggerEvent1Us = msToResult1us (getConfig ().getMinTreggerEventMs ());
+        active = getConfig ().isIrSensorOn ();
         __enable_irq ();
 }

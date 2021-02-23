@@ -10,6 +10,7 @@
 #include "CanProtocol.h"
 #include "Timer.h"
 #include "Types.h"
+#include <etl/queue.h>
 #include <optional>
 
 struct IInfraRedBeam;
@@ -26,19 +27,21 @@ struct IRandomAccessStorage;
  */
 class Event {
 public:
+        // Warining : for optimization reasons, the numbers below has to be in sync with DetectorEventType
         enum class Type {
-                timePassed,      /// Every 10ms / 1ms / 100µs
-                irTrigger,       /// IR beam interrupted
-                externalTrigger, /// External trigger (M-LVDS) GPIO state changed.
+                irTrigger = 0, /// IR beam interrupted
+                noBeam = 1,
+                beamRestored = 1,
+                noise = 2,
+                noNoise = 3,
+                externalTrigger = 4, /// External trigger (M-LVDS) GPIO state changed.
+                timePassed,          /// Every 10ms / 1ms / 100µs
                 // canBusLoop,  /// Peripheral device reported the restart of the LOOP state.
                 pause,
                 reset, // Use for resume after pause
-                noIr,
-                irPresent,
-                irNoise
         };
 
-        Event (Type t, Result1us r = 0) : type{t}, time{r} {}
+        Event (Type t = Type::timePassed, Result1us r = 0) : type{t}, time{r} {}
 
         Type getType () const { return type; }
         Result1us getTime () const { return time; } /// TODO change name to timepoint
@@ -47,6 +50,11 @@ private:
         Type type;
         Result1us time;
 };
+
+/**
+ * Queue of events.
+ */
+using EventQueue = etl::queue<Event, 8, etl::memory_model::MEMORY_MODEL_SMALL>;
 
 /**
  * Main algorithm.
@@ -122,7 +130,7 @@ public:
 
 #ifdef WITH_CHECK_SENSOR_STATUS
                 case Message::NO_IR:
-                        fastStateMachine.run ({Event::Type::noIr /* , time */});
+                        fastStateMachine.run ({Event::Type::noBeam /* , time */});
                         break;
 #endif
 

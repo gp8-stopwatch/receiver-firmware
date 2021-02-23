@@ -59,7 +59,9 @@ using ConfigFlashEepromStorage = FlashEepromStorage<2048, 2>;
 extern ConfigFlashEepromStorage &getConfigFlashEepromStorage ();
 #endif
 
-extern InfraRedBeamExti &getBeam ();
+extern EventQueue eventQueue;
+
+// extern InfraRedBeamExti &getBeam ();
 extern DisplayMenu &getMenu ();
 extern Buzzer &getBuzzer ();
 extern Button &getButton ();

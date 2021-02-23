@@ -129,7 +129,7 @@ void InfraRedBeamExti::onExti (IrBeam state, bool external)
                                 HAL_NVIC_SetPriority (IR_IRQn, DISPLAY_TIMER_PRIORITY, 0); // Priorities are inverted
 #endif
 
-                                fStateMachine->run (Event::Type::irNoise);
+                                fStateMachine->run (Event::Type::noise);
                         }
                 }
                 // IR was restored
