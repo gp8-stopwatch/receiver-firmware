@@ -274,6 +274,13 @@ Variables
   * irTrigger 
   * mlvdsTrigger
 
+# Trigger features test
+* Blind time
+* Minimum trigger length duration
+* dutyTresholdPercent
+* Noise detection
+* no beam dsetection.
+
 # Battery test cases
 * a
 

@@ -105,7 +105,8 @@ private:
 extern bool &changed ();
 
 // static_assert (sizeof (Config) == 4);
+#ifndef UNIT_TEST
 static_assert (sizeof (Config) == 10);
-// static_assert (sizeof (Config) == 12);
+#endif
 
 } // namespace cfg

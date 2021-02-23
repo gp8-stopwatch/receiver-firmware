@@ -8,6 +8,7 @@
 
 #pragma once
 #include "CanProtocol.h"
+#include "Detector.h"
 #include "Timer.h"
 #include "Types.h"
 #include <etl/queue.h>
@@ -67,7 +68,7 @@ public:
         void run (Event event);
         bool isCounting () const { return state == State::RUNNING || state == State::LOOP_RUNNING; }
 
-        void setIr (IInfraRedBeam *i) { this->ir = i; }
+        void setIr (EdgeFilter *i) { this->ir = i; }
         void setStopWatch (StopWatch *s) { this->stopWatch = s; }
         void setDisplay (IDisplay *d) { this->display = d; }
         void setBuzzer (Buzzer *b) { this->buzzer = b; }
@@ -82,8 +83,13 @@ private:
         // void pause_entryAction ();
 
         // void checkCanBusEvents (Event event);
-        bool isInternalTrigger (Event event) const;
-        bool isExternalTrigger (Event event) const { return event.getType () == Event::Type::externalTrigger; }
+        // bool isInternalTrigger (Event event) const;
+        static bool isTrigger (Event event)
+        {
+                return event.getType () == Event::Type::externalTrigger || event.getType () == Event::Type::irTrigger;
+        }
+
+        static bool isExternalTrigger (Event event) { return event.getType () == Event::Type::externalTrigger; }
 
         // bool isExternalTrigger (Event event) const;
         RemoteBeamState isRemoteBeamStateOk () const;
@@ -91,7 +97,8 @@ private:
         /*--------------------------------------------------------------------------*/
 
         State state{WAIT_FOR_BEAM};
-        IInfraRedBeam *ir{};
+        // IInfraRedBeam *ir{};
+        EdgeFilter *ir{};
         StopWatch *stopWatch{};
         Timer loopDisplayTimeout;
         IDisplay *display{};

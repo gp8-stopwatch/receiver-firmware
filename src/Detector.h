@@ -70,6 +70,9 @@ private:
 // Warning! Due to optimization reasons, the values below has to be in sync with enum Event
 enum class DetectorEventType { trigger = 0, noise = 1, noNoise = 2, noBeam = 3, beamRestored = 4 };
 
+// /// State of the IR beam that can be always queried.
+// enum class DetectorStateType { ok, noise, noBeam };
+
 /**
  *
  */
@@ -77,8 +80,11 @@ struct IEdgeDetectorCallback {
         virtual void report (DetectorEventType type, Result1us timePoint) = 0;
 };
 
-/*****************************************************************************/
-
+/**
+ * Responsible for reacting to the IR sesnor output as fast as possible, minimizing
+ * noise impact on the accuracy of the measuremetns, detecting excessive noise levels,
+ * detecting IR signal state.
+ */
 class EdgeFilter {
 public:
         enum class PwmState { low = 0, high = 1, middle };
@@ -132,8 +138,13 @@ public:
          */
         static constexpr uint32_t MIN_NOISE_SPIKE_1US = 100;
 
+        bool isActive () const { return active; }
+        bool isBeamOk () const { return beamState == BeamState::present && noiseState == NoiseState::noNoise; }
+        // DetectorStateType getDetectorState () const { return detectorState; }
+
 private:
         bool active{};
+        // DetectorStateType detectorState{DetectorStateType::ok};
         Result1us minTriggerEvent1Us{};
 
         /*--------------------------------------------------------------------------*/

@@ -37,7 +37,7 @@ void FastStateMachine::run (Event event)
 
         // Global except for the PAUSED state
         if (state != PAUSED) {
-                if (ir->isActive () && ir->getBeamState () != IrBeam::triggerFalling) {
+                if (ir->isActive () && !ir->isBeamOk ()) {
                         state = State::WAIT_FOR_BEAM;
                 }
 
@@ -67,7 +67,7 @@ void FastStateMachine::run (Event event)
                 auto remoteBeamState = RemoteBeamState::noResponse;
 #endif
 
-                if (ir->isActive () && ir->getBeamState () == IrBeam::noise) {
+                if (event.getType () == Event::Type::noise) {
                         display->setText ("noise ");
 
                         // TODO
@@ -78,7 +78,7 @@ void FastStateMachine::run (Event event)
                         //                         }
                         // #endif
                 }
-                else if (ir->isActive () && ir->getBeamState () == IrBeam::triggerRising) {
+                else if (event.getType () == Event::Type::noBeam) {
                         display->setText ("noi.r.  ");
 
 #ifdef WITH_CAN
@@ -98,7 +98,7 @@ void FastStateMachine::run (Event event)
 #endif
 
                 // The transition
-                if ((ir->isActive () && ir->getBeamState () == IrBeam::triggerFalling) || remoteBeamState == RemoteBeamState::allOk) {
+                if ((ir->isActive () && ir->isBeamOk ()) || remoteBeamState == RemoteBeamState::allOk) {
                         state = READY;
                 }
 
@@ -112,7 +112,7 @@ void FastStateMachine::run (Event event)
                  * Even if the mode was selected to "loop", the very first counting is performed in the "running" mode.
                  * This is to avoid showing the first result which is not there.
                  */
-                if (isInternalTrigger (event) || isExternalTrigger (event)) {
+                if (isTrigger (event)) {
                         state = RUNNING;
                         running_entryAction (event);
                 }
@@ -123,7 +123,7 @@ void FastStateMachine::run (Event event)
                 // Refresh the screen (shows the time is running). In an event of the stop_entryAction this will be re-set again.
                 display->setTime (result1To10 (stopWatch->getTime () - lastTime), getConfig ().getResolution ());
 
-                if (isInternalTrigger (event) || isExternalTrigger (event)) {
+                if (isTrigger (event)) {
                         if (getConfig ().getStopMode () == StopMode::stop) {
                                 state = STOP;
                         }
@@ -137,7 +137,7 @@ void FastStateMachine::run (Event event)
                 break;
 
         case STOP:
-                if (isInternalTrigger (event) || isExternalTrigger (event)) {
+                if (isTrigger (event)) {
                         state = RUNNING;
                         running_entryAction (event);
                 }
@@ -150,7 +150,7 @@ void FastStateMachine::run (Event event)
                                           getConfig ().getResolution ()); // Refresh the screen (shows the time is running)
                 }
 
-                if (isInternalTrigger (event) || isExternalTrigger (event)) {
+                if (isTrigger (event)) {
                         loopStop_entryAction (event);
                 }
 
@@ -160,13 +160,6 @@ void FastStateMachine::run (Event event)
         default:
                 break;
         }
-}
-
-/*****************************************************************************/
-
-bool FastStateMachine::isInternalTrigger (Event event) const
-{
-        return ((ir->getBeamState () == IrBeam::triggerFalling && ir->isBeamInterrupted ()) || event.getType () == Event::Type::irTrigger);
 }
 
 /*****************************************************************************/

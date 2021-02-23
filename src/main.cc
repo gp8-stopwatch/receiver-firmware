@@ -80,12 +80,18 @@ int main ()
                          * would notice anyway.
                          */
                         Event evt;
+                        bool isEvt{};
                         __disable_irq ();
                         if (!eventQueue.empty ()) {
                                 evt = eventQueue.front ();
                                 eventQueue.pop ();
+                                isEvt = true;
                         }
                         __enable_irq ();
+
+                        if (isEvt) {
+                                getFastStateMachine ().run (evt);
+                        }
 
                         getFastStateMachine ().run (Event::Type::timePassed);
                         displayTimer.start (refreshRate);

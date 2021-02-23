@@ -218,7 +218,13 @@ FastStateMachine &getFastStateMachine ()
 EventQueue eventQueue;
 
 struct DetectorCallback : public IEdgeDetectorCallback {
-        void report (DetectorEventType type, Result1us timePoint) override { eventQueue.push ({detectorEventToFSMEvent (type), timePoint}); }
+        void report (DetectorEventType type, Result1us timePoint) override
+        {
+                if (!eventQueue.full ()) {
+                        eventQueue.push ({detectorEventToFSMEvent (type), timePoint});
+                }
+        }
+
         static inline Event::Type detectorEventToFSMEvent (DetectorEventType evt) { return Event::Type (evt); }
 };
 
@@ -385,6 +391,7 @@ void init ()
         getProtocol ().setCallback (&callback);
 #endif
         // getFastStateMachine ().setIr (&getBeam ());
+        getFastStateMachine ().setIr (&getIrDetector ());
         getFastStateMachine ().setDisplay (&getDisplay ());
 
 #ifdef WITH_SOUND

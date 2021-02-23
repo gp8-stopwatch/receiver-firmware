@@ -76,12 +76,13 @@
 * [x] Można uprościć circular buffer
 * [x] Jeden event na raz. Teraz po beamRestored wrzuca jeszcze trigger, bo nie czyści stanu wewnętrznego.
 * [ ] Noise liczba spikow na długą i niezależna od ustawień jednostkę czasu np 1s. Ten okres powinien być zależny od charakteru typowych zakłóceń. Dzielimy sygnał na sekundowe odcinki. Histereza. Działa cały czas nawet gdy blind.
-  * [ ] Wykrywanie szumu musi być jakoś powiązane z aktualnym dutu cycle level. Jeśli nie będzie to możemy mieć sytuację że pokazuje się niski poziom szumu, ale z powodu wysokiego progu duty nie łapiemy trigeroe. No i to będzie wyglądało jak błąd!
+  * [ ] Wykrywanie szumu musi być jakoś powiązane z aktualnym dutu cycle level. Jeśli nie będzie to możemy mieć sytuację że pokazuje się niski poziom szumu, ale z powodu wysokiego progu duty nie łapiemy trigeroe. No i to będzie wyglądało jak błąd! Załóżmy, że min trigger event jest 200µs (mało, ale załóżmy że tak jest). Wówczas tylko jeden jedyny noise spike o minimalnej długości (100µs) spowoduje, że już nie wiadomo czy to był trigger, czy nie. 
 * [ ] No signal dzielimy sygnał na odcinku. Uzależnione od ustawień. Blond timer i min event . A może jednak nie uzależniać od blind timer?  Jak ktoś ustawy blind na 10 sekund to słabo będzie działać. Może jednak 1s tak samo jak z noise, ale w czasie blind time po prostu nie wykrywany ani trigeroe ani blind Jeżeli w odcinku czasu ty hiduty większe niż tteshold (ten sam co przy triger) to zgłaszamy. Żeby odwołać histereza
 * [ ] Draw a diagram of all of this.
 * [ ] Test minimum event length in unit tests.
   * [ ] Test when minimum event lenght is longer than blind period.
 * [ ] Blind time.
+* [ ] IR off by default in the settings in the regular receiver.
 
 
 # Hardware

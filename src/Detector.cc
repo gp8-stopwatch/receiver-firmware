@@ -295,6 +295,7 @@ void EdgeFilter::run (Result1us const &now)
                         __disable_irq ();
                         callback->report (DetectorEventType::trigger, currentHighStateStart);
                         highStateStart = middleStateStart = lowStateStart; // To prevent reporting twice
+                        pwmState = PwmState::middle;
                         __enable_irq ();
                 }
         }

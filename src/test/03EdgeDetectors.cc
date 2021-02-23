@@ -26,7 +26,6 @@ struct TestDetectorCallback : public IEdgeDetectorCallback {
  */
 TEST_CASE ("Edge cases", "[detector]")
 {
-
         {
                 /*
                  *        +-----+
@@ -259,6 +258,81 @@ TEST_CASE ("Edge cases", "[detector]")
         }
 }
 
+/**
+ * Checks if after reporting a trigger event it does not repeat itself
+ * for some reason. This was observed on the target.
+ */
+TEST_CASE ("Only one report", "[detector]")
+{
+        {
+                /*
+                 *        +-----+
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 * -------+     +-------+
+                 * 0    10ms   22ms     34ms
+                 */
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+                events.clear ();
+                edgeFilter.setCallback (&tc);
+
+                Result1us time = 0;
+
+                for (int i = 0; i < 10000 / 9; ++i) {
+                        time += 9;
+                        edgeFilter.run (time);
+                }
+
+                time = 10000;
+                edgeFilter.onEdge ({time, EdgePolarity::rising});
+
+                for (int i = 0; i < 12000 / 9; ++i) {
+                        time += 9;
+                        edgeFilter.run (time);
+                }
+
+                REQUIRE (events.empty ());
+
+                time = 22000;
+                edgeFilter.onEdge ({time, EdgePolarity::falling});
+                REQUIRE (events.empty ());
+
+                for (int i = 0; i < 12000 / 9; ++i) {
+                        time += 9;
+                        edgeFilter.run (time);
+                }
+
+                REQUIRE (events.size () == 1);
+                REQUIRE (events.back ().type == DetectorEventType::trigger);
+                REQUIRE (events.back ().timePoint == 10000);
+
+                for (int i = 0; i < 6 * 1000000 / 9; ++i) {
+                        time += 9;
+                        edgeFilter.run (time);
+                }
+
+                REQUIRE (events.size () == 1);
+
+                // 6 seconds has elapsed, now I simulate the second trigger event
+
+                time = 6040000;
+                edgeFilter.onEdge ({time, EdgePolarity::rising});
+
+                time += 12000;
+                edgeFilter.onEdge ({time, EdgePolarity::falling});
+
+                time += 12000;
+                edgeFilter.run (time);
+
+                REQUIRE (events.size () == 2);
+                REQUIRE (events.back ().type == DetectorEventType::trigger);
+                REQUIRE (events.back ().timePoint == 6040000);
+        }
+}
+
 #if 0
 TEST_CASE ("Low PWM in the middle", "[detector]")
 {
@@ -304,6 +378,45 @@ TEST_CASE ("Low PWM in the middle", "[detector]")
         // REQUIRE (events.front ().timePoint == 10 * 1000);
 }
 #endif
+
+TEST_CASE ("Slightly more", "[detector]")
+{
+
+        {
+                /*
+                 *        +-----+
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 * -------+     +-------+
+                 * 0    10000  20001 30ms
+                 */
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                edgeFilter.onEdge ({10000, EdgePolarity::rising});
+                edgeFilter.run (10001);
+                REQUIRE (events.empty ());
+
+                // This high level is 1µs too short.
+                edgeFilter.onEdge ({20001, EdgePolarity::falling});
+                edgeFilter.run (20002);
+                REQUIRE (events.empty ());
+
+                // edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
+                edgeFilter.run (30002);
+                REQUIRE (events.size () == 1);
+
+                edgeFilter.run (300010);
+                REQUIRE (events.size () == 1);
+
+                edgeFilter.run (40003);
+                REQUIRE (events.size () == 1);
+        }
+}
 
 /**
  * Negative cases, where events are slightly (usually 1µs) shorter than
