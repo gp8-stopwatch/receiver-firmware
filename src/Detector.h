@@ -88,7 +88,6 @@ struct IEdgeDetectorCallback {
 class EdgeFilter {
 public:
         enum class PwmState { low = 0, high = 1, middle };
-        enum class TriggerLevelState { idle, high, /*  low */ };
 
         EdgeFilter (PwmState initialState) : pwmState{initialState}
         {
@@ -103,6 +102,7 @@ public:
                         // edges are in correct order?
                         queue.push ({0, EdgePolarity::falling});
                         queue.push ({0, EdgePolarity::rising});
+                        // beamState = BeamState::absent;
                 }
         }
 
@@ -155,7 +155,6 @@ private:
         IEdgeDetectorCallback *callback{};
 
         PwmState pwmState;
-        TriggerLevelState triggerLevelState{TriggerLevelState::idle};
         Result1us highStateStart{};
         Result1us lowStateStart{};
         Result1us middleStateStart{};

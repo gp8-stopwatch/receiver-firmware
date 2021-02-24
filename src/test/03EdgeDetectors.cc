@@ -1568,13 +1568,46 @@ TEST_CASE ("No beam at the start", "[detector]")
                  *             |
                  *             |
                  *             |
-                 *             +-------+
-                 * 0           10ms   20ms     30ms
+                 *       +     +-------+
+                 * 0     10    20ms    30ms
                  */
                 TestDetectorCallback tc;
                 EdgeFilter edgeFilter{EdgeFilter::PwmState::high};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
+
+                edgeFilter.run (10 * 1000);
+                REQUIRE (events.empty ());
+
+                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
+                edgeFilter.run (20 * 1000);
+                REQUIRE (events.empty ());
+
+                edgeFilter.run (30 * 1000);
+                REQUIRE (events.empty ());
+        }
+
+        {
+                /*
+                 * ---+-+--+---------+
+                 *    | |  |         |
+                 *    | |  |         |
+                 *    | |  |         |
+                 *    | |  |         |
+                 *    + +  +   +     +-------+
+                 * 0          10ms   20ms     30ms
+                 */
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::high};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                edgeFilter.onEdge ({1 * 1000, EdgePolarity::falling});
+                edgeFilter.onEdge ({1 * 1000 + 100, EdgePolarity::rising});
+                edgeFilter.onEdge ({2 * 1000, EdgePolarity::falling});
+                edgeFilter.onEdge ({2 * 1000 + 100, EdgePolarity::rising});
+                edgeFilter.onEdge ({3 * 1000, EdgePolarity::falling});
+                edgeFilter.onEdge ({3 * 1000 + 100, EdgePolarity::rising});
 
                 edgeFilter.run (10 * 1000);
                 REQUIRE (events.empty ());
