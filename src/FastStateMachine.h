@@ -31,11 +31,11 @@ public:
         // Warining : for optimization reasons, the numbers below has to be in sync with DetectorEventType
         enum class Type {
                 irTrigger = 0, /// IR beam interrupted
-                noBeam = 1,
-                beamRestored = 1,
-                noise = 2,
-                noNoise = 3,
-                externalTrigger = 4, /// External trigger (M-LVDS) GPIO state changed.
+                noise = 1,
+                noNoise = 2,
+                noBeam = 3,
+                beamRestored = 4,
+                externalTrigger = 5, /// External trigger (M-LVDS) GPIO state changed.
                 timePassed,          /// Every 10ms / 1ms / 100µs
                 // canBusLoop,  /// Peripheral device reported the restart of the LOOP state.
                 pause,
@@ -62,7 +62,7 @@ using EventQueue = etl::queue<Event, 8, etl::memory_model::MEMORY_MODEL_SMALL>;
  */
 class FastStateMachine {
 public:
-        enum State { WAIT_FOR_BEAM, READY, RUNNING, STOP, LOOP_RUNNING, PAUSED };
+        enum State { WAIT_FOR_BEAM, READY, RUNNING, STOP, LOOP_RUNNING, PAUSED, NOISE, NO_BEAM };
         enum RemoteBeamState { wait, allOk, someNotOk, noResponse };
 
         void run (Event event);

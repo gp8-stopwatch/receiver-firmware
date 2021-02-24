@@ -83,79 +83,7 @@
   * [ ] Test when minimum event lenght is longer than blind period.
 * [ ] Blind time.
 * [ ] IR off by default in the settings in the regular receiver.
-
-
-# Hardware
-* [x] Boot pin easy accessible (for DFU).
-* [x] Crystal oscillator footprint suitable for modern TCXOs, not this THT crap.
-* [x] ~~Reduce holes for CAN socket supports (thise 2 plastic one sticking out)~~ The case is holding the socket in place. Too much effort.
-* [x] Ldo for RTC should be 3v3 not 1v8. Voltage difference would be smaller.
-* [x] Przetestować RTC z tym małym LDO.
-* [x] Battery protection in software (for overdischarge)
-  * [x] When powered off no software is running. What is the current draw of ldo plus rtc? 0.5µA (includeing RTC + low Q LDO)
-  * [x] Measure what all elements except the µC and LEDs are drawing, and whether we should optimize this, or leave alone.
-  * [x] When powered on, simply go to sleep, calculate current, maybe modify HW so it draws less quiescent current.
-  * [x] Same for the transmitter
-* [ ] Battery protection in hardware. While software protection works, a peripheral powered from +BATT can be attached to the CANbus port thus draving a current. I this peripheral doesn't have its protection, then the battery can be over-discharged.
-* [x] If the transmitter had an uc, we could use the charging led to indicate that it is running, and there would be no changes to the casing necessary.
-* [x] ~~Charging led to uc,~~ charger outputs as well. This way we could sense when charger plugged in.
-* [x] Check common cathode configuration
-* [x] Check µC - charger connection.
-* [ ] Field tests of the trigger 
-  * [x] Rough range tests shows that there's no noticeable change.
-  * [ ] Problems when exposed to the direct sunlight.
-  * [ ] Poprawić działanie we wnętrzach (incadescent lights & cameras) ????
-  * [ ] Jeszcze osłabić sygnał IR.
-* [x] 56kHz transmitter.
-* [x] Test points.
-* [x] ~~Fix the distance between the holes on 18650 battery holder. **Not until new arrive**.~~ Besides : the holder is supported by case's back wall.
-* [x] Route the receiver PCB
-* [x] USB 2.0 port can source only 500mA while, I am charging at 660mA. Maybe I should lower the consumption?
-* [x] Route the transmitter (mcu branch)
-* [x] Identify what causes spurious trigger release when power line noise is present. Is it the test trigger, or the IR trigger. Observe what happens using an oscilloscope. Turning a solder iron or hotair on/off causes this to happen (It was a long cable connecting the signal generator with the transmitter. It was the transmitter which caused this).
-  * [x] Fix. Problem does not occur when the test trigger is disconnected.
-  * [x] ~~Consider disabling the test trigger in production IF this is caused by it.~~ Not neccessary.
-* [x] Schotky diode from +BATT to one of the 6P6C socket pins. This would be for powering some smaller peripherals. Why haven't I thought about this earlier!
-* Certification / reliability / safety
-  * [ ] Input protection
-  * [ ] Battery over-discharge preotection
-  * [ ] Other means of battery protection (over-charge, over-current)
-  * [x] Emi - I can see lots of noise in the CAN bus, and test-trigger can be easily fired by transients.
-  * [x] The same goes to IR signal - I can see 20MHz / 60kHz - maybe screen is te cullprit. EDIT - with screen truned off I can see the same noise. **It was caused by faulty power supply of my LED lamps**
-  * [x] Connect test trigger to the IR output pin, and make a solder jumper. 
-
-
-## Huge display
-* [ ] czy nie potrzeba kondensatorów !? 
-* [ ] jaki jest na prawdę prąd
-* [ ] zmierzyć jaki ma być opornik dla DP
-
-# Case
-* [ ] Make sure the battery holder is well supported by case's back wall. It has to be fixed in place. This way we can ignore the screws that would normally fix the holder to the PCB.
-* [ ] Pod grilem musi być wytłoczenie, bo głośniczek jest za wysoki.
-* [ ] Fotorezystor musi mieć lepszy dostęp do światła.
-
-# UI 
-* [ ] On screen menu
-  * [ ] Brightness (1/2/3/auto). Auto as default.
-  * [ ] 1 or 2 participants
-  * [x] Loop mode / normal
-  * [x] Date / time setting
-  * [x] Time display
-* [ ] USB menu should include all what on-display provides plus:
-  * [x] Results (via command)
-  * [x] Results as they go.
-
-# Possible features 
-* [x] µC in the transmitter
-  * [x] Battery sensing in the transmitter
-* [x] ~~Hardware battery protection in both devices~~ I went with software one.
-* [x] Test trigger in the transmitter (same as receiver) - a test point(s)
-* [ ] Speed trap. Receivers connected together would measure the speed.
-* [x] Result resolution setting (100µs)
-* [ ] Chronograph https://en.wikipedia.org/wiki/Gun_chronograph
-* [ ] Laser transmitter / receiver. Complex (sub µs) pattern would act as a noise correction. It would at least prevent DC light problems. It would not prevent erros coming from reflections and weak signal. But I still don't know (I'm not sure) about the rest of noise and it's nature. How fast would it be? I think that if we want to achieve 1µs resolution, then we should cope with 1µs spikes. 1µs is too fast to do it in ISR.
-* [ ] Test rig with a stepper motor and a wheel with a notch for IR testing.
+* [ ] FastStateMachine compatible fully with the new detector.
 
 # Firmware
 * [x] Settings memory (screen flip & sound on/off should be persisted)
@@ -241,22 +169,16 @@ Hi 00:00,00000
 * [x] Opcja /restart : Wyslanie tej komendy powoduje zatrzymanie liczenia czasu jesli bylo wlaczone, ustawia wyswietlacz na 0:00 i czeka na przeciecie wiazki i pomiar
   * [ ] Błąd - czasem nie czyści.
 * [x] Pipczenie - jesli mozesz zobic na start 1 pip a na pomiar w trybie zawodow 3xpip. Pomiar w tyrybie /trening 2x pip
-* [x] Wyniki
-    
-# Infrastructure
-* [x] Clean the code (prepare for new repo that is)
-  * [x] Code should be self-contained. Everything needed for building should be included.
-* [x] Remove this "big" display project for now.
-* [x] Prepare and commit other projects
-* [x] Release FW as opensource.
-* [ ] Prepare a web page with documentation.
-
+* [x] Wyniki 
+  
 # USB
 * [x] Does not work under Manjaro.
 * [x] Gibberish at the beginning, just after styarting a serial terminal for the first time.
   * [x] I was able to sove this using this *ready* flag, but this is a hack. The bottom line is that there are problems when writing to the buffer while USB cable is disconnected. It should work, this is what the buffer is for. Fix this, and remove the *ready* flag.
 * [x] Gibberish everytime the cable gets unplugged and then plugged again by the user.
+  * [ ] Sometimes (after first plugin) this error appears. There are a few strange characters at the beginning, like not initialized buffer or something. Maybe this has something to do with the echo and the device receives such suprious chars?
 * [x] Communication go crazy after some time (floods the console).
+* [ ] USB - change `__disable_irq ()` to ~~NVIC-disable USB~~. No, NVIC is nothe way to go. Maybe there is some USB disable register?
 * [ ] Few letters missing from time to time (very rarely):
 
 ```
@@ -288,8 +210,92 @@ Under Manjaro it behaves very unstable. Only 1 byte at a time san be sent to tyh
 Solved. The problem was due to lack of USBD_CDC_ReceivePacket calls. So it seems that my prebious implementation was deaf do USB requests, and it broke all communications under Manjaro, whereas under Windows and Ubuntu it worked (the device was able to send, and the host received the data).
 
 # Refactoring
-* [ ] USB - change `__disable_irq ()` to NVIC-disable USB.
 * [x] Config object should be globally available. 
 * [ ] Eliminate ifdef galore somehow.
 * [x] Rename CANbus start event to "trigger" event.
 * [ ] ~~FastStateMachine could be split into two. One for IR and one for CANbus handling. Both would control the same StopWatch instance.~~
+
+
+# Infrastructure
+* [x] Clean the code (prepare for new repo that is)
+  * [x] Code should be self-contained. Everything needed for building should be included.
+* [x] Remove this "big" display project for now.
+* [x] Prepare and commit other projects
+* [x] Release FW as opensource.
+* [ ] Prepare a web page with documentation.
+
+# Hardware
+* [x] Boot pin easy accessible (for DFU).
+* [x] Crystal oscillator footprint suitable for modern TCXOs, not this THT crap.
+* [x] ~~Reduce holes for CAN socket supports (thise 2 plastic one sticking out)~~ The case is holding the socket in place. Too much effort.
+* [x] Ldo for RTC should be 3v3 not 1v8. Voltage difference would be smaller.
+* [x] Przetestować RTC z tym małym LDO.
+* [x] Battery protection in software (for overdischarge)
+  * [x] When powered off no software is running. What is the current draw of ldo plus rtc? 0.5µA (includeing RTC + low Q LDO)
+  * [x] Measure what all elements except the µC and LEDs are drawing, and whether we should optimize this, or leave alone.
+  * [x] When powered on, simply go to sleep, calculate current, maybe modify HW so it draws less quiescent current.
+  * [x] Same for the transmitter
+* [ ] Battery protection in hardware. While software protection works, a peripheral powered from +BATT can be attached to the CANbus port thus draving a current. I this peripheral doesn't have its protection, then the battery can be over-discharged.
+* [x] If the transmitter had an uc, we could use the charging led to indicate that it is running, and there would be no changes to the casing necessary.
+* [x] ~~Charging led to uc,~~ charger outputs as well. This way we could sense when charger plugged in.
+* [x] Check common cathode configuration
+* [x] Check µC - charger connection.
+* [ ] Field tests of the trigger 
+  * [x] Rough range tests shows that there's no noticeable change.
+  * [ ] Problems when exposed to the direct sunlight.
+  * [ ] Poprawić działanie we wnętrzach (incadescent lights & cameras) ????
+  * [ ] Jeszcze osłabić sygnał IR.
+* [x] 56kHz transmitter.
+* [x] Test points.
+* [x] ~~Fix the distance between the holes on 18650 battery holder. **Not until new arrive**.~~ Besides : the holder is supported by case's back wall.
+* [x] Route the receiver PCB
+* [x] USB 2.0 port can source only 500mA while, I am charging at 660mA. Maybe I should lower the consumption?
+* [x] Route the transmitter (mcu branch)
+* [x] Identify what causes spurious trigger release when power line noise is present. Is it the test trigger, or the IR trigger. Observe what happens using an oscilloscope. Turning a solder iron or hotair on/off causes this to happen (It was a long cable connecting the signal generator with the transmitter. It was the transmitter which caused this).
+  * [x] Fix. Problem does not occur when the test trigger is disconnected.
+  * [x] ~~Consider disabling the test trigger in production IF this is caused by it.~~ Not neccessary.
+* [x] Schotky diode from +BATT to one of the 6P6C socket pins. This would be for powering some smaller peripherals. Why haven't I thought about this earlier!
+* Certification / reliability / safety
+  * [ ] Input protection
+  * [ ] Battery over-discharge preotection
+  * [ ] Other means of battery protection (over-charge, over-current)
+  * [x] Emi - I can see lots of noise in the CAN bus, and test-trigger can be easily fired by transients.
+  * [x] The same goes to IR signal - I can see 20MHz / 60kHz - maybe screen is te cullprit. EDIT - with screen truned off I can see the same noise. **It was caused by faulty power supply of my LED lamps**
+  * [x] Connect test trigger to the IR output pin, and make a solder jumper. 
+
+
+## Huge display
+* [ ] czy nie potrzeba kondensatorów !? 
+* [ ] jaki jest na prawdę prąd
+* [ ] zmierzyć jaki ma być opornik dla DP
+
+# Case
+* [ ] Make sure the battery holder is well supported by case's back wall. It has to be fixed in place. This way we can ignore the screws that would normally fix the holder to the PCB.
+* [ ] Pod grilem musi być wytłoczenie, bo głośniczek jest za wysoki.
+* [ ] Fotorezystor musi mieć lepszy dostęp do światła.
+
+# UI 
+* [ ] On screen menu
+  * [ ] Brightness (1/2/3/auto). Auto as default.
+  * [ ] 1 or 2 participants
+  * [x] Loop mode / normal
+  * [x] Date / time setting
+  * [x] Time display
+* [ ] USB menu should include all what on-display provides plus:
+  * [x] Results (via command)
+  * [x] Results as they go.
+
+# Possible features 
+* [x] µC in the transmitter
+  * [x] Battery sensing in the transmitter
+* [x] ~~Hardware battery protection in both devices~~ I went with software one.
+* [x] Test trigger in the transmitter (same as receiver) - a test point(s)
+* [ ] Speed trap. Receivers connected together would measure the speed.
+* [x] Result resolution setting (100µs)
+* [ ] Chronograph https://en.wikipedia.org/wiki/Gun_chronograph
+* [ ] Laser transmitter / receiver. Complex (sub µs) pattern would act as a noise correction. It would at least prevent DC light problems. It would not prevent erros coming from reflections and weak signal. But I still don't know (I'm not sure) about the rest of noise and it's nature. How fast would it be? I think that if we want to achieve 1µs resolution, then we should cope with 1µs spikes. 1µs is too fast to do it in ISR.
+* [ ] Test rig with a stepper motor and a wheel with a notch for IR testing.
+* [ ] Reflective receiver? For small objects like rc cars? What use cases? Indoors?
+* [ ] Proper application.
+* [ ] Filming in slow motion (adjustable fps).
+* [ ] Receiver that can be connected to an Arduino or RasPI instead of the "regular" receiver. If I ever consider doing this, take the path of minimal effor, and change only the connector and protocol (TTL instead of CAN).

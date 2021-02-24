@@ -175,5 +175,5 @@ private:
         enum class BeamState { present, absent };
         BeamState beamState{};
         Result1us lastBeamStateCalculation{};
-        Result1us highStateAveragePeriod{};
+        // Result1us highStateAveragePeriod{};
 };

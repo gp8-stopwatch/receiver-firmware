@@ -47,14 +47,21 @@ void FastStateMachine::run (Event event)
                         lastTime = event.getTime ();
                 }
                 // Event possible only if WITH_CHECK_SENSOR_STATUS is set
-                else if (eType == Event::Type::noBeam || eType == Event::Type::noise) {
-                        state = State::WAIT_FOR_BEAM;
+                // else if (eType == Event::Type::noBeam || eType == Event::Type::noise) {
+                //         state = State::WAIT_FOR_BEAM;
+                // }
+                else if (eType == Event::Type::noBeam) {
+                        state = State::NO_BEAM;
+                }
+                else if (eType == Event::Type::noise) {
+                        state = State::NOISE;
                 }
         }
 
         // Entry actions and transitions distinct for every state.
         switch (state) {
         case WAIT_FOR_BEAM: {
+                /*
 #ifdef WITH_CHECK_SENSOR_STATUS
                 // The entry action
                 auto remoteBeamState = isRemoteBeamStateOk ();
@@ -96,13 +103,46 @@ void FastStateMachine::run (Event event)
                         display->setText ("blind ");
                 }
 #endif
-
+*/
                 // The transition
-                if ((ir->isActive () && ir->isBeamOk ()) || remoteBeamState == RemoteBeamState::allOk) {
+                if ((ir->isActive () && ir->isBeamOk ()) /* || remoteBeamState == RemoteBeamState::allOk */) {
                         state = READY;
                 }
 
         } break;
+
+        case NOISE:
+                display->setText ("noise ");
+
+                // TODO
+                // #ifdef WITH_CAN
+                //                         if (protocol != nullptr && !canEvent && !noIrRequestSent) {
+                //                                 protocol->sendNoIr ();
+                //                                 noIrRequestSent = true;
+                //                         }
+                // #endif
+
+                if (event.getType () == Event::Type::noNoise) {
+                        state = WAIT_FOR_BEAM;
+                }
+
+                break;
+
+        case NO_BEAM:
+                display->setText ("noi.r.  ");
+
+                if (event.getType () == Event::Type::beamRestored) {
+                        state = WAIT_FOR_BEAM;
+                }
+
+#ifdef WITH_CAN
+                if (protocol != nullptr && !isExternalTrigger (event) && !noIrRequestSent) {
+                        protocol->sendNoIr ();
+                        noIrRequestSent = true;
+                }
+#endif
+
+                break;
 
         case READY: {
                 noIrRequestSent = false;

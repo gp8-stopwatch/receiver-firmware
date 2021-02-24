@@ -247,6 +247,7 @@ A7. Field test with slow-mo camera
 A8. Test with a motorized rig
 
 # Triggering tests cases
+Test if triggering works at all (does not care about the acuracy).
 Variables
 * Device connection variant : 
   * T1. Like in A1. transmiter -> regular
@@ -275,11 +276,11 @@ Variables
   * mlvdsTrigger
 
 # Trigger features test
-* Blind time
-* Minimum trigger length duration
-* dutyTresholdPercent
-* Noise detection
-* no beam dsetection.
+* F1. Blind time. Use signal gen, and decrease pulse period until the stopwatch catches every second one (meaning that the period is too short, and everything works).
+* F2. Noise detection. 
+* F3. No beam detection. 
+* F4. Minimum trigger length duration. Same as 1, but this time the pulse length gets adjusted.
+* F5. DutyTresholdPercent. How to test this? Some manual test in noisy environment.
 
 # Battery test cases
 * a

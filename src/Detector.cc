@@ -92,7 +92,7 @@ void EdgeFilter::onEdge (Edge const &e)
                 }
         }
 
-        highStateAveragePeriod += hiDuration;
+        // highStateAveragePeriod += hiDuration;
 
         /*--------------------------------------------------------------------------*/
         /* PWM State transitions depending on dutyCycle and recent level length.    */
@@ -130,7 +130,7 @@ void EdgeFilter::onEdge (Edge const &e)
                 bool longHighState = (lowStateStart - highStateStart) >= minTriggerEvent1Us;
                 bool longLowState = (e.timePoint - lowStateStart) >= minTriggerEvent1Us;
 
-                if (longHighState && longLowState) {
+                if (longHighState && longLowState && isBeamOk ()) {
                         callback->report (DetectorEventType::trigger, highStateStart);
                         highStateStart = middleStateStart = lowStateStart; // To prevent reporting twice
                 }
@@ -156,12 +156,13 @@ void EdgeFilter::run (Result1us const &now)
         /*--------------------------------------------------------------------------*/
         /* Noise detection + hysteresis                                             */
         /*--------------------------------------------------------------------------*/
-        if (now - lastNoiseCalculation >= msToResult1us (NOISE_CALCULATION_PERIOD_MS)) {
+        if (now - lastNoiseCalculation >= msToResult1us (NOISE_CALCULATION_PERIOD_MS) && beamState != BeamState::absent) {
                 lastNoiseCalculation = now;
 
                 __disable_irq ();
                 auto currentNoiseCounter = noiseCounter;
                 noiseCounter = 0;
+                // highStateAveragePeriod = 0;
                 __enable_irq ();
 
                 if (currentNoiseCounter > 0) {
@@ -209,29 +210,53 @@ void EdgeFilter::run (Result1us const &now)
         /*--------------------------------------------------------------------------*/
         /* No beam detection + hysteresis                                           */
         /*--------------------------------------------------------------------------*/
-        auto noBeamTimeout = std::max (NO_BEAM_CALCULATION_PERIOD_MS, getConfig ().getMinTreggerEventMs ());
+        auto noBeamTimeoutMs = std::max (NO_BEAM_CALCULATION_PERIOD_MS, getConfig ().getMinTreggerEventMs ());
 
-        if (now - lastBeamStateCalculation >= msToResult1us (noBeamTimeout)) {
+        if (now - lastBeamStateCalculation >= msToResult1us (noBeamTimeoutMs) && noiseState != NoiseState::noise) {
                 lastBeamStateCalculation = now;
 
-                __disable_irq ();
-                auto currentHighStateAveragePeriod = highStateAveragePeriod;
-                highStateAveragePeriod = 0;
-                __enable_irq ();
-
-                uint8_t currentHighStateAveragePeriodPerccent
-                        = 100 * currentHighStateAveragePeriod / msToResult1us (NO_BEAM_CALCULATION_PERIOD_MS);
+                // __disable_irq ();
+                // // noiseCounter = 0;
+                // __enable_irq ();
 
                 bool stateChanged{};
+                if (beamState == BeamState::present && // State correct - beam was present before.
 
-                if (beamState == BeamState::present && currentHighStateAveragePeriodPerccent >= getConfig ().getDutyTresholdPercent ()) {
+                    /*
+                     * Case 1 - noisy signal
+                     *       __________
+                     * _____| | || |
+                     */
+                    ((currentState == PwmState::high && now - currentHighStateStart >= msToResult1us (NO_BEAM_CALCULATION_PERIOD_MS)) ||
+
+                     /*
+                      * Case 2 - clean signal, no pwmState change (duty is 100%)
+                      *       __________
+                      * _____|
+                      */
+                     (back.polarity == EdgePolarity::rising && now - back.timePoint >= msToResult1us (NO_BEAM_CALCULATION_PERIOD_MS)))) {
+
                         beamState = BeamState::absent;
                         stateChanged = true;
                         __disable_irq ();
                         callback->report (DetectorEventType::noBeam, now);
                         __enable_irq ();
                 }
-                else if (beamState == BeamState::absent && currentHighStateAveragePeriodPerccent < getConfig ().getDutyTresholdPercent ()) {
+                else if (beamState == BeamState::absent &&
+                         /*
+                          * Case 1 - noisy signal
+                          * _______
+                          *   | | ||________
+                          */
+                         (currentState == PwmState::low ||
+
+                          /*
+                           * Case 2 - clean signal, no pwmState change (duty is 100%)
+                           * ______
+                           *       |_______
+                           */
+                          (back.polarity == EdgePolarity::falling && now - back.timePoint >= msToResult1us (NO_BEAM_CALCULATION_PERIOD_MS)))) {
+
                         beamState = BeamState::present;
                         stateChanged = true;
                         __disable_irq ();
@@ -291,7 +316,7 @@ void EdgeFilter::run (Result1us const &now)
                         longLowState = (now - currentLowStateStart) >= minTriggerEvent1Us;
                 }
 
-                if (longHighState && longLowState) {
+                if (longHighState && longLowState && isBeamOk ()) {
                         __disable_irq ();
                         callback->report (DetectorEventType::trigger, currentHighStateStart);
                         highStateStart = middleStateStart = lowStateStart; // To prevent reporting twice
