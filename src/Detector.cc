@@ -128,7 +128,7 @@ void EdgeFilter::onEdge (Edge const &e)
                 bool longHighState = (lowStateStart - highStateStart) >= minTriggerEvent1Us;
                 bool longLowState = (e.timePoint - lowStateStart) >= minTriggerEvent1Us;
 
-                if (longHighState && longLowState && isBeamOk ()) {
+                if (longHighState && longLowState && isBeamClean ()) {
                         callback->report (DetectorEventType::trigger, highStateStart);
                         highStateStart = middleStateStart = lowStateStart; // To prevent reporting twice
                 }
@@ -212,10 +212,6 @@ void EdgeFilter::run (Result1us const &now)
 
         if (now - lastBeamStateCalculation >= msToResult1us (noBeamTimeoutMs) && noiseState != NoiseState::noise) {
                 lastBeamStateCalculation = now;
-
-                // __disable_irq ();
-                // // noiseCounter = 0;
-                // __enable_irq ();
 
                 bool stateChanged{};
                 if (beamState == BeamState::present && // State correct - beam was present before.
@@ -314,7 +310,7 @@ void EdgeFilter::run (Result1us const &now)
                         longLowState = (now - currentLowStateStart) >= minTriggerEvent1Us;
                 }
 
-                if (longHighState && longLowState && isBeamOk ()) {
+                if (longHighState && longLowState && isBeamClean ()) {
                         __disable_irq ();
                         callback->report (DetectorEventType::trigger, currentHighStateStart);
                         highStateStart = middleStateStart = lowStateStart; // To prevent reporting twice
