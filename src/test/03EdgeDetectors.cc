@@ -1349,7 +1349,6 @@ TEST_CASE ("No beam", "[detector]")
                 edgeFilter.onEdge ({1500000, EdgePolarity::falling});
 
                 edgeFilter.run (3000000);
-                // TODO there's a trigger event inbetween, which isn't
                 REQUIRE (events.size () == 2);
                 REQUIRE (events.back ().type == DetectorEventType::beamRestored);
 
@@ -1446,7 +1445,6 @@ TEST_CASE ("No beam", "[detector]")
                 edgeFilter.onEdge ({1500000, EdgePolarity::falling});
 
                 edgeFilter.run (3000000);
-                // TODO there's a trigger event inbetween, which isn't
                 REQUIRE (events.size () == 2);
                 REQUIRE (events.back ().type == DetectorEventType::beamRestored);
 
@@ -1542,7 +1540,6 @@ TEST_CASE ("No beam", "[detector]")
                 edgeFilter.onEdge ({1500000, EdgePolarity::falling});
 
                 edgeFilter.run (3000000);
-                // TODO there's a trigger event inbetween, which isn't
                 REQUIRE (events.size () == 2);
                 REQUIRE (events.back ().type == DetectorEventType::beamRestored);
 
@@ -1559,5 +1556,34 @@ TEST_CASE ("No beam", "[detector]")
                 edgeFilter.run (5300000);
                 REQUIRE (events.size () == 4);
                 REQUIRE (events.back ().type == DetectorEventType::beamRestored);
+        }
+}
+
+TEST_CASE ("No beam at the start", "[detector]")
+{
+        {
+                /*
+                 * ------------+
+                 *             |
+                 *             |
+                 *             |
+                 *             |
+                 *             +-------+
+                 * 0           10ms   20ms     30ms
+                 */
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::high};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                edgeFilter.run (10 * 1000);
+                REQUIRE (events.empty ());
+
+                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
+                edgeFilter.run (20 * 1000);
+                REQUIRE (events.empty ());
+
+                edgeFilter.run (30 * 1000);
+                REQUIRE (events.empty ());
         }
 }

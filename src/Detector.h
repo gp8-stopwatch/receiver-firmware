@@ -139,8 +139,8 @@ public:
         static constexpr uint32_t MIN_NOISE_SPIKE_1US = 100;
 
         bool isActive () const { return active; }
-        bool isBeamOk () const { return beamState == BeamState::present && noiseState == NoiseState::noNoise; }
-        // DetectorStateType getDetectorState () const { return detectorState; }
+        bool isBeamClean () const { return beamState == BeamState::present && noiseState == NoiseState::noNoise; }
+        bool isReadyForTrigger () const { return isBeamClean () && pwmState == PwmState::low; }
 
 private:
         bool active{};

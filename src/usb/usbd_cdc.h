@@ -97,10 +97,6 @@ typedef void (*UsbOnDisconnected) ();
 extern void usbWrite (const char *str);
 extern void usbWriteData (const uint8_t *str, size_t size);
 
-// TODO remove
-extern bool usbWriteUnprotected (const char *str);
-extern bool usbWriteDataUnprotected (const uint8_t *str, size_t size);
-
 extern void usbOnData (UsbOnData callback);
 extern void usbOnConnected (UsbOnConnected callback);
 extern void usbOnDisconnected (UsbOnConnected callback);
