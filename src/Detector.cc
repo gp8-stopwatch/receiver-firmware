@@ -92,8 +92,6 @@ void EdgeFilter::onEdge (Edge const &e)
                 }
         }
 
-        // highStateAveragePeriod += hiDuration;
-
         /*--------------------------------------------------------------------------*/
         /* PWM State transitions depending on dutyCycle and recent level length.    */
         /*--------------------------------------------------------------------------*/
