@@ -37,7 +37,7 @@ void FastStateMachine::run (Event event)
 
         // Global except for the PAUSED state
         if (state != PAUSED) {
-                if (ir->isActive () && !ir->isBeamOk ()) {
+                if (ir->isActive () && !ir->isBeamClean ()) {
                         state = State::WAIT_FOR_BEAM;
                 }
 
@@ -105,7 +105,7 @@ void FastStateMachine::run (Event event)
 #endif
 */
                 // The transition
-                if ((ir->isActive () && ir->isBeamOk ()) /* || remoteBeamState == RemoteBeamState::allOk */) {
+                if ((ir->isActive () && ir->isBeamClean ()) /* || remoteBeamState == RemoteBeamState::allOk */) {
                         state = READY;
                 }
 

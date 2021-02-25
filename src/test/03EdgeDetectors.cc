@@ -1559,6 +1559,46 @@ TEST_CASE ("No beam", "[detector]")
         }
 }
 
+/*
+ * Wrong behaviour of no beam tetector.
+ */
+TEST_CASE ("No beam not", "[detector]")
+{
+        {
+                /*
+                 *        +-----+
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 * -------+     +-----------+
+                 * 0    10ms  15ms          1.5s
+                 */
+                TestDetectorCallback tc;
+                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+                edgeFilter.setCallback (&tc);
+                events.clear ();
+
+                edgeFilter.onEdge ({9000, EdgePolarity::rising});
+                REQUIRE (events.empty ());
+
+                edgeFilter.onEdge ({9500, EdgePolarity::falling});
+                REQUIRE (events.empty ());
+
+                edgeFilter.onEdge ({10000, EdgePolarity::rising});
+                REQUIRE (events.empty ());
+
+                edgeFilter.run (11000);
+                REQUIRE (events.empty ());
+
+                edgeFilter.onEdge ({15000, EdgePolarity::falling});
+                REQUIRE (events.empty ());
+
+                edgeFilter.run (1500000);
+                REQUIRE (events.empty ());
+        }
+}
+
 TEST_CASE ("No beam at the start", "[detector]")
 {
         {
@@ -1584,7 +1624,7 @@ TEST_CASE ("No beam at the start", "[detector]")
                 REQUIRE (events.empty ());
 
                 edgeFilter.run (30 * 1000);
-                REQUIRE (events.empty ());
+                REQUIRE (events.empty ()); // TODO I don't know how to overcome this yet. Generally speaking this is not an error.
         }
 
         {

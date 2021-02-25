@@ -40,6 +40,13 @@ void EdgeFilter::onEdge (Edge const &e)
          * Release:
          * 14.3kHz / 40% / 200Hz (42µs + 28µs)
          * 16.6kHz
+         *
+         * TODO Pokazuje no i.r. (często/co drugi raz).
+         * TODO Zaimplementować blind time przed kolejnymi testami.
+         * TODO EDIT : chyba jednak nie jest to błąd. Przy dużych zakłóceniach widoczne błędne działanie algorytmu. Screeny w katalogu doc. z
+         * dnia 24/02/2021
+         * TODO Testy powinny symulowac dwór. Czysty sygnał zakłócamy żarówką 100W. Testy z odbiciami są prostsze (nie trzeba żarówki) ale to nie
+         * ten use-case.
          */
         if (!queue.empty () && queue.back ().polarity == e.polarity) {
                 // Reset queue so it's still full, but pulses are 0 width. This will automatically increase noiseCounter by 2
@@ -208,6 +215,7 @@ void EdgeFilter::run (Result1us const &now)
         /*--------------------------------------------------------------------------*/
         /* No beam detection + hysteresis                                           */
         /*--------------------------------------------------------------------------*/
+
         auto noBeamTimeoutMs = std::max (NO_BEAM_CALCULATION_PERIOD_MS, getConfig ().getMinTreggerEventMs ());
 
         if (now - lastBeamStateCalculation >= msToResult1us (noBeamTimeoutMs) && noiseState != NoiseState::noise) {

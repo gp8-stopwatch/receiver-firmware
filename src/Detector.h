@@ -140,7 +140,7 @@ public:
 
         bool isActive () const { return active; }
         bool isBeamClean () const { return beamState == BeamState::present && noiseState == NoiseState::noNoise; }
-        bool isReadyForTrigger () const { return isBeamClean () && pwmState == PwmState::low; }
+        // bool isReadyForTrigger () const { return isBeamClean () && pwmState == PwmState::low; }
 
 private:
         bool active{};
