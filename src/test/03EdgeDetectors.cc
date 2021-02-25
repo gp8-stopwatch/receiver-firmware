@@ -1566,13 +1566,13 @@ TEST_CASE ("No beam not", "[detector]")
 {
         {
                 /*
-                 *        +-----+
-                 *        |     |
-                 *        |     |
-                 *        |     |
-                 *        |     |
-                 * -------+     +-----------+
-                 * 0    10ms  15ms          1.5s
+                 *     +-+  +-----+
+                 *     | |  |     |
+                 *     | |  |     |
+                 *     | |  |     |
+                 *     | |  |     |
+                 * ----+ +--+     +-----------+
+                 * 0       10ms  15ms          1.5s
                  */
                 TestDetectorCallback tc;
                 EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
@@ -1593,6 +1593,9 @@ TEST_CASE ("No beam not", "[detector]")
 
                 edgeFilter.onEdge ({15000, EdgePolarity::falling});
                 REQUIRE (events.empty ());
+
+                edgeFilter.run (25000);
+                edgeFilter.run (35000);
 
                 edgeFilter.run (1500000);
                 REQUIRE (events.empty ());

@@ -23,6 +23,7 @@ Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
 
 void EdgeFilter::onEdge (Edge const &e)
 {
+        // TODO turn off this EXTI and remove this condition (opt). EDIT : NO : button would not work.
         if (!active) {
                 return;
         }
@@ -49,7 +50,8 @@ void EdgeFilter::onEdge (Edge const &e)
          * ten use-case.
          */
         if (!queue.empty () && queue.back ().polarity == e.polarity) {
-                // Reset queue so it's still full, but pulses are 0 width. This will automatically increase noiseCounter by 2
+                // TODO there should be some bit in some register that would tell me that I've missed this ISR. This would be safer and cleaner
+                // to use. Reset queue so it's still full, but pulses are 0 width. This will automatically increase noiseCounter by 2
                 queue.push (e);
                 queue.push ({e.timePoint, (e.polarity == EdgePolarity::rising) ? (EdgePolarity::falling) : (EdgePolarity::rising)});
 
@@ -157,6 +159,29 @@ void EdgeFilter::run (Result1us const &now)
         auto currentLowStateStart = lowStateStart;
         auto currentMiddleStateStart = middleStateStart;
         __enable_irq ();
+
+        Result1us lastSignalChange = back.timePoint;
+
+        if (now - lastSignalChange >= minTriggerEvent1Us) {
+                if (back.polarity == EdgePolarity::rising) {
+                        if (pwmState != PwmState::high) {
+                                __disable_irq ();
+                                pwmState = PwmState::high;
+                                highStateStart = lastSignalChange;
+                                __enable_irq ();
+                                debugPin (true);
+                        }
+                }
+                else {
+                        if (pwmState != PwmState::low) {
+                                __disable_irq ();
+                                pwmState = PwmState::low;
+                                lowStateStart = lastSignalChange;
+                                __enable_irq ();
+                                debugPin (false);
+                        }
+                }
+        }
 
         /*--------------------------------------------------------------------------*/
         /* Noise detection + hysteresis                                             */
@@ -278,9 +303,7 @@ void EdgeFilter::run (Result1us const &now)
         /*--------------------------------------------------------------------------*/
         /* Steady state prevention                                                  */
         /*--------------------------------------------------------------------------*/
-
         Result1us tp;
-
         /*
          * This additional condition (forst branch) is for situations, when for certain period of time
          * after correct (long) high state we have a period of low PWM duty cycle (with some positive noise),
