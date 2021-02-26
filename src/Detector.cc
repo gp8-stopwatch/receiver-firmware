@@ -251,27 +251,14 @@ void EdgeFilter::run (Result1us const &now)
         auto noBeamTimeoutMs = std::max (NO_BEAM_CALCULATION_PERIOD_MS, getConfig ().getMinTreggerEventMs ());
 
         if (now - lastBeamStateCalculation >= msToResult1us (noBeamTimeoutMs) && noiseState != NoiseState::noise) {
+                // This is the real period during we gathered the data uised to determine if there is noBeam situation.
                 auto actualNoBeamCalculationPeriod = now - lastBeamStateCalculation;
                 lastBeamStateCalculation = now;
 
                 bool stateChanged{};
                 if (beamState == BeamState::present && // State correct - beam was present before.
-
-                    /*
-                     * Case 1 - noisy signal
-                     *       __________
-                     * _____| | || |
-                     */
-                    ((currentState == PwmState::high
-                      && 100 * (now - currentHighStateStart) >= getConfig ().getDutyTresholdPercent () * actualNoBeamCalculationPeriod)
-                     ||
-
-                     /*
-                      * Case 2 - clean signal, no pwmState change (duty is 100%)
-                      *       __________
-                      * _____|
-                      */
-                     (back.polarity == EdgePolarity::rising && now - back.timePoint >= msToResult1us (NO_BEAM_CALCULATION_PERIOD_MS)))) {
+                    (currentState == PwmState::high
+                     && 100 * (now - currentHighStateStart) >= getConfig ().getDutyTresholdPercent () * actualNoBeamCalculationPeriod)) {
 
                         beamState = BeamState::absent;
                         stateChanged = true;
@@ -279,20 +266,7 @@ void EdgeFilter::run (Result1us const &now)
                         callback->report (DetectorEventType::noBeam, now);
                         __enable_irq ();
                 }
-                else if (beamState == BeamState::absent &&
-                         /*
-                          * Case 1 - noisy signal
-                          * _______
-                          *   | | ||________
-                          */
-                         (currentState == PwmState::low ||
-
-                          /*
-                           * Case 2 - clean signal, no pwmState change (duty is 100%)
-                           * ______
-                           *       |_______
-                           */
-                          (back.polarity == EdgePolarity::falling && now - back.timePoint >= msToResult1us (NO_BEAM_CALCULATION_PERIOD_MS)))) {
+                else if (beamState == BeamState::absent && currentState == PwmState::low) {
 
                         beamState = BeamState::present;
                         stateChanged = true;
