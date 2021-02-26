@@ -251,6 +251,7 @@ void EdgeFilter::run (Result1us const &now)
         auto noBeamTimeoutMs = std::max (NO_BEAM_CALCULATION_PERIOD_MS, getConfig ().getMinTreggerEventMs ());
 
         if (now - lastBeamStateCalculation >= msToResult1us (noBeamTimeoutMs) && noiseState != NoiseState::noise) {
+                auto actualNoBeamCalculationPeriod = now - lastBeamStateCalculation;
                 lastBeamStateCalculation = now;
 
                 bool stateChanged{};
@@ -261,7 +262,9 @@ void EdgeFilter::run (Result1us const &now)
                      *       __________
                      * _____| | || |
                      */
-                    ((currentState == PwmState::high && now - currentHighStateStart >= msToResult1us (NO_BEAM_CALCULATION_PERIOD_MS)) ||
+                    ((currentState == PwmState::high
+                      && 100 * (now - currentHighStateStart) >= getConfig ().getDutyTresholdPercent () * actualNoBeamCalculationPeriod)
+                     ||
 
                      /*
                       * Case 2 - clean signal, no pwmState change (duty is 100%)

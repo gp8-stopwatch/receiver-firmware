@@ -880,12 +880,7 @@ TEST_CASE ("No beam", "[detector]")
                  * -------+   + +-------+-+  +-----
                  * 0    10ms  1s10ms   3s  10ms
                  */
-                sim.signal ({10000} /* , 1010000 */); // NOLINT
-
-                edgeFilter.run (1000000); // NOLINT
-                REQUIRE (events.empty ());
-
-                edgeFilter.run (1010000); // NOLINT
+                sim.signal ({10000}, 1000'000); // NOLINT
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::noBeam);
 
