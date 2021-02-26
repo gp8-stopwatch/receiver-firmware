@@ -1026,19 +1026,19 @@ TEST_CASE ("No beam", "[detector]")
                  * -------+   + +-------+-+      +-----
                  * 0    10ms  1s10ms   3s 4s     5s
                  */
-                sim.signal ({10000}, 1010000);
+                sim.signal ({10000}, 1010000); // NOLINT
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::noBeam);
 
-                sim.signal ({1500000}, 3000000);
+                sim.signal ({1500000}, 3000000); // NOLINT
                 REQUIRE (events.size () == 2);
                 REQUIRE (events.back ().type == DetectorEventType::beamRestored);
 
-                sim.signal ({3100000}, 4200000);
+                sim.signal ({3100000}, 4200000); // NOLINT
                 REQUIRE (events.size () == 3);
                 REQUIRE (events.back ().type == DetectorEventType::noBeam);
 
-                sim.signal ({4200001}, 5300000);
+                sim.signal ({4200001}, 5300000); // NOLINT
 
                 // edgeFilter.onEdge ({4200001, EdgePolarity::falling});
                 // edgeFilter.run (5300000);
@@ -1111,5 +1111,59 @@ TEST_CASE ("No beam at the start", "[detector]")
 
                 sim.signal ({20000}, 30000); // NOLINT
                 REQUIRE (events.empty ());
+        }
+}
+
+TEST_CASE ("Blind period", "[detector]")
+{
+        TestDetectorCallback tc;
+        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        edgeFilter.setCallback (&tc);
+        SignalSimulator sim{edgeFilter};
+        events.clear ();
+
+        SECTION ("Simplest blind")
+        {
+                /*
+                 *        +-----+
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 * -------+     +-------+
+                 * 0    10ms   20ms     30ms
+                 */
+                getConfig ().setBlindTime (1000); // NOLINT
+
+                sim.signal ({10000, 20000}, 30000); // NOLINT
+                REQUIRE (events.size () == 1);
+                REQUIRE (events.front ().type == DetectorEventType::trigger);
+                REQUIRE (events.front ().timePoint == 10 * 1000);
+
+                // Another valid trigger event, but occuring in the blind period.
+                sim.signal ({40000, 50000}, 60000); // NOLINT
+                REQUIRE (events.size () == 1);
+        }
+
+        SECTION ("No blind period, fastest 2 triggers")
+        {
+                /*
+                 *        +-----+
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 *        |     |
+                 * -------+     +-------+
+                 * 0    10ms   20ms     30ms
+                 */
+                getConfig ().setBlindTime (0); // NOLINT
+
+                sim.signal ({10000, 20000, 30000, 40000}, 50000); // NOLINT
+                REQUIRE (events.size () == 2);
+                REQUIRE (events.front ().type == DetectorEventType::trigger);
+                REQUIRE (events.front ().timePoint == 10000);
+
+                REQUIRE (events.back ().type == DetectorEventType::trigger);
+                REQUIRE (events.back ().timePoint == 30000);
         }
 }

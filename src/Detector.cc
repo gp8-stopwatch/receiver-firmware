@@ -218,7 +218,7 @@ void EdgeFilter::run (Result1us const &now)
                 if (noiseState == NoiseState::noNoise && noiseLevel >= getConfig ().getNoiseLevelHigh ()) {
                         noiseState = NoiseState::noise;
                         // TODO When noise counter is high, turn of the EXTI, so the rest of the code has a chance to run. Then enable it
-                        // after 1s
+                        // after 1s TODO button will stop working during this period.
                         __disable_irq ();
                         callback->report (DetectorEventType::noise, now);
                         reset ();
@@ -274,42 +274,20 @@ void EdgeFilter::run (Result1us const &now)
         }
 
         /*--------------------------------------------------------------------------*/
-        /* Steady state prevention                                                  */
+        /* Trigger detection during steady state.                                   */
         /*--------------------------------------------------------------------------*/
-        Result1us tp;
-        /*
-         * This additional condition (forst branch) is for situations, when for certain period of time
-         * after correct (long) high state we have a period of low PWM duty cycle (with some positive noise),
-         * but not long enough to be qualified as a correct (long) low state.
-         */
-        if (currentLowStateStart > currentHighStateStart) {
-                tp = std::min (back.timePoint, currentLowStateStart);
-        }
-        else { // This is valid when after high duty there is absolutely no noise.
-                tp = back.timePoint;
-        }
 
         // If there's no noise which would trigger onEdge and thus force a check.
-        if (now - tp >= minTriggerEvent1Us && back.polarity == EdgePolarity::falling) {
+        if (now - lastSignalChange >= minTriggerEvent1Us) { // Steady for minTriggerEvent1Us or more
 
                 debugPin (false);
                 bool longHighState{};
                 bool longLowState{};
 
-                /*
-                 * This is case when we are still in high state, because no PWM was calculated.
-                 * My previous impl. was inserting fake noise spikes to recalcutale the PWM and
-                 * thus state. This was inefficient.
-                 */
-                if (currentState == PwmState::high && back.timePoint > currentHighStateStart) {
-                        longHighState = (back.timePoint - currentHighStateStart) >= minTriggerEvent1Us;
-                        longLowState = (now - back.timePoint) >= minTriggerEvent1Us;
-                }
-                /*
-                 * And this condition is the same as in onEvent's case
-                 */
-                else if (currentState == PwmState::low && currentHighStateStart < currentLowStateStart
-                         && currentMiddleStateStart < currentHighStateStart) {
+                if (currentState == PwmState::low &&                // Correct current state
+                    currentHighStateStart < currentLowStateStart && // And correct order of previous pwmStates
+                    currentMiddleStateStart < currentHighStateStart) {
+
                         longHighState = (currentLowStateStart - currentHighStateStart) >= minTriggerEvent1Us;
                         longLowState = (now - currentLowStateStart) >= minTriggerEvent1Us;
                 }
