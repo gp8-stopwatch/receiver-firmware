@@ -139,7 +139,7 @@ void EdgeFilter::onEdge (Edge const &e)
 
                 if (longHighState && longLowState && isBeamClean ()) {
                         callback->report (DetectorEventType::trigger, highStateStart);
-                        highStateStart = middleStateStart = lowStateStart; // To prevent reporting twice
+                        reset (); // To prevent reporting twice
                 }
         }
 }
@@ -199,7 +199,6 @@ void EdgeFilter::run (Result1us const &now)
                 __disable_irq ();
                 auto currentNoiseCounter = noiseCounter;
                 noiseCounter = 0;
-                // highStateAveragePeriod = 0;
                 __enable_irq ();
 
                 if (currentNoiseCounter > 0) {
@@ -216,31 +215,24 @@ void EdgeFilter::run (Result1us const &now)
                         noiseLevel = 0;
                 }
 
-                bool stateChanged{};
-
                 if (noiseState == NoiseState::noNoise && noiseLevel >= getConfig ().getNoiseLevelHigh ()) {
                         noiseState = NoiseState::noise;
-                        stateChanged = true;
                         // TODO When noise counter is high, turn of the EXTI, so the rest of the code has a chance to run. Then enable it
                         // after 1s
                         __disable_irq ();
                         callback->report (DetectorEventType::noise, now);
-                        __enable_irq ();
-                }
-                else if (noiseState == NoiseState::noise && noiseLevel <= getConfig ().getNoiseLevelLow ()) {
-                        noiseState = NoiseState::noNoise;
-                        stateChanged = true;
-                        __disable_irq ();
-                        callback->report (DetectorEventType::noNoise, now);
+                        reset ();
+                        return;
                         __enable_irq ();
                 }
 
-                if (stateChanged) { // No point of calculating trigger if there's no beam, or it was just restored.
+                /* else */ if (noiseState == NoiseState::noise && noiseLevel <= getConfig ().getNoiseLevelLow ()) {
+                        noiseState = NoiseState::noNoise;
                         __disable_irq ();
-                        highStateStart = middleStateStart = lowStateStart;
-                        pwmState = PwmState::middle;
-                        __enable_irq ();
+                        callback->report (DetectorEventType::noNoise, now);
+                        reset ();
                         return;
+                        __enable_irq ();
                 }
         }
 
@@ -255,32 +247,29 @@ void EdgeFilter::run (Result1us const &now)
                 auto actualNoBeamCalculationPeriod = now - lastBeamStateCalculation;
                 lastBeamStateCalculation = now;
 
-                bool stateChanged{};
                 if (beamState == BeamState::present && // State correct - beam was present before.
-                    (currentState == PwmState::high
-                     && 100 * (now - currentHighStateStart) >= getConfig ().getDutyTresholdPercent () * actualNoBeamCalculationPeriod)) {
+                    currentState == PwmState::high &&  // Pwm state is high (still is) for very long
+                    /*
+                     * For so long, that high time to noBeam calculation time (def 1s) is higher
+                     * (or eq) than dutyCycle (50 by def.)
+                     */
+                    100 * (now - currentHighStateStart) >= getConfig ().getDutyTresholdPercent () * actualNoBeamCalculationPeriod) {
 
                         beamState = BeamState::absent;
-                        stateChanged = true;
                         __disable_irq ();
                         callback->report (DetectorEventType::noBeam, now);
+                        reset ();
+                        return;
                         __enable_irq ();
                 }
-                else if (beamState == BeamState::absent && currentState == PwmState::low) {
+                /* else */ if (beamState == BeamState::absent && currentState == PwmState::low) {
 
                         beamState = BeamState::present;
-                        stateChanged = true;
                         __disable_irq ();
                         callback->report (DetectorEventType::beamRestored, now);
-                        __enable_irq ();
-                }
-
-                if (stateChanged) { // No point of calculating trigger if there's no beam, or it was just restored.
-                        __disable_irq ();
-                        highStateStart = middleStateStart = lowStateStart;
-                        pwmState = PwmState::middle;
-                        __enable_irq ();
+                        reset ();
                         return;
+                        __enable_irq ();
                 }
         }
 
@@ -328,8 +317,7 @@ void EdgeFilter::run (Result1us const &now)
                 if (longHighState && longLowState && isBeamClean ()) {
                         __disable_irq ();
                         callback->report (DetectorEventType::trigger, currentHighStateStart);
-                        highStateStart = middleStateStart = lowStateStart; // To prevent reporting twice
-                        pwmState = PwmState::middle;
+                        reset ();
                         __enable_irq ();
                 }
         }

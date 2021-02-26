@@ -143,6 +143,12 @@ public:
         // bool isReadyForTrigger () const { return isBeamClean () && pwmState == PwmState::low; }
 
 private:
+        void reset ()
+        {
+                highStateStart = middleStateStart = lowStateStart;
+                pwmState = PwmState::middle;
+        }
+
         bool active{};
         // DetectorStateType detectorState{DetectorStateType::ok};
         Result1us minTriggerEvent1Us{};
