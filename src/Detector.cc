@@ -23,8 +23,8 @@ Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
 
 void EdgeFilter::onEdge (Edge const &e)
 {
-        // TODO turn off this EXTI and remove this condition (opt). EDIT : NO : button would not work.
-        if (!active) {
+        // TODO turn off this EXTI and remove this condition (opt). EDIT : button would not work. The button pin should be changed then.
+        if (!active || blindState == BlindState::blind) {
                 return;
         }
 
@@ -139,6 +139,8 @@ void EdgeFilter::onEdge (Edge const &e)
 
                 if (longHighState && longLowState && isBeamClean ()) {
                         callback->report (DetectorEventType::trigger, highStateStart);
+                        blindState = BlindState::blind;
+                        blindStateStart = e.timePoint;
                         reset (); // To prevent reporting twice
                 }
         }
@@ -151,6 +153,19 @@ void EdgeFilter::run (Result1us const &now)
 {
         if (!active || queue.empty ()) {
                 return;
+        }
+
+        /*--------------------------------------------------------------------------*/
+        /* Blind state.                                                             */
+        /*--------------------------------------------------------------------------*/
+        if (blindState == BlindState::blind) {
+
+                if (now - blindStateStart >= msToResult1us (getConfig ().getBlindTime ())) {
+                        blindState = BlindState::notBlind;
+                }
+                else {
+                        return;
+                }
         }
 
         /*--------------------------------------------------------------------------*/
@@ -295,6 +310,8 @@ void EdgeFilter::run (Result1us const &now)
                 if (longHighState && longLowState && isBeamClean ()) {
                         __disable_irq ();
                         callback->report (DetectorEventType::trigger, currentHighStateStart);
+                        blindState = BlindState::blind;
+                        blindStateStart = now;
                         reset ();
                         __enable_irq ();
                 }

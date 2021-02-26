@@ -140,7 +140,6 @@ public:
 
         bool isActive () const { return active; }
         bool isBeamClean () const { return beamState == BeamState::present && noiseState == NoiseState::noNoise; }
-        // bool isReadyForTrigger () const { return isBeamClean () && pwmState == PwmState::low; }
 
 private:
         void reset ()
@@ -150,7 +149,6 @@ private:
         }
 
         bool active{};
-        // DetectorStateType detectorState{DetectorStateType::ok};
         Result1us minTriggerEvent1Us{};
 
         /*--------------------------------------------------------------------------*/
@@ -180,4 +178,11 @@ private:
         enum class BeamState { present, absent };
         BeamState beamState{};
         Result1us lastBeamStateCalculation{};
+
+        /*--------------------------------------------------------------------------*/
+        /* Blind period calculations                                                */
+        /*--------------------------------------------------------------------------*/
+        enum class BlindState { notBlind, blind };
+        BlindState blindState{};
+        Result1us blindStateStart{};
 };
