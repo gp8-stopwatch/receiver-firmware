@@ -146,18 +146,18 @@ void EdgeFilter::onEdge (Edge const &e)
 
 /****************************************************************************/
 
+// TODO Run every half min trigger len.
 void EdgeFilter::run (Result1us const &now)
 {
-        __disable_irq ();
         if (!active || queue.empty ()) {
                 return;
         }
 
+        /*--------------------------------------------------------------------------*/
+        /* Steady state detection, pwmState correction.                             */
+        /*--------------------------------------------------------------------------*/
+        __disable_irq ();
         auto back = queue.back ();
-        auto currentState = pwmState;
-        auto currentHighStateStart = highStateStart;
-        auto currentLowStateStart = lowStateStart;
-        auto currentMiddleStateStart = middleStateStart;
         __enable_irq ();
 
         Result1us lastSignalChange = back.timePoint;
@@ -182,6 +182,13 @@ void EdgeFilter::run (Result1us const &now)
                         }
                 }
         }
+
+        __disable_irq ();
+        auto currentState = pwmState;
+        auto currentHighStateStart = highStateStart;
+        auto currentLowStateStart = lowStateStart;
+        auto currentMiddleStateStart = middleStateStart;
+        __enable_irq ();
 
         /*--------------------------------------------------------------------------*/
         /* Noise detection + hysteresis                                             */

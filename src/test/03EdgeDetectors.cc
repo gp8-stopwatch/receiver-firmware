@@ -15,7 +15,7 @@ struct DetectorEvent {
         Result1us timePoint{};
 };
 
-std::vector<DetectorEvent> events;
+std::vector<DetectorEvent> events; // NOLINT
 
 struct TestDetectorCallback : public IEdgeDetectorCallback {
         void report (DetectorEventType type, Result1us timePoint) override { events.push_back ({type, timePoint}); }
@@ -67,7 +67,14 @@ void SignalSimulator::signal (std::vector<uint32_t> const &edges, uint32_t runUn
         }
 
         while (currentTimeUs < runUntilMs) {
-                currentTimeUs += RUN_PERIOD_US;
+
+                if (runUntilMs - currentTimeUs < RUN_PERIOD_US) {
+                        currentTimeUs = runUntilMs;
+                }
+                else {
+                        currentTimeUs += RUN_PERIOD_US;
+                }
+
                 edgeFilter.run (/* msToResult1us */ (currentTimeUs));
         }
 }
@@ -94,7 +101,7 @@ TEST_CASE ("Edge cases", "[detector]")
                  * -------+     +-------+
                  * 0    10ms   20ms     30ms
                  */
-                sim.signal ({10000, 20000}, 30000);
+                sim.signal ({10000, 20000}, 30000); // NOLINT
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::trigger);
                 REQUIRE (events.front ().timePoint == 10 * 1000);
@@ -111,7 +118,7 @@ TEST_CASE ("Edge cases", "[detector]")
                  * -------+     +-------+
                  * 0    10ms   20ms     30ms
                  */
-                sim.signal ({10000, 20000, 30000});
+                sim.signal ({10000, 20000, 30000}); // NOLINT
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::trigger);
                 REQUIRE (events.front ().timePoint == 10 * 1000);
@@ -129,7 +136,7 @@ TEST_CASE ("Edge cases", "[detector]")
                  * -------+  +   +-------+
                  * 0    10ms   20ms     30ms
                  */
-                sim.signal ({10000, 15000, 15100, 20000}, 30000);
+                sim.signal ({10000, 15000, 15100, 20000}, 30000); // NOLINT
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::trigger);
                 REQUIRE (events.front ().timePoint == 10000);
@@ -147,7 +154,7 @@ TEST_CASE ("Edge cases", "[detector]")
                  * -------+  +   +-------+
                  * 0    10ms   20ms     30ms
                  */
-                sim.signal ({10000, 15000, 15100, 20000, 30000});
+                sim.signal ({10000, 15000, 15100, 20000, 30000}); // NOLINT
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::trigger);
                 REQUIRE (events.front ().timePoint == 10 * 1000);
@@ -166,7 +173,7 @@ TEST_CASE ("Edge cases", "[detector]")
                  * -------+  +   +----+------+------+
                  * 0    10ms   20ms  25(100) 30ms    50ms
                  */
-                sim.signal ({10000, 15000, 15100, 20000, 25000, 25100}, 50000);
+                sim.signal ({10000, 15000, 15100, 20000, 25000, 25100}, 50000); // NOLINT
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::trigger);
                 REQUIRE (events.front ().timePoint == 10 * 1000);
@@ -185,7 +192,7 @@ TEST_CASE ("Edge cases", "[detector]")
                  * -------+  +   +----+------+------+
                  * 0    10ms   20ms  25(100) 30ms    50ms
                  */
-                sim.signal ({10000, 15000, 15100, 20000, 25000, 25100, 30000, 30001, 50000, 50001});
+                sim.signal ({10000, 15000, 15100, 20000, 25000, 25100, 30000, 30001, 50000, 50001}); // NOLINT
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::trigger);
                 REQUIRE (events.front ().timePoint == 10 * 1000);
@@ -198,76 +205,35 @@ TEST_CASE ("Edge cases", "[detector]")
  */
 TEST_CASE ("Only one report", "[detector]")
 {
+        TestDetectorCallback tc;
+        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        edgeFilter.setCallback (&tc);
+        SignalSimulator sim{edgeFilter};
+        events.clear ();
+
+        SECTION ("The only section")
         {
                 /*
-                 *        +-----+
-                 *        |     |
-                 *        |     |
-                 *        |     |
-                 *        |     |
-                 * -------+     +-------+
-                 * 0    10ms   22ms     34ms
+                 *        +-----+                  +-----+
+                 *        |     |                  |     |
+                 *        |     |                  |     |
+                 *        |     |                  |     |
+                 *        |     |                  |     |
+                 * -------+     +-------+----------+     +------
+                 * 0    10ms   22ms     34ms     6s+ 12ms
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                events.clear ();
-                edgeFilter.setCallback (&tc);
-
-                Result1us time = 0;
-
-                for (int i = 0; i < 10000 / 9; ++i) {
-                        time += 9;
-                        edgeFilter.run (time);
-                }
-
-                time = 10000;
-                edgeFilter.onEdge ({time, EdgePolarity::rising});
-
-                for (int i = 0; i < 12000 / 9; ++i) {
-                        time += 9;
-                        edgeFilter.run (time);
-                }
-
-                REQUIRE (events.empty ());
-
-                time = 22000;
-                edgeFilter.onEdge ({time, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                for (int i = 0; i < 12000 / 9; ++i) {
-                        time += 9;
-                        edgeFilter.run (time);
-                }
-
+                sim.signal ({10000, 22000}, 34000); // NOLINT
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.back ().type == DetectorEventType::trigger);
                 REQUIRE (events.back ().timePoint == 10000);
 
-                for (int i = 0; i < 6 * 1000000 / 9; ++i) {
-                        time += 9;
-                        edgeFilter.run (time);
-                }
-
-                REQUIRE (events.size () == 1);
-
-                // 6 seconds has elapsed, now I simulate the second trigger event
-
-                time = 6040000;
-                edgeFilter.onEdge ({time, EdgePolarity::rising});
-
-                time += 12000;
-                edgeFilter.onEdge ({time, EdgePolarity::falling});
-
-                time += 12000;
-                edgeFilter.run (time);
-
+                sim.signal ({6040000, 6040000 + 12000}, 6040000 + 24000); // NOLINT
                 REQUIRE (events.size () == 2);
                 REQUIRE (events.back ().type == DetectorEventType::trigger);
                 REQUIRE (events.back ().timePoint == 6040000);
         }
 }
 
-#if 0
 TEST_CASE ("Low PWM in the middle", "[detector]")
 {
         /*
@@ -290,32 +256,26 @@ TEST_CASE ("Low PWM in the middle", "[detector]")
         TestDetectorCallback tc;
         EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
         edgeFilter.setCallback (&tc);
+        SignalSimulator sim{edgeFilter};
         events.clear ();
 
-        // First rising @ 10ms
-        edgeFilter.onEdge ({10000, EdgePolarity::rising});
-
-        // Noise spike
-        edgeFilter.onEdge ({15000, EdgePolarity::falling});
-        edgeFilter.onEdge ({15000 + 200, EdgePolarity::rising});
-        // Noise spike
-        edgeFilter.onEdge ({15000 + 300, EdgePolarity::falling});
-        edgeFilter.onEdge ({15000 + 400, EdgePolarity::rising});
-
-        edgeFilter.onEdge ({25000, EdgePolarity::falling});
-
-        edgeFilter.onEdge ({35000, EdgePolarity::rising});
+        sim.signal ({10000, 15000, 15200, 15300, 15400, 25000, 35000}); // NOLINT
 
         // Current implementation cannot handle this scenario, and implementiung it would be hard. Current one should be tested for now.
         // REQUIRE (events.size () == 1);
         // REQUIRE (events.front ().type == DetectorEventType::trigger);
         // REQUIRE (events.front ().timePoint == 10 * 1000);
 }
-#endif
 
 TEST_CASE ("Slightly more", "[detector]")
 {
+        TestDetectorCallback tc;
+        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        edgeFilter.setCallback (&tc);
+        SignalSimulator sim{edgeFilter};
+        events.clear ();
 
+        SECTION ("First section")
         {
                 /*
                  *        +-----+
@@ -323,31 +283,13 @@ TEST_CASE ("Slightly more", "[detector]")
                  *        |     |
                  *        |     |
                  *        |     |
-                 * -------+     +-------+
+                 * -------+     +-------+-----
                  * 0    10000  20001 30ms
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10000, EdgePolarity::rising});
-                edgeFilter.run (10001);
-                REQUIRE (events.empty ());
-
-                // This high level is 1µs too short.
-                edgeFilter.onEdge ({20001, EdgePolarity::falling});
-                edgeFilter.run (20002);
-                REQUIRE (events.empty ());
-
-                // edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
-                edgeFilter.run (30002);
+                sim.signal ({10000, 20001}, 30002); // NOLINT
                 REQUIRE (events.size () == 1);
 
-                edgeFilter.run (300010);
-                REQUIRE (events.size () == 1);
-
-                edgeFilter.run (40003);
+                sim.signal ({}, 300010); // NOLINT
                 REQUIRE (events.size () == 1);
         }
 }
@@ -358,7 +300,13 @@ TEST_CASE ("Slightly more", "[detector]")
  */
 TEST_CASE ("Slightly less", "[detector]")
 {
+        TestDetectorCallback tc;
+        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        edgeFilter.setCallback (&tc);
+        SignalSimulator sim{edgeFilter};
+        events.clear ();
 
+        SECTION ("Shorter high level")
         {
                 /*
                  *        +-----+
@@ -369,24 +317,11 @@ TEST_CASE ("Slightly less", "[detector]")
                  * -------+     +-------+
                  * 0    10000  19999µ 30ms
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10000, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                // This high level is 1µs too short.
-                edgeFilter.onEdge ({19999, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                // edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
-                edgeFilter.run (30 * 1000);
-
+                sim.signal ({10000, 19999}, 30000); // NOLINT
                 REQUIRE (events.empty ());
         }
 
+        SECTION ("Shorter low level")
         {
                 /*
                  *        +-----+
@@ -397,22 +332,11 @@ TEST_CASE ("Slightly less", "[detector]")
                  * -------+     +-------+
                  * 0    10ms   20ms     29999µ
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                sim.signal ({10000, 20000}, 29999); // NOLINT
                 REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                // edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
-                edgeFilter.run (20 * 1000 + 9999);
-
-                REQUIRE (events.size () == 0);
         }
 
+        SECTION ("Shorter high level, rising at the end")
         {
                 /*
                  *        +-----+       +
@@ -423,22 +347,11 @@ TEST_CASE ("Slightly less", "[detector]")
                  * -------+     +-------+
                  * 0    10ms   19999µ  30ms
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                sim.signal ({10000, 19999, 30000}); // NOLINT
                 REQUIRE (events.empty ());
-
-                // 1µs too short
-                edgeFilter.onEdge ({19999, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
-                REQUIRE (events.size () == 0);
         }
 
+        SECTION ("Shorter low level, rising at the end")
         {
                 /*
                  *        +-----+       +
@@ -449,22 +362,11 @@ TEST_CASE ("Slightly less", "[detector]")
                  * -------+     +-------+
                  * 0    10ms   20ms  29999µ
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                sim.signal ({10000, 20000, 29999}); // NOLINT
                 REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({20000, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                // 1µs too short
-                edgeFilter.onEdge ({29999, EdgePolarity::rising});
-                REQUIRE (events.size () == 0);
         }
 
+        SECTION ("Shorter high level, neg. spike")
         {
 
                 /*
@@ -476,29 +378,11 @@ TEST_CASE ("Slightly less", "[detector]")
                  * -------+  +   +-------+
                  * 0    10ms   19999ms     30ms
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                // Noise spike (negative)
-                edgeFilter.onEdge ({15 * 1000, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({15 * 1000 + 100, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({19999, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                edgeFilter.run (30 * 1000);
-
+                sim.signal ({10000, 15000, 15100, 19999}, 30000); // NOLINT
                 REQUIRE (events.empty ());
         }
 
+        SECTION ("Shorter low level, neg. spike")
         {
 
                 /*
@@ -510,29 +394,11 @@ TEST_CASE ("Slightly less", "[detector]")
                  * -------+  +   +-------+
                  * 0    10ms   20ms     29999µ
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                // Noise spike (negative)
-                edgeFilter.onEdge ({15 * 1000, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({15 * 1000 + 100, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                edgeFilter.run (29999);
-
+                sim.signal ({10000, 15000, 15100, 20000}, 29999); // NOLINT
                 REQUIRE (events.empty ());
         }
 
+        SECTION ("Shorter high level, neg. spike, rising at the end")
         {
 
                 /*
@@ -544,31 +410,12 @@ TEST_CASE ("Slightly less", "[detector]")
                  * -------+  +   +-------+
                  * 0    10ms   19999µ   30ms
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                // Noise spike (negative)
-                edgeFilter.onEdge ({15 * 1000, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({15 * 1000 + 100, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({19999, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
-
+                sim.signal ({10000, 15000, 15100, 19999, 30000}); // NOLINT
                 REQUIRE (events.empty ());
         }
 
+        SECTION ("Shorter low level, neg. spike, rising at the end")
         {
-
                 /*
                  *        +--+---+       +
                  *        |  |   |       |
@@ -578,26 +425,7 @@ TEST_CASE ("Slightly less", "[detector]")
                  * -------+  +   +-------+
                  * 0    10ms   20ms     29999µ
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                // Noise spike (negative)
-                edgeFilter.onEdge ({15 * 1000, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({15 * 1000 + 100, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({29999, EdgePolarity::rising});
-
+                sim.signal ({10000, 15000, 15100, 20000, 29999}); // NOLINT
                 REQUIRE (events.empty ());
         }
 }
@@ -607,6 +435,13 @@ TEST_CASE ("Slightly less", "[detector]")
  */
 TEST_CASE ("Advanced / slightly less", "[detector]")
 {
+        TestDetectorCallback tc;
+        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        edgeFilter.setCallback (&tc);
+        SignalSimulator sim{edgeFilter};
+        events.clear ();
+
+        SECTION ("Negative and positive noise")
         {
 
                 /*
@@ -616,38 +451,13 @@ TEST_CASE ("Advanced / slightly less", "[detector]")
                  *        |  |   |    |
                  *        |  |   |    |
                  * -------+  +   +----+--+
-                 * 0    10ms   19999µ   30ms
+                 * 0    10ms   19999µ   35ms
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                // First rising @ 10ms
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                // Noise spike (negative) @ 15ms
-                edgeFilter.onEdge ({15 * 1000, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-                edgeFilter.onEdge ({15 * 1000 + 100, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                // Falling @ 20ms
-                edgeFilter.onEdge ({19999, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                // Noise spike (positive) @ 25ms
-                edgeFilter.onEdge ({25 * 1000, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-                edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                // Run after minTreggerEventMs from last edge
-                edgeFilter.run (35 * 1000 + 100);
+                sim.signal ({10000, 15000, 15100, 19999, 25000, 25100}, 35100); // NOLINT
                 REQUIRE (events.empty ());
         }
 
+        SECTION ("Negative and positive noise 2")
         {
 
                 /*
@@ -658,41 +468,24 @@ TEST_CASE ("Advanced / slightly less", "[detector]")
                  *        |  |   |    |
                  * -------+  +   +----+--+
                  * 0    10ms   20ms   25,25+100   34999 + 100
+                 *
+                 * This basically is the same as the previous one, but before the
+                 * unit test refactoiring it somehow made sense.
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                // First rising @ 10ms
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                // Noise spike (negative) @ 15ms
-                edgeFilter.onEdge ({15 * 1000, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-                edgeFilter.onEdge ({15 * 1000 + 100, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                // Falling @ 20ms
-                edgeFilter.onEdge ({19999, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                // Noise spike (positive) @ 25ms
-                edgeFilter.onEdge ({25 * 1000, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-                edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                // Run after minTreggerEventMs from last edge
-                edgeFilter.run (34999 + 100);
+                sim.signal ({10000, 15000, 15100, 19999, 25000, 25100}, 34999 + 100); // NOLINT
                 REQUIRE (events.empty ());
         }
 }
 
 TEST_CASE ("Noise detection", "[detector]")
 {
+        TestDetectorCallback tc;
+        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        edgeFilter.setCallback (&tc);
+        SignalSimulator sim{edgeFilter};
+        events.clear ();
 
+        SECTION ("Negative burst")
         {
                 /*
                  *        +--+++++---+
@@ -703,33 +496,25 @@ TEST_CASE ("Noise detection", "[detector]")
                  * -------+  +++++   +-------+------+
                  * 0    10ms        20ms     1s     2s
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                sim.signal ({10000}); // NOLINT
                 REQUIRE (events.empty ());
 
-                for (int i = 0; i < 750; ++i) {
-                        edgeFilter.onEdge ({static_cast<Result1us> (15 * 1000 + i * 2), EdgePolarity::falling});
-                        edgeFilter.onEdge ({static_cast<Result1us> (15 * 1000 + i * 2 + 1), EdgePolarity::rising});
+                for (uint32_t i = 0; i < 750; ++i) {                     // NOLINT
+                        sim.signal ({15000 + i * 2, 15000 + i * 2 + 1}); // NOLINT
                 }
 
-                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
+                sim.signal ({20000}); // NOLINT
                 REQUIRE (events.empty ());
 
-                edgeFilter.run (1000 * 1000);
-
+                sim.signal ({}, 1000000); // NOLINT
                 REQUIRE (!events.empty ());
                 REQUIRE (events.back ().type == DetectorEventType::noise);
 
-                edgeFilter.run (2000 * 1000);
+                sim.signal ({}, 2000000); // NOLINT
                 REQUIRE (events.back ().type == DetectorEventType::noNoise);
-
-                // REQUIRE (events.front ().timePoint == 10 * 1000);
         }
 
+        SECTION ("BURST, and then 1 positive")
         {
                 /*
                  *        +--+++++---+           +
@@ -740,34 +525,22 @@ TEST_CASE ("Noise detection", "[detector]")
                  * -------+  +++++   +-------+---+--+
                  * 0    10ms        20ms     1s     2s
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                sim.signal ({10000}); // NOLINT
                 REQUIRE (events.empty ());
 
-                for (int i = 0; i < 750; ++i) {
-                        edgeFilter.onEdge ({static_cast<Result1us> (15 * 1000 + i * 2), EdgePolarity::falling});
-                        edgeFilter.onEdge ({static_cast<Result1us> (15 * 1000 + i * 2 + 1), EdgePolarity::rising});
+                for (uint32_t i = 0; i < 750; ++i) {                     // NOLINT
+                        sim.signal ({15000 + i * 2, 15000 + i * 2 + 1}); // NOLINT
                 }
 
-                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
+                sim.signal ({20000}); // NOLINT
                 REQUIRE (events.empty ());
 
-                edgeFilter.run (1000 * 1000);
-
+                sim.signal ({}, 1000000); // NOLINT
                 REQUIRE (!events.empty ());
                 REQUIRE (events.back ().type == DetectorEventType::noise);
 
-                edgeFilter.onEdge ({1010000 + 1, EdgePolarity::rising});
-                edgeFilter.onEdge ({1010000 + 2, EdgePolarity::falling});
-
-                edgeFilter.run (2000 * 1000);
+                sim.signal ({1010000 + 1, 1010000 + 2}, 2000000); // NOLINT
                 REQUIRE (events.back ().type == DetectorEventType::noNoise);
-
-                // REQUIRE (events.front ().timePoint == 10 * 1000);
         }
 }
 
@@ -776,37 +549,45 @@ TEST_CASE ("Noise detection", "[detector]")
  */
 TEST_CASE ("Spikes", "[detector]")
 {
+        TestDetectorCallback tc;
+        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        edgeFilter.setCallback (&tc);
+        SignalSimulator sim{edgeFilter};
+        events.clear ();
 
-        {
-                /*
-                 *   + + + + + + +
-                 *   | | | | | | |
-                 *   | | | | | | |
-                 *   | | | | | | |
-                 *   | | | | | | |
-                 * --+-+-+-+-+-+-+-------------+
-                 * 0
-                 */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
+        /*
+         *   + + + + + + +
+         *   | | | | | | |
+         *   | | | | | | |
+         *   | | | | | | |
+         *   | | | | | | |
+         * --+-+-+-+-+-+-+-------------+
+         * 0
+         */
+        for (uint32_t i = 0; i < 20; ++i) {                 // NOLINT
+                uint32_t timePoint = i * 20000;             // Every 20ms NOLINT
+                sim.signal ({timePoint, timePoint + 1000}); // NOLINT
 
-                for (int i = 0; i < 20; ++i) {
-                        Result1us timePoint = i * 20000; // Every 20ms
-                        edgeFilter.onEdge ({timePoint, EdgePolarity::rising});
-                        edgeFilter.onEdge ({timePoint + 1000, EdgePolarity::falling});
-                        edgeFilter.run (timePoint + 2000);
-                        edgeFilter.run (timePoint + 5000);
-                        edgeFilter.run (timePoint + 19000);
-                }
-
-                REQUIRE (events.empty ());
+                // edgeFilter.onEdge ({timePoint, EdgePolarity::rising});
+                // edgeFilter.onEdge ({timePoint + 1000, EdgePolarity::falling});
+                // edgeFilter.run (timePoint + 2000);
+                // edgeFilter.run (timePoint + 5000);
+                // edgeFilter.run (timePoint + 19000);
         }
+
+        sim.signal ({}, 21 * 20000); // NOLINT
+        REQUIRE (events.empty ());
 }
 
 TEST_CASE ("Noise level", "[detector]")
 {
+        TestDetectorCallback tc;
+        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        edgeFilter.setCallback (&tc);
+        SignalSimulator sim{edgeFilter};
+        events.clear ();
+
+        SECTION ("Basic test")
         {
                 /*
                  *        +-----+
@@ -817,25 +598,12 @@ TEST_CASE ("Noise level", "[detector]")
                  * -------+     +-------+
                  * 0    10ms   20ms     30ms
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-
-                edgeFilter.setCallback (&tc);
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                edgeFilter.run (10 * 1000);
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
-                edgeFilter.run (20 * 1000);
-                REQUIRE (events.empty ());
-
-                edgeFilter.run (30 * 1000);
-
+                sim.signal ({10000, 20000}, 30000); // NOLINT
                 REQUIRE (events.size () == 1);
                 REQUIRE (edgeFilter.getNoiseLevel () == 0);
         }
 
+        SECTION ("1 spike")
         {
                 /*
                  *        +-----+
@@ -846,24 +614,11 @@ TEST_CASE ("Noise level", "[detector]")
                  * -------+     +-------+
                  * 0    10ms   10ms+100µs  1s
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                edgeFilter.run (10 * 1000);
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({10100, EdgePolarity::falling});
-                edgeFilter.run (10100);
-                REQUIRE (events.empty ());
-
-                edgeFilter.run (1000'000);
-
+                sim.signal ({10000, 10100}, 1000'000); // NOLINT
                 REQUIRE (edgeFilter.getNoiseLevel () == 1);
         }
 
+        SECTION ("Many spikes of 1ms")
         {
                 /*
                  *   + + + + + + +
@@ -874,66 +629,69 @@ TEST_CASE ("Noise level", "[detector]")
                  * --+-+-+-+-+-+-+-------------+
                  * 0     every 20ms pulse 1ms
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
+                for (uint32_t i = 0; i < 20; ++i) {                 // NOLINT
+                        uint32_t timePoint = i * 20000;             // Every 20ms NOLINT
+                        sim.signal ({timePoint, timePoint + 1000}); // NOLINT
 
-                for (int i = 0; i < 20; ++i) {
-                        Result1us timePoint = i * 20000; // Every 20ms
-                        edgeFilter.onEdge ({timePoint, EdgePolarity::rising});
-                        edgeFilter.onEdge ({timePoint + 1000, EdgePolarity::falling});
+                        // edgeFilter.onEdge ({timePoint, EdgePolarity::rising});
+                        // edgeFilter.onEdge ({timePoint + 1000, EdgePolarity::falling});
                 }
 
-                edgeFilter.run (1000'000);
+                sim.signal ({}, 1000'000); // NOLINT
                 REQUIRE (edgeFilter.getNoiseLevel () == 1);
         }
 
+        SECTION ("Maximum noise")
         {
                 /*
                  * Maximum noise - edge case - noise level not exceeding maximum
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
+                uint32_t timePoint{};
 
-                for (int i = 0; i < msToResult1us (EdgeFilter::NOISE_CALCULATION_PERIOD_MS) / EdgeFilter::MIN_NOISE_SPIKE_1US + 10; ++i) {
-                        Result1us timePoint = i * EdgeFilter::MIN_NOISE_SPIKE_1US * 2; // Every 20ms
-                        edgeFilter.onEdge ({timePoint, EdgePolarity::rising});
-                        edgeFilter.onEdge ({timePoint + EdgeFilter::MIN_NOISE_SPIKE_1US, EdgePolarity::falling});
-                        edgeFilter.run (timePoint + EdgeFilter::MIN_NOISE_SPIKE_1US);
+                // NOLINTNEXTLINE 2 This is actually 2 seconds worth of signal
+                for (uint32_t i = 0; i < msToResult1us (EdgeFilter::NOISE_CALCULATION_PERIOD_MS) / EdgeFilter::MIN_NOISE_SPIKE_1US + 10; ++i) {
+                        timePoint = i * EdgeFilter::MIN_NOISE_SPIKE_1US * 2;                   // Every 20ms
+                        sim.signal ({timePoint, timePoint + EdgeFilter::MIN_NOISE_SPIKE_1US}); // NOLINT
                 }
 
+                // This is only to recalulate the noise
+                sim.signal ({}, timePoint + EdgeFilter::MIN_NOISE_SPIKE_1US + 1); // NOLINT
                 REQUIRE (edgeFilter.getNoiseLevel () == 15);
         }
 
+        SECTION ("Even more noise")
         {
                 /*
                  * Maximum noise - noise 2 times more intense than max measurable (shorter spikes
                  * and more of them).
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
                 auto noiseSpikeLen = EdgeFilter::MIN_NOISE_SPIKE_1US / 2;
+                uint32_t timePoint{};
 
-                for (int i = 0; i < msToResult1us (EdgeFilter::NOISE_CALCULATION_PERIOD_MS) / noiseSpikeLen + 10; ++i) {
-                        Result1us timePoint = i * noiseSpikeLen * 2; // Every 20ms
+                for (uint32_t i = 0; i < msToResult1us (EdgeFilter::NOISE_CALCULATION_PERIOD_MS) / noiseSpikeLen + 10; ++i) { // NOLINT
+                        uint32_t timePoint = i * noiseSpikeLen * 2;                                                           // Every 20ms
+                        // sim.signal ({timePoint, timePoint + noiseSpikeLen});                                                  // NOLINT
+
                         edgeFilter.onEdge ({timePoint, EdgePolarity::rising});
                         edgeFilter.onEdge ({timePoint + noiseSpikeLen, EdgePolarity::falling});
                         edgeFilter.run (timePoint + noiseSpikeLen);
                 }
 
+                // This is only to recalulate the noise
+                // sim.signal ({}, timePoint + noiseSpikeLen + 1); // NOLINT
                 REQUIRE (edgeFilter.getNoiseLevel () == 15);
         }
 }
 
 TEST_CASE ("Duty cycle", "[detector]")
 {
+        TestDetectorCallback tc;
+        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        edgeFilter.setCallback (&tc);
+        SignalSimulator sim{edgeFilter};
+        events.clear ();
 
+        SECTION ("Duty cycle 100")
         {
                 /*
                  *        +-----+
@@ -944,29 +702,14 @@ TEST_CASE ("Duty cycle", "[detector]")
                  * -------+     +-------+
                  * 0    10ms   20ms     30ms
                  */
-                getConfig ().setDutyTresholdPercent (100);
-
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                edgeFilter.run (10 * 1000);
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
-                edgeFilter.run (20 * 1000);
-                REQUIRE (events.empty ());
-
-                // edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
-                edgeFilter.run (30 * 1000);
-
+                getConfig ().setDutyTresholdPercent (100); // NOLINT
+                sim.signal ({10000, 20000}, 30000);        // NOLINT
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::trigger);
                 REQUIRE (events.front ().timePoint == 10 * 1000);
         }
 
+        SECTION ("Duty cycle 100 - 2")
         {
 
                 /*
@@ -978,31 +721,12 @@ TEST_CASE ("Duty cycle", "[detector]")
                  * -------+  +   +-------+
                  * 0    10ms   20ms     30ms
                  */
-                getConfig ().setDutyTresholdPercent (100);
-
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                // Noise spike (negative)
-                edgeFilter.onEdge ({15 * 1000, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({15 * 1000 + 1, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                edgeFilter.run (30 * 1000);
-
+                getConfig ().setDutyTresholdPercent (100);        // NOLINT
+                sim.signal ({10000, 15000, 15100, 20000}, 30000); // NOLINT
                 REQUIRE (events.empty ());
         }
 
+        SECTION ("Duty cycle 100 - 3")
         {
 
                 /*
@@ -1014,26 +738,14 @@ TEST_CASE ("Duty cycle", "[detector]")
                  * -------+      +-------+
                  * 0    10ms   20ms     30ms
                  */
-                getConfig ().setDutyTresholdPercent (100);
-
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                // // Noise spike (negative)
-                // edgeFilter.onEdge ({15 * 1000, EdgePolarity::falling});
-                // edgeFilter.onEdge ({15 * 1000 + 100, EdgePolarity::rising});
-
-                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
-                edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
-
+                getConfig ().setDutyTresholdPercent (100); // NOLINT
+                sim.signal ({10000, 20000, 30000});        // NOLINT
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::trigger);
                 REQUIRE (events.front ().timePoint == 10 * 1000);
         }
 
+        SECTION ("Duty cycle 100 - spike")
         {
 
                 /*
@@ -1045,24 +757,12 @@ TEST_CASE ("Duty cycle", "[detector]")
                  * -------+  +   +-------+
                  * 0    10ms   20ms     30ms
                  */
-                getConfig ().setDutyTresholdPercent (100);
-
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                // Noise spike (negative)
-                edgeFilter.onEdge ({15 * 1000, EdgePolarity::falling});
-                edgeFilter.onEdge ({15 * 1000 + 100, EdgePolarity::rising});
-
-                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
-                edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
-
+                getConfig ().setDutyTresholdPercent (100);        // NOLINT
+                sim.signal ({10000, 15000, 15100, 20000, 30000}); // NOLINT
                 REQUIRE (events.empty ());
         }
 
+        SECTION ("Duty cycle 100 - pos. spike")
         {
 
                 /*
@@ -1074,25 +774,12 @@ TEST_CASE ("Duty cycle", "[detector]")
                  * -------+      +---+---+
                  * 0    10ms   20ms     30ms
                  */
-                getConfig ().setDutyTresholdPercent (100);
-
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
-
-                // Noise spike (positive)
-                edgeFilter.onEdge ({25 * 1000, EdgePolarity::falling});
-                edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::rising});
-
-                edgeFilter.onEdge ({30 * 1000, EdgePolarity::rising});
-
+                getConfig ().setDutyTresholdPercent (100);        // NOLINT
+                sim.signal ({10000, 20000, 25000, 25100, 30000}); // NOLINT
                 REQUIRE (events.empty ());
         }
 
+        SECTION ("Duty cycle 100 - 2 pos. spikes")
         {
 
                 /*
@@ -1104,28 +791,12 @@ TEST_CASE ("Duty cycle", "[detector]")
                  * -------+      +---+-----+-------+
                  * 0    10ms   20ms        31ms    50ms
                  */
-                getConfig ().setDutyTresholdPercent (100);
-
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
-
-                // Noise spike (positive)
-                edgeFilter.onEdge ({25 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::falling});
-
-                edgeFilter.onEdge ({31 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({31 * 1000 + 50, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({50 * 1000, EdgePolarity::rising});
+                getConfig ().setDutyTresholdPercent (100);                      // NOLINT
+                sim.signal ({10000, 20000, 25000, 25100, 31000, 31050, 50000}); // NOLINT
                 REQUIRE (events.empty ());
         }
 
+        SECTION ("Duty cycle 100 - 2,2 pos. spike")
         {
 
                 /*
@@ -1138,37 +809,21 @@ TEST_CASE ("Duty cycle", "[detector]")
                  * 0    10ms   20ms            35ms
                  *                      30,31ms     50ms
                  */
-                getConfig ().setDutyTresholdPercent (100);
-
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
-
-                // Noise spike (positive)
-                edgeFilter.onEdge ({25 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::falling});
-
-                edgeFilter.run (30 * 1000);
-                REQUIRE (events.empty ());
-
-                edgeFilter.run (31 * 1000);
-                REQUIRE (events.empty ());
-
-                // Noise spike (positive)
-                edgeFilter.onEdge ({35 * 1000 + 100, EdgePolarity::rising});
-                edgeFilter.onEdge ({35 * 1000 + 200, EdgePolarity::falling});
-
-                edgeFilter.run (50 * 1000);
+                getConfig ().setDutyTresholdPercent (100);                      // NOLINT
+                sim.signal ({10000, 20000, 25000, 25100, 35100, 35200}, 50000); // NOLINT
                 REQUIRE (events.empty ());
         }
 }
 
 TEST_CASE ("Duty cycle less", "[detector]")
 {
+        TestDetectorCallback tc;
+        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        edgeFilter.setCallback (&tc);
+        SignalSimulator sim{edgeFilter};
+        events.clear ();
+
+        SECTION ("Duty cycle 95")
         {
 
                 /*
@@ -1181,36 +836,12 @@ TEST_CASE ("Duty cycle less", "[detector]")
                  * 0    10ms   20ms            35ms
                  *                      30,31ms     50ms
                  */
-                getConfig ().setDutyTresholdPercent (95);
-
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
-
-                // Noise spike (positive)
-                edgeFilter.onEdge ({25 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::falling});
-                edgeFilter.onEdge ({25 * 1000 + 200, EdgePolarity::rising});
-                edgeFilter.onEdge ({25 * 1000 + 300, EdgePolarity::falling});
-
-                edgeFilter.run (30 * 1000);
-                REQUIRE (events.empty ());
-
-                edgeFilter.run (31 * 1000);
-                REQUIRE (events.empty ());
-
-                // Noise spike (positive)
-                edgeFilter.onEdge ({36 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({36 * 1000, EdgePolarity::falling});
-
-                edgeFilter.run (50 * 1000);
+                getConfig ().setDutyTresholdPercent (95);                                     // NOLINT
+                sim.signal ({10000, 20000, 25000, 25100, 25200, 25300, 36000, 36000}, 50000); // NOLINT
                 REQUIRE (events.empty ());
         }
 
+        SECTION ("Duty cycle 95, rising end")
         {
 
                 /*
@@ -1223,39 +854,22 @@ TEST_CASE ("Duty cycle less", "[detector]")
                  * 0    10ms   20ms            35ms
                  *                      30,31ms     50ms
                  */
-                getConfig ().setDutyTresholdPercent (95);
-
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
-
-                // Noise spike (positive)
-                edgeFilter.onEdge ({25 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({25 * 1000 + 100, EdgePolarity::falling});
-                edgeFilter.onEdge ({25 * 1000 + 200, EdgePolarity::rising});
-                edgeFilter.onEdge ({25 * 1000 + 300, EdgePolarity::falling});
-
-                edgeFilter.run (30 * 1000);
-                REQUIRE (events.empty ());
-
-                edgeFilter.run (31 * 1000);
-                REQUIRE (events.empty ());
-
-                // Noise spike (positive)
-                edgeFilter.onEdge ({36 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({36 * 1000, EdgePolarity::falling});
-
-                edgeFilter.onEdge ({50 * 1000, EdgePolarity::rising});
+                getConfig ().setDutyTresholdPercent (95);                                     // NOLINT
+                sim.signal ({10000, 20000, 25000, 25100, 25200, 25300, 36000, 36000, 50000}); // NOLINT
                 REQUIRE (events.empty ());
         }
 }
 
 TEST_CASE ("No beam", "[detector]")
 {
+        TestDetectorCallback tc;
+        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        edgeFilter.setCallback (&tc);
+        SignalSimulator sim{edgeFilter};
+        events.clear ();
+        getConfig ().setDutyTresholdPercent (50); // NOLINT
+
+        SECTION ("First")
         {
                 /*
                  *        +-----+         +--+
@@ -1266,37 +880,29 @@ TEST_CASE ("No beam", "[detector]")
                  * -------+   + +-------+-+  +-----
                  * 0    10ms  1s10ms   3s  10ms
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
+                sim.signal ({10000} /* , 1010000 */); // NOLINT
 
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
+                edgeFilter.run (1000000); // NOLINT
                 REQUIRE (events.empty ());
 
-                edgeFilter.run (60000);
-
-                edgeFilter.run (1010000);
+                edgeFilter.run (1010000); // NOLINT
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::noBeam);
 
-                edgeFilter.onEdge ({1500000, EdgePolarity::falling});
-
-                edgeFilter.run (3000000);
+                sim.signal ({1500000}, 3000000); // NOLINT
                 REQUIRE (events.size () == 2);
                 REQUIRE (events.back ().type == DetectorEventType::beamRestored);
 
-                edgeFilter.run (3000001);
+                edgeFilter.run (3000001); // NOLINT
                 REQUIRE (events.size () == 2);
 
                 // Now test if when beam os restored, everything works as it shoud
-                edgeFilter.onEdge ({3000000 + 100, EdgePolarity::rising});
-                edgeFilter.onEdge ({3000000 + 100 + 10000, EdgePolarity::falling});
-                edgeFilter.run (3000000 + 100 + 20000);
+                sim.signal ({3000000 + 100, 3000000 + 100 + 10000}, 3000000 + 100 + 20000); // NOLINT
                 REQUIRE (events.size () == 3);
                 REQUIRE (events.back ().type == DetectorEventType::trigger);
         }
 
+        SECTION ("No beam, noise")
         {
                 /*
                  *        +--+---+-+-----+     +   + +
@@ -1308,49 +914,20 @@ TEST_CASE ("No beam", "[detector]")
                  * 0    10ms        1s10ms                  3s
                  *                       1,5s
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-                getConfig ().setDutyTresholdPercent (50);
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({11 * 1000, EdgePolarity::falling});
-                edgeFilter.onEdge ({11 * 1000 + 100, EdgePolarity::rising});
-
-                edgeFilter.onEdge ({12 * 1000, EdgePolarity::falling});
-                edgeFilter.onEdge ({12 * 1000 + 100, EdgePolarity::rising});
-
-                edgeFilter.onEdge ({13 * 1000, EdgePolarity::falling});
-                edgeFilter.onEdge ({13 * 1000 + 100, EdgePolarity::rising});
-
-                edgeFilter.run (1010000);
+                sim.signal ({10000, 11000, 11100, 12000, 12100, 13000, 13100}, 1010000); // NOLINT
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::noBeam);
 
-                edgeFilter.onEdge ({1500000, EdgePolarity::falling});
+                sim.signal ({1500000, 1500000 + 11000, 1500000 + 11100, 1500000 + 12000, 1500000 + 12100, 1500000 + 13000, // NOLINT
+                             1500000 + 13100});                                                                            // NOLINT
                 REQUIRE (events.size () == 1);
 
-                edgeFilter.onEdge ({1500000 + 11 * 1000, EdgePolarity::rising});
-                REQUIRE (events.size () == 1);
-                edgeFilter.onEdge ({1500000 + 11 * 1000 + 100, EdgePolarity::falling});
-                REQUIRE (events.size () == 1);
-
-                edgeFilter.onEdge ({1500000 + 12 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({1500000 + 12 * 1000 + 100, EdgePolarity::falling});
-                REQUIRE (events.size () == 1);
-
-                edgeFilter.onEdge ({1500000 + 13 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({1500000 + 13 * 1000 + 100, EdgePolarity::falling});
-                REQUIRE (events.size () == 1);
-
-                edgeFilter.run (3000000);
+                edgeFilter.run (3000000); // NOLINT
                 REQUIRE (events.size () == 2);
                 REQUIRE (events.back ().type == DetectorEventType::beamRestored);
         }
 
+        SECTION ("High level from the start")
         {
                 /*
                  *--------------+         +--+
@@ -1361,38 +938,34 @@ TEST_CASE ("No beam", "[detector]")
                  *            + +-------+-+  +-----
                  * 0           1s10ms   3s  10ms
                  */
+
                 TestDetectorCallback tc;
                 EdgeFilter edgeFilter{EdgeFilter::PwmState::high};
                 edgeFilter.setCallback (&tc);
+                SignalSimulator sim{edgeFilter};
                 events.clear ();
 
-                edgeFilter.run (10000);
+                sim.signal ({}, 60000); // NOLINT
                 REQUIRE (events.empty ());
 
-                edgeFilter.run (60000);
-                REQUIRE (events.empty ());
-
-                edgeFilter.run (1000000);
+                sim.signal ({}, 1000'000); // NOLINT
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::noBeam);
 
-                edgeFilter.onEdge ({1500000, EdgePolarity::falling});
-
-                edgeFilter.run (3000000);
+                sim.signal ({1500000}, 3000'000, EdgePolarity::falling); // NOLINT
                 REQUIRE (events.size () == 2);
                 REQUIRE (events.back ().type == DetectorEventType::beamRestored);
 
-                edgeFilter.run (3000001);
+                edgeFilter.run (3000001); // NOLINT
                 REQUIRE (events.size () == 2);
 
                 // Now test if when beam os restored, everything works as it shoud
-                edgeFilter.onEdge ({3000000 + 100, EdgePolarity::rising});
-                edgeFilter.onEdge ({3000000 + 100 + 10000, EdgePolarity::falling});
-                edgeFilter.run (3000000 + 100 + 20000);
+                sim.signal ({3000000 + 100, 3000000 + 100 + 10000}, 3000000 + 100 + 20000); // NOLINT
                 REQUIRE (events.size () == 3);
                 REQUIRE (events.back ().type == DetectorEventType::trigger);
         }
 
+        SECTION ("High level from the start, noise")
         {
                 /*
                  *----------+---+-+-----+     +   + +
@@ -1447,6 +1020,7 @@ TEST_CASE ("No beam", "[detector]")
                 REQUIRE (events.back ().type == DetectorEventType::beamRestored);
         }
 
+        SECTION ("Signal restored 2 times")
         {
                 /*
                  *        +-----+         +------+
@@ -1457,37 +1031,22 @@ TEST_CASE ("No beam", "[detector]")
                  * -------+   + +-------+-+      +-----
                  * 0    10ms  1s10ms   3s 4s     5s
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({10 * 1000, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                edgeFilter.run (60000);
-
-                edgeFilter.run (1010000);
+                sim.signal ({10000}, 1010000);
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::noBeam);
 
-                edgeFilter.onEdge ({1500000, EdgePolarity::falling});
-
-                edgeFilter.run (3000000);
+                sim.signal ({1500000}, 3000000);
                 REQUIRE (events.size () == 2);
                 REQUIRE (events.back ().type == DetectorEventType::beamRestored);
 
-                edgeFilter.run (3000001);
-                REQUIRE (events.size () == 2);
-
-                edgeFilter.onEdge ({3100000, EdgePolarity::rising});
-
-                edgeFilter.run (4200000);
+                sim.signal ({3100000}, 4200000);
                 REQUIRE (events.size () == 3);
                 REQUIRE (events.back ().type == DetectorEventType::noBeam);
 
-                edgeFilter.onEdge ({4200001, EdgePolarity::falling});
-                edgeFilter.run (5300000);
+                sim.signal ({4200001}, 5300000);
+
+                // edgeFilter.onEdge ({4200001, EdgePolarity::falling});
+                // edgeFilter.run (5300000);
                 REQUIRE (events.size () == 4);
                 REQUIRE (events.back ().type == DetectorEventType::beamRestored);
         }
@@ -1498,46 +1057,35 @@ TEST_CASE ("No beam", "[detector]")
  */
 TEST_CASE ("No beam not", "[detector]")
 {
-        {
-                /*
-                 *     +-+  +-----+
-                 *     | |  |     |
-                 *     | |  |     |
-                 *     | |  |     |
-                 *     | |  |     |
-                 * ----+ +--+     +-----------+
-                 * 0       10ms  15ms          1.5s
-                 */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
+        /*
+         *     +-+  +-----+
+         *     | |  |     |
+         *     | |  |     |
+         *     | |  |     |
+         *     | |  |     |
+         * ----+ +--+     +-----------+
+         * 0       10ms  15ms          1.5s
+         */
+        TestDetectorCallback tc;
+        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        edgeFilter.setCallback (&tc);
+        events.clear ();
+        SignalSimulator sim{edgeFilter};
 
-                edgeFilter.onEdge ({9000, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({9500, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({10000, EdgePolarity::rising});
-                REQUIRE (events.empty ());
-
-                edgeFilter.run (11000);
-                REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({15000, EdgePolarity::falling});
-                REQUIRE (events.empty ());
-
-                edgeFilter.run (25000);
-                edgeFilter.run (35000);
-
-                edgeFilter.run (1500000);
-                REQUIRE (events.empty ());
-        }
+        sim.signal ({9000, 9500, 10000, 15000}, 1500000); // NOLINT
+        REQUIRE (events.empty ());
 }
 
 TEST_CASE ("No beam at the start", "[detector]")
 {
+        TestDetectorCallback tc;
+        EdgeFilter edgeFilter{EdgeFilter::PwmState::high};
+        edgeFilter.setCallback (&tc);
+        SignalSimulator sim{edgeFilter};
+        events.clear ();
+        getConfig ().setDutyTresholdPercent (50); // NOLINT
+
+        SECTION ("Simple")
         {
                 /*
                  * ------------+
@@ -1548,22 +1096,11 @@ TEST_CASE ("No beam at the start", "[detector]")
                  *       +     +-------+
                  * 0     10    20ms    30ms
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::high};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.run (10 * 1000);
+                sim.signal ({20000}, 30000, EdgePolarity::falling); // NOLINT
                 REQUIRE (events.empty ());
-
-                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
-                edgeFilter.run (20 * 1000);
-                REQUIRE (events.empty ());
-
-                edgeFilter.run (30 * 1000);
-                REQUIRE (events.empty ()); // TODO I don't know how to overcome this yet. Generally speaking this is not an error.
         }
 
+        SECTION ("Noise")
         {
                 /*
                  * ---+-+--+---------+
@@ -1574,26 +1111,10 @@ TEST_CASE ("No beam at the start", "[detector]")
                  *    + +  +   +     +-------+
                  * 0          10ms   20ms     30ms
                  */
-                TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::high};
-                edgeFilter.setCallback (&tc);
-                events.clear ();
-
-                edgeFilter.onEdge ({1 * 1000, EdgePolarity::falling});
-                edgeFilter.onEdge ({1 * 1000 + 100, EdgePolarity::rising});
-                edgeFilter.onEdge ({2 * 1000, EdgePolarity::falling});
-                edgeFilter.onEdge ({2 * 1000 + 100, EdgePolarity::rising});
-                edgeFilter.onEdge ({3 * 1000, EdgePolarity::falling});
-                edgeFilter.onEdge ({3 * 1000 + 100, EdgePolarity::rising});
-
-                edgeFilter.run (10 * 1000);
+                sim.signal ({1000, 1100, 2000, 2100, 3000, 3100}, 10000, EdgePolarity::falling); // NOLINT
                 REQUIRE (events.empty ());
 
-                edgeFilter.onEdge ({20 * 1000, EdgePolarity::falling});
-                edgeFilter.run (20 * 1000);
-                REQUIRE (events.empty ());
-
-                edgeFilter.run (30 * 1000);
+                sim.signal ({20000}, 30000); // NOLINT
                 REQUIRE (events.empty ());
         }
 }
