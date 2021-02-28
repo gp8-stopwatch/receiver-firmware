@@ -23,10 +23,9 @@ Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
 
 void EdgeFilter::onEdge (Edge const &e)
 {
-        // TODO turn off this EXTI and remove this condition (opt). EDIT : button would not work. The button pin should be changed then.
-        if (!active || blindState == BlindState::blind) {
-                return;
-        }
+        // if (!active || blindState == BlindState::blind) {
+        //         return;
+        // }
 
         /*
          * This can happen when noise frequency is very high, and the µC can't keep up,
@@ -42,12 +41,15 @@ void EdgeFilter::onEdge (Edge const &e)
          * 14.3kHz / 40% / 200Hz (42µs + 28µs)
          * 16.6kHz
          *
-         * TODO Pokazuje no i.r. (często/co drugi raz).
-         * TODO Zaimplementować blind time przed kolejnymi testami.
+         * [x] Pokazuje no i.r. (często/co drugi raz).
+         * [x] Zaimplementować blind time przed kolejnymi testami.
          * TODO EDIT : chyba jednak nie jest to błąd. Przy dużych zakłóceniach widoczne błędne działanie algorytmu. Screeny w katalogu doc. z
          * dnia 24/02/2021
          * TODO Testy powinny symulowac dwór. Czysty sygnał zakłócamy żarówką 100W. Testy z odbiciami są prostsze (nie trzeba żarówki) ale to nie
          * ten use-case.
+         * TODO No beam detection stops working after 2 triggers (start + stop)
+         * TODO There was a opposite situation - there was no ir detected even though IS was not obstructed. Yellow trace was hi even though blue
+         * was low.
          */
         if (!queue.empty () && queue.back ().polarity == e.polarity) {
                 // TODO there should be some bit in some register that would tell me that I've missed this ISR. This would be safer and cleaner
@@ -65,6 +67,10 @@ void EdgeFilter::onEdge (Edge const &e)
         }
 
         queue.push (e);
+
+        if (!active || blindState == BlindState::blind) {
+                return;
+        }
 
         /*--------------------------------------------------------------------------*/
 
@@ -236,8 +242,8 @@ void EdgeFilter::run (Result1us const &now)
                         __disable_irq ();
                         callback->report (DetectorEventType::noise, now);
                         reset ();
-                        return;
                         __enable_irq ();
+                        return;
                 }
 
                 /* else */ if (noiseState == NoiseState::noise && noiseLevel <= getConfig ().getNoiseLevelLow ()) {
@@ -245,8 +251,8 @@ void EdgeFilter::run (Result1us const &now)
                         __disable_irq ();
                         callback->report (DetectorEventType::noNoise, now);
                         reset ();
-                        return;
                         __enable_irq ();
+                        return;
                 }
         }
 
@@ -273,8 +279,8 @@ void EdgeFilter::run (Result1us const &now)
                         __disable_irq ();
                         callback->report (DetectorEventType::noBeam, now);
                         reset ();
-                        return;
                         __enable_irq ();
+                        return;
                 }
                 /* else */ if (beamState == BeamState::absent && currentState == PwmState::low) {
 
@@ -282,8 +288,8 @@ void EdgeFilter::run (Result1us const &now)
                         __disable_irq ();
                         callback->report (DetectorEventType::beamRestored, now);
                         reset ();
-                        return;
                         __enable_irq ();
+                        return;
                 }
         }
 

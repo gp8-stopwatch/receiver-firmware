@@ -138,6 +138,7 @@ public:
          */
         static constexpr uint32_t MIN_NOISE_SPIKE_1US = 100;
 
+        // TODO turn off this EXTI as well. EDIT : button would not work. The button pin should be changed to 0-1 then.
         bool isActive () const { return active; }
         bool isBeamClean () const { return beamState == BeamState::present && noiseState == NoiseState::noNoise; }
 
