@@ -14,8 +14,8 @@ Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
 #define debugPin(x) senseOn.set (x)
 #include "Container.h"
 #else
-#define __disable_irq(x) x
-#define __enable_irq(x) x
+#define __disable_irq(x) x // NOLINT this is for unit testing
+#define __enable_irq(x) x // NOLINT
 #define debugPin(x)
 #endif
 
@@ -148,7 +148,6 @@ void EdgeFilter::onEdge (Edge const &e)
 
 /****************************************************************************/
 
-// TODO Run every half min trigger len.
 void EdgeFilter::run (Result1us const &now)
 {
         if (!active || queue.empty ()) {
@@ -159,7 +158,6 @@ void EdgeFilter::run (Result1us const &now)
         /* Blind state.                                                             */
         /*--------------------------------------------------------------------------*/
         if (blindState == BlindState::blind) {
-
                 if (now - blindStateStart >= msToResult1us (getConfig ().getBlindTime ())) {
                         blindState = BlindState::notBlind;
                 }
@@ -176,8 +174,9 @@ void EdgeFilter::run (Result1us const &now)
         __enable_irq ();
 
         Result1us lastSignalChange = back.timePoint;
+        bool lastSignalChangeLongAgo = now - lastSignalChange >= minTriggerEvent1Us;
 
-        if (now - lastSignalChange >= minTriggerEvent1Us) {
+        if (lastSignalChangeLongAgo) {
                 if (back.polarity == EdgePolarity::rising) {
                         if (pwmState != PwmState::high) {
                                 __disable_irq ();
@@ -293,9 +292,8 @@ void EdgeFilter::run (Result1us const &now)
         /*--------------------------------------------------------------------------*/
 
         // If there's no noise which would trigger onEdge and thus force a check.
-        if (now - lastSignalChange >= minTriggerEvent1Us) { // Steady for minTriggerEvent1Us or more
+        if (lastSignalChangeLongAgo) { // Steady for minTriggerEvent1Us or more
 
-                debugPin (false);
                 bool longHighState{};
                 bool longLowState{};
 

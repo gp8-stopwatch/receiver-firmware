@@ -164,6 +164,9 @@ auto &getCli ()
                                  else if (arg == "none") {
                                          getConfig ().setAutoDisplayResult (ResultDisplayStyle::none);
                                  }
+                                 else {
+                                         usbWrite ("Valid options : s, ms, none\r\n\r\n");
+                                 }
                          }),
                 cl::cmd (String ("getAuto"),
                          [] {

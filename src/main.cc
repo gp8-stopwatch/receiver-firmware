@@ -30,6 +30,18 @@ int main ()
 
         container::init ();
 
+        auto prev = getStopWatch ().getTime ();
+
+        while (true) {
+                auto curr = getStopWatch ().getTime ();
+
+                if (prev > curr) {
+                        Error_Handler ();
+                }
+
+                prev = curr;
+        }
+
         Timer displayTimer;
         Timer menuTimer;
 

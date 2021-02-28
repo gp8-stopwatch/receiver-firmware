@@ -27,7 +27,7 @@ public:
 
         void signal (std::vector<uint32_t> const &edges, uint32_t runUntilMs = 0, std::optional<EdgePolarity> startPolarity = {});
 
-        static constexpr uint32_t RUN_PERIOD_US = 5000;
+        static constexpr uint32_t RUN_PERIOD_US = 1000;
 
 private:
         EdgeFilter &edgeFilter;
@@ -1125,13 +1125,13 @@ TEST_CASE ("Blind period", "[detector]")
         SECTION ("Simplest blind")
         {
                 /*
-                 *        +-----+
-                 *        |     |
-                 *        |     |
-                 *        |     |
-                 *        |     |
-                 * -------+     +-------+
-                 * 0    10ms   20ms     30ms
+                 *        +-----+       +-----+
+                 *        |     |       |     |
+                 *        |     |       |     |
+                 *        |     |       |     |
+                 *        |     |       |     |
+                 * -------+     +-------+     +------
+                 * 0    10ms   20ms    40ms   50     60
                  */
                 getConfig ().setBlindTime (1000); // NOLINT
 
@@ -1148,13 +1148,13 @@ TEST_CASE ("Blind period", "[detector]")
         SECTION ("No blind period, fastest 2 triggers")
         {
                 /*
-                 *        +-----+
-                 *        |     |
-                 *        |     |
-                 *        |     |
-                 *        |     |
-                 * -------+     +-------+
-                 * 0    10ms   20ms     30ms
+                 *        +-----+       +-----+
+                 *        |     |       |     |
+                 *        |     |       |     |
+                 *        |     |       |     |
+                 *        |     |       |     |
+                 * -------+     +-------+     +------
+                 * 0    10ms   20ms    30ms   40     50
                  */
                 getConfig ().setBlindTime (0); // NOLINT
 
