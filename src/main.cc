@@ -30,18 +30,6 @@ int main ()
 
         container::init ();
 
-        auto prev = getStopWatch ().getTime ();
-
-        while (true) {
-                auto curr = getStopWatch ().getTime ();
-
-                if (prev > curr) {
-                        Error_Handler ();
-                }
-
-                prev = curr;
-        }
-
         Timer displayTimer;
         Timer menuTimer;
 
@@ -79,7 +67,6 @@ int main ()
                 getPowerManager ().run ();
 #endif
 
-                getStopWatch ().run ();
                 // getBeam ().run ();
                 getIrDetector ().run (getStopWatch ().getTime ());
 
