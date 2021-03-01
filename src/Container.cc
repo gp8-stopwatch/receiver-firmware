@@ -21,53 +21,17 @@ bool showGreeting{};
 IDisplay &getDisplay ()
 {
 #ifdef WITH_DISPLAY
-        static Gpio d1 (GPIOB, GPIO_PIN_11);
-        static Gpio d2 (GPIOB, GPIO_PIN_12);
-        static Gpio d3 (GPIOB, GPIO_PIN_13);
-        static Gpio d4 (GPIOB, GPIO_PIN_10);
-        static Gpio d5 (GPIOB, GPIO_PIN_2);
-        static Gpio d6 (GPIOA, GPIO_PIN_5);
-
-        static Gpio sa (GPIOA, GPIO_PIN_0);
-        static Gpio sb (GPIOA, GPIO_PIN_1);
-        static Gpio sc (GPIOA, GPIO_PIN_2);
-        static Gpio sd (GPIOA, GPIO_PIN_3);
-        static Gpio se (GPIOA, GPIO_PIN_6);
-        static Gpio sf (GPIOA, GPIO_PIN_7);
-        static Gpio sg (GPIOB, GPIO_PIN_5);
-        static Gpio sdp (GPIOB, GPIO_PIN_1);
-
-#if 0
-        // !!!WARNING!!!
-        // Uncomenting this will pass 100mA continuous through all displays and can damage them.
-        d1 = d2 = d3 = d4 = d5 = d6 = false;
-        sa = sb = sc = sd = se = sf = sg = sdp = true;
-
-        while (true) {
-        }
-#endif // 0
 
 #ifdef PLATFORM_HUGE
         // TODO remove this when new PCBs for huge diplay are ordered
         static Led7SegmentDisplay display (sa, sb, sc, sd, se, sf, sg, sdp, d3, d2, d1, d4, d5, d6);
 #else
-        static Led7SegmentDisplay display (sa, sb, sc, sd, se, sf, sg, sdp, d1, d2, d3, d4, d5, d6);
+        static Led7SegmentDisplayDma display{};
+        // static Led7SegmentDisplay display (sa, sb, sc, sd, se, sf, sg, sdp, d3, d2, d1, d4, d5, d6);
 #endif // PLATFORM_HUGE
 
 #else // WITH_DISPLAY
         static FakeDisplay display;
-#endif
-
-#if 0
-        display.setDigit (0, 0xa);
-        display.setDigit (1, 0xb);
-        display.setDigit (2, 0xc);
-        display.setDigit (3, 0xd);
-        display.setDigit (4, 0xe);
-        display.setDigit (5, 0xf);
-
-        while (true) {
-        }
 #endif
 
         return display;
@@ -167,13 +131,6 @@ History &getHistory ()
 {
 #ifdef WITH_HISTORY
         static History history{getRtc ()};
-        static FlashEepromStorage<2048, 4> hiScoreStorage (4, 1, size_t (&_hiscore_storage_address));
-        hiScoreStorage.init ();
-        history.setHiScoreStorage (&hiScoreStorage);
-
-        static FlashEepromStorage<2048, 4> historyStorage (12, 2, size_t (&_history_storage_address));
-        historyStorage.init ();
-        history.setHistoryStorage (&historyStorage);
         return history;
 #endif
 }
@@ -299,10 +256,32 @@ void init ()
         /*+-------------------------------------------------------------------------+*/
 
 #ifdef WITH_DISPLAY
-        static HardwareTimer tim15 (TIM15, 48 - 1, 200 - 1); // Update 5kHz
-        HAL_NVIC_SetPriority (TIM15_IRQn, DISPLAY_TIMER_PRIORITY, 0);
-        HAL_NVIC_EnableIRQ (TIM15_IRQn);
-        tim15.setOnUpdate ([] { getDisplay ().refresh (); });
+
+        static Gpio d1 (GPIOB, GPIO_PIN_11);
+        static Gpio d2 (GPIOB, GPIO_PIN_12);
+        static Gpio d3 (GPIOB, GPIO_PIN_13);
+        static Gpio d4 (GPIOB, GPIO_PIN_10);
+        static Gpio d5 (GPIOB, GPIO_PIN_2);
+        static Gpio d6 (GPIOA, GPIO_PIN_5);
+
+        static Gpio sa (GPIOA, GPIO_PIN_0);
+        static Gpio sb (GPIOA, GPIO_PIN_1);
+        static Gpio sc (GPIOA, GPIO_PIN_2);
+        static Gpio sd (GPIOA, GPIO_PIN_3);
+        static Gpio se (GPIOA, GPIO_PIN_6);
+        static Gpio sf (GPIOA, GPIO_PIN_7);
+        static Gpio sg (GPIOB, GPIO_PIN_5);
+        static Gpio sdp (GPIOB, GPIO_PIN_1);
+
+        // static HardwareTimer tim15 (TIM15, 48 - 1, 200 - 1); // Update 5kHz
+        // // static HardwareTimer tim15 (TIM15, 4800 - 1, 10000 - 1);
+        // HAL_NVIC_SetPriority (TIM15_IRQn, DISPLAY_TIMER_PRIORITY, 0);
+        // HAL_NVIC_EnableIRQ (TIM15_IRQn);
+        // tim15.setOnUpdate ([] { getDisplay ().refresh (); });
+
+        d1 = d2 = d3 = d4 = d5 /* = d6 */ = true;
+        sa = sb = sc = sd = se = sf = sg = sdp = true;
+        getDisplay ();
 #endif
 
         /*+-------------------------------------------------------------------------+*/
@@ -350,6 +329,13 @@ void init ()
         /*+-------------------------------------------------------------------------+*/
 
         getHistory ();
+        static FlashEepromStorage<2048, 4> hiScoreStorage (4, 1, size_t (&_hiscore_storage_address));
+        hiScoreStorage.init ();
+        getHistory ().setHiScoreStorage (&hiScoreStorage);
+
+        static FlashEepromStorage<2048, 4> historyStorage (12, 2, size_t (&_history_storage_address));
+        historyStorage.init ();
+        getHistory ().setHistoryStorage (&historyStorage);
 
         /*+-------------------------------------------------------------------------+*/
         /*| Backlight, beeper                                                       |*/

@@ -6,6 +6,7 @@ PROJECT (receiver)
 ENABLE_LANGUAGE (ASM-ATT)
 
 INCLUDE_DIRECTORIES("src/")
+INCLUDE_DIRECTORIES("src/display")
 INCLUDE_DIRECTORIES("src/usb")
 INCLUDE_DIRECTORIES("deps/etl/include/")
 INCLUDE_DIRECTORIES("deps/GSL/include/")
@@ -194,7 +195,8 @@ IF (DEFINED DEVICE)
     IF (WITH_DISPLAY)
         LIST (APPEND SOURCES 
         "${LIB_MICRO_ROOT}/src/HardwareTimer.cc"
-        "src/Led7SegmentDisplay.cc"
+        "src/display/Led7SegmentDisplayDma.cc"
+        "src/display/Led7SegmentDisplay.cc"
         )
     ENDIF ()
 

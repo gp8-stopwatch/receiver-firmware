@@ -1,0 +1,25 @@
+0x0800865c: 0d 48           	ldr	r0, [pc, #52]	; (0x8008694 <LoopForever+2>)
+0x0800865e: 85 46           	mov	sp, r0
+0x08008660: 00 21           	movs	r1, #0
+0x08008662: 03 e0           	b.n	0x800866c <Reset_Handler+16>
+0x08008664: 0c 4b           	ldr	r3, [pc, #48]	; (0x8008698 <LoopForever+6>)
+0x08008666: 5b 58           	ldr	r3, [r3, r1]
+0x08008668: 43 50           	str	r3, [r0, r1]
+0x0800866a: 04 31           	adds	r1, #4
+0x0800866c: 0b 48           	ldr	r0, [pc, #44]	; (0x800869c <LoopForever+10>)
+0x0800866e: 0c 4b           	ldr	r3, [pc, #48]	; (0x80086a0 <LoopForever+14>)
+0x08008670: 42 18           	adds	r2, r0, r1
+0x08008672: 9a 42           	cmp	r2, r3
+0x08008674: f6 d3           	bcc.n	0x8008664 <Reset_Handler+8>
+0x08008676: 0b 4a           	ldr	r2, [pc, #44]	; (0x80086a4 <LoopForever+18>)
+0x08008678: 02 e0           	b.n	0x8008680 <Reset_Handler+36>
+0x0800867a: 00 23           	movs	r3, #0
+0x0800867c: 13 60           	str	r3, [r2, #0]
+0x0800867e: 04 32           	adds	r2, #4
+0x08008680: 09 4b           	ldr	r3, [pc, #36]	; (0x80086a8 <LoopForever+22>)
+0x08008682: 9a 42           	cmp	r2, r3
+0x08008684: f9 d3           	bcc.n	0x800867a <Reset_Handler+30>
+0x08008686: 00 f0 2b f8     	bl	0x80086e0 <SystemInit>
+0x0800868a: f8 f7 c7 fe     	bl	0x800141c <__libc_init_array>
+0x0800868e: f9 f7 1b fc     	bl	0x8001ec8 <main()>
+0x08008692: fe e7           	b.n	0x8008692 <Reset_Handler+54>

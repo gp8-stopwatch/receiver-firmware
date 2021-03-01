@@ -23,6 +23,7 @@
 #include "History.h"
 #include "InfraRedBeamExti.h"
 #include "Led7SegmentDisplay.h"
+#include "Led7SegmentDisplayDma.h"
 #include "PowerManagement.h"
 #include "Rtc.h"
 #include "StopWatch.h"

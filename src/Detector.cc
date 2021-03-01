@@ -23,10 +23,6 @@ Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
 
 void EdgeFilter::onEdge (Edge const &e)
 {
-        // if (!active || blindState == BlindState::blind) {
-        //         return;
-        // }
-
         /*
          * This can happen when noise frequency is very high, and the µC can't keep up,
          * and its misses an EXTI event. This way we can end up with two consecutive edges
@@ -47,9 +43,9 @@ void EdgeFilter::onEdge (Edge const &e)
          * dnia 24/02/2021
          * TODO Testy powinny symulowac dwór. Czysty sygnał zakłócamy żarówką 100W. Testy z odbiciami są prostsze (nie trzeba żarówki) ale to nie
          * ten use-case.
-         * TODO No beam detection stops working after 2 triggers (start + stop)
-         * TODO There was a opposite situation - there was no ir detected even though IS was not obstructed. Yellow trace was hi even though blue
-         * was low.
+         * [x] No beam detection stops working after 2 triggers (start + stop) EDIT due to wrong blindState management
+         * [x] There was a opposite situation - there was no ir detected even though IS was not obstructed. Yellow trace was hi even though blue
+         * was low. EDIT due to wrong blindState management
          */
         if (!queue.empty () && queue.back ().polarity == e.polarity) {
                 // TODO there should be some bit in some register that would tell me that I've missed this ISR. This would be safer and cleaner
