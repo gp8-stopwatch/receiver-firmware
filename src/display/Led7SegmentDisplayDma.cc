@@ -160,11 +160,6 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
 void Led7SegmentDisplayDma::setDigit (uint8_t position, uint8_t digit)
 {
-        if (digit == '.') {
-                setDot (position, true);
-                return;
-        }
-
         if (digit >= 0 && digit <= 0xf) {
         }
         else if (digit >= 48 && digit <= 57) {
@@ -180,7 +175,12 @@ void Led7SegmentDisplayDma::setDigit (uint8_t position, uint8_t digit)
                 digit = SPACE_CHAR_INDEX;
         }
 
-        displayBuffer.at (position) = ALL_SEGMENTS | FONTS.at (digit);
+        if (digit == '.') {
+                setDot (position, true);
+        }
+        else {
+                displayBuffer.at (position) = ALL_SEGMENTS | FONTS.at (digit);
+        }
 
         if (dots & (1 << position)) {
                 displayBuffer.at (position) &= ~DOT_MASK;
@@ -255,16 +255,6 @@ void Led7SegmentDisplayDma::setText (const char *s)
 }
 
 /*****************************************************************************/
-
-// void Led7SegmentDisplayDma::setDot (uint8_t number, bool on)
-// {
-//         if (on) {
-//                 displayBuffer.at (number) &= ~DOT_MASK;
-//         }
-//         else {
-//                 displayBuffer.at (number) |= DOT_MASK;
-//         }
-// }
 
 void Led7SegmentDisplayDma::setDot (uint8_t number, bool on)
 {
