@@ -283,16 +283,16 @@ void init ()
         // d1 = d2 = d3 = d4 = d5 = d6 = true;
         // sa = sb = sc = sd = se = sf = sg = sdp = false;
 
-        getDisplay ().setDigit (0, 0);
-        getDisplay ().setDigit (1, 1);
-        getDisplay ().setDigit (2, 2);
-        getDisplay ().setDigit (3, 3);
-        getDisplay ().setDigit (4, 4);
-        getDisplay ().setDigit (5, 5);
-        // getDisplay ();
+        // getDisplay ().setDigit (0, 'u');
+        // getDisplay ().setDigit (1, 'v');
+        // getDisplay ().setDigit (2, 'w');
+        // getDisplay ().setDigit (3, 'x');
+        // getDisplay ().setDigit (4, 'y');
+        // getDisplay ().setDigit (5, 'z');
+        getDisplay ();
 
-        while (true) {
-        }
+        // while (true) {
+        // }
 #endif
 
         /*+-------------------------------------------------------------------------+*/

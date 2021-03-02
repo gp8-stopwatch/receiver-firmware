@@ -11,6 +11,8 @@
 #include "StopWatch.h"
 #include <array>
 
+/****************************************************************************/
+
 Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 {
         /*--------------------------------------------------------------------------*/
@@ -134,36 +136,58 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         }
 
         /*--------------------------------------------------------------------------*/
-        /* Synchronization of the above two timers.                                 */
-        /*--------------------------------------------------------------------------*/
 
-        // TIM15->CNT = 0;
-        // TIM16->CNT = 0;
+        /*
+         * This "resynchronization" step makes TIM15 start 1 OC1 event after the TIM16,
+         * and the number (text) displayed is shifted 1 place to the left. Without this
+         * it would have been shifted 2 places to the left. The order of events is as
+         * follows:
+         * - TIM15 (slave) and TIM16 (master) start. TIM15 has CNT == 0, and TIM16 has CNT == 99
+         * (see below).
+         * - After 100 ticks TIM16 generates UP and OC events (at the same time) and thus:
+         *   - DMA request is generated and the first "enable" pin is set.
+         *   - TIM15->CNT is again reset to 0.
+         * - After another 200 ticks BOTH TIM16 and TIM16 generate UP event and thus, additionaly
+         * to what happened durung previus cycle, TIM15 generates UP event and DMA request, and
+         * this triggers the DMA transfer of the first element in the displayBuffer. This is why
+         * the text is shifted on the display.
+         */
+        TIM15->CNT = 0;
+        TIM16->CNT = 100 - 1;
 }
 
 /*****************************************************************************/
 
 void Led7SegmentDisplayDma::setDigit (uint8_t position, uint8_t digit)
 {
-        // if (digit >= 0 && digit <= 0xf) {
-        // }
-        // else if (digit >= 48 && digit <= 57) {
-        //         digit -= 48;
-        // }
-        // else if (digit >= 65 /*A*/ && digit <= 90 /*Z*/) {
-        //         digit -= 55;
-        // }
-        // else if (digit >= 97 /*a*/ && digit <= 122 /*z*/) {
-        //         digit -= 87;
-        // }
-        // else if (digit == '.') {
-        //         setDot (position, true);
-        // }
-        // else if (digit == ' ') {
-        //         digit = SPACE_CHAR_INDEX;
-        // }
+        if (digit == '.') {
+                setDot (position, true);
+                return;
+        }
 
-        displayBuffer[position] = ALL_SEGMENTS | FONTS[digit];
+        if (digit >= 0 && digit <= 0xf) {
+        }
+        else if (digit >= 48 && digit <= 57) {
+                digit -= 48;
+        }
+        else if (digit >= 65 /*A*/ && digit <= 90 /*Z*/) {
+                digit -= 55;
+        }
+        else if (digit >= 97 /*a*/ && digit <= 122 /*z*/) {
+                digit -= 87;
+        }
+        else if (digit == ' ') {
+                digit = SPACE_CHAR_INDEX;
+        }
+
+        displayBuffer.at (position) = ALL_SEGMENTS | FONTS.at (digit);
+
+        if (dots & (1 << position)) {
+                displayBuffer.at (position) &= ~DOT_MASK;
+        }
+        else {
+                displayBuffer.at (position) |= DOT_MASK;
+        }
 }
 
 /****************************************************************************/
@@ -231,6 +255,16 @@ void Led7SegmentDisplayDma::setText (const char *s)
 }
 
 /*****************************************************************************/
+
+// void Led7SegmentDisplayDma::setDot (uint8_t number, bool on)
+// {
+//         if (on) {
+//                 displayBuffer.at (number) &= ~DOT_MASK;
+//         }
+//         else {
+//                 displayBuffer.at (number) |= DOT_MASK;
+//         }
+// }
 
 void Led7SegmentDisplayDma::setDot (uint8_t number, bool on)
 {
