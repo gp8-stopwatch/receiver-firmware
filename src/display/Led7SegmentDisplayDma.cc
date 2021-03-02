@@ -59,6 +59,20 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
         __HAL_TIM_ENABLE_DMA (&htim, TIM_DMA_UPDATE);
 
+        /*--------------------------------------------------------------------------*/
+
+        TIM_SlaveConfigTypeDef sSlaveConfig{};
+        sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
+        sSlaveConfig.InputTrigger = TIM_TS_ITR2; // Table 71.
+        sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+        sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1;
+
+        if (HAL_TIM_SlaveConfigSynchro (&htim, &sSlaveConfig) != HAL_OK) {
+                Error_Handler ();
+        }
+
+        /*--------------------------------------------------------------------------*/
+
         if (HAL_TIM_Base_Start (&htim) != HAL_OK) {
                 Error_Handler ();
         }
@@ -67,18 +81,18 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         /* Enable (common pin) timer & DMA. This enables individual displays.       */
         /*--------------------------------------------------------------------------*/
 
-        htim.Instance = TIM7;
+        htim.Instance = TIM16;
         htim.Init.Prescaler = 48 - 1;
         htim.Init.Period = 200 - 1;
-        __HAL_RCC_TIM7_CLK_ENABLE ();
-        dmaHandle.Instance = DMA1_Channel4;
+        __HAL_RCC_TIM16_CLK_ENABLE ();
+        dmaHandle.Instance = DMA1_Channel3;
         __HAL_LINKDMA (&htim, hdma[TIM_DMA_ID_UPDATE], dmaHandle);
 
         if (HAL_DMA_Init (htim.hdma[TIM_DMA_ID_UPDATE]) != HAL_OK) {
                 Error_Handler ();
         }
 
-        if (HAL_TIM_Base_Init (&htim) != HAL_OK) {
+        if (HAL_TIM_PWM_Init (&htim) != HAL_OK) {
                 Error_Handler ();
         }
 
@@ -90,7 +104,32 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
         __HAL_TIM_ENABLE_DMA (&htim, TIM_DMA_UPDATE);
 
-        if (HAL_TIM_Base_Start (&htim) != HAL_OK) {
+        /*--------------------------------------------------------------------------*/
+
+        TIM_MasterConfigTypeDef sMasterConfig{};
+        sMasterConfig.MasterOutputTrigger = TIM_TRGO_OC1; // I think that this has no effect
+        sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
+
+        if (HAL_TIMEx_MasterConfigSynchronization (&htim, &sMasterConfig) != HAL_OK) {
+                Error_Handler ();
+        }
+
+        /*--------------------------------------------------------------------------*/
+
+        TIM_OC_InitTypeDef sConfig{};
+        sConfig.OCMode = TIM_OCMODE_PWM1;
+        sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+        sConfig.OCFastMode = TIM_OCFAST_DISABLE;
+        sConfig.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+        sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+        sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
+        sConfig.Pulse = 200 - 1;
+
+        if (HAL_TIM_PWM_ConfigChannel (&htim, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
+                Error_Handler ();
+        }
+
+        if (HAL_TIM_PWM_Start (&htim, TIM_CHANNEL_1) != HAL_OK) {
                 Error_Handler ();
         }
 
@@ -98,8 +137,8 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         /* Synchronization of the above two timers.                                 */
         /*--------------------------------------------------------------------------*/
 
-        TIM15->CNT = 0;
-        TIM7->CNT = 0;
+        // TIM15->CNT = 0;
+        // TIM16->CNT = 0;
 }
 
 /*****************************************************************************/
