@@ -18,9 +18,9 @@
 #define CAN_PIN_2 GPIO_PIN_9
 #define CAN_ALTERNATE GPIO_AF4_CAN
 
-#define IR_PORT GPIOA
-#define IR_PINS GPIO_PIN_8
-#define IR_IRQn EXTI4_15_IRQn
+#define IR_PORT GPIOB
+#define IR_PINS GPIO_PIN_1
+#define IR_IRQn EXTI0_1_IRQn
 
 // Test trigger
 #define EXT_TRIGGER_INPUT_PORT GPIOB

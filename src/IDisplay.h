@@ -40,7 +40,7 @@ struct IDisplay {
         virtual void setBrightness (uint8_t b) = 0;
         virtual uint8_t getBrightness () const = 0;
 
-        virtual void refresh () = 0;
+        // virtual void refresh () = 0;
 
         virtual void clear () = 0;
         virtual void setFlip (bool b) = 0;
@@ -75,7 +75,7 @@ struct FakeDisplay : public IDisplay {
         void setBrightness (uint8_t b) override {}
         uint8_t getBrightness () const override { return 0; }
 
-        void refresh () override {}
+        void refresh () {}
 
         void clear () override {}
         void setFlip (bool b) override {}

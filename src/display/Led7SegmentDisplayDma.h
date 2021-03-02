@@ -21,6 +21,9 @@
 
 /**
  * See AN4666 Application note. Parallel synchronous transmission using GPIO and DMA
+ * Important : for this "driver" to work, all the segmnents have to be connected to the
+ * same port, and all the commons (CAs or CCs) have to be connected to a single port.
+ * For example now all segments are connected to PAx, and commons to PBx.
  */
 class Led7SegmentDisplayDma : public IDisplay {
 public:
@@ -36,7 +39,7 @@ public:
         void setIcons (uint8_t /*bitmask*/) override {}
 
         void setTime (Result10us time, Resolution res) override;
-        void setText (const char *) override;
+        void setText (const char *s) override;
 
         void setFlip (bool b) override { flip = b; }
 
@@ -51,10 +54,9 @@ public:
         void setBrightness (uint8_t b) override { brightness = std::min<uint8_t> (MAX_BRIGHTNESS, b); }
         uint8_t getBrightness () const override { return brightness; }
 
-        void refresh () override;
         void clear () override;
 
-        static constexpr size_t SPACE_CHAR = 36;
+        static constexpr size_t SPACE_CHAR_INDEX = 36;
 
         static constexpr uint8_t fonts[] = {
                 0b00111111, // 0
@@ -96,17 +98,43 @@ public:
                 0b00000000, // [space] 36
         };
 
+        static constexpr std::array<uint16_t, 10> FONTS{
+                //        p feg  dcba
+                0b0000'0000'0010'0000, // 0
+                0b0000'0000'1110'1001, // 1
+                0b0000'0000'1000'0100, // 2
+                0b0000'0000'1100'0000, // 3
+                0b0000'0000'0100'0001, // 4
+                0b0000'0000'0100'0010, // 5
+                0b0000'0000'0000'0010, // 6
+                0b0000'0000'0110'1000, // 7
+                0b0000'0000'0000'0000, // 8
+                0b0000'0000'0100'0000, // 9
+
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+                // 0b0000'0000'0000'0000, // 0
+        };
+
         void setResolution (Resolution res) override;
 
 private:
-#ifdef PLATFORM_HUGE
-        /// Turns a single display on or off
-        void turnDisplay (uint8_t d, bool b) { *common.at (d) = !CA ^ b; }
-#else
-        /// Turns a single display on or off
-        void turnDisplay (uint8_t d, bool b) { *common.at (d) = !CA ^ !b; }
-#endif
-        void outputDigit (uint8_t position);
         uint8_t flipFont (uint8_t font) { return (font & 0xc0) | (font & 0x07) << 3 | (font & 0x38) >> 3; }
 
 private:
@@ -117,8 +145,6 @@ private:
 #endif
 
         static constexpr size_t DISPLAY_NUM = 6;
-        std::array<Gpio *, 8> segment;
-        std::array<Gpio *, DISPLAY_NUM> common;
         uint8_t digits[DISPLAY_NUM] = {0}; // TODO variable number of displays
         uint8_t dots = 0;
         uint8_t currentDigit = 0;
@@ -131,4 +157,23 @@ private:
         Resolution resolution{};
         int factorIndex{};
         uint32_t prescaler = 1;
+
+        //           p feg  dcba
+        // 0b0000'0001'1110'1111
+
+        static constexpr uint32_t ALL_SEGMENTS = 0b0000'0001'1110'1111'0000'0000'0000'0000;
+        static constexpr uint32_t NO_SEGMENTS = 0b0000'0000'0000'0000'0000'0001'1110'1111;
+
+        std::array<uint32_t, DISPLAY_NUM> displayBuffer{
+
+        };
+
+        const std::array<uint32_t, DISPLAY_NUM> enableBuffer{
+                0b0000'0000'0010'0000'0000'1000'0000'0000, //
+                0b0000'1000'0000'0000'0001'0000'0000'0000, //
+                0b0001'0000'0000'0000'0010'0000'0000'0000, //
+                0b0010'0000'0000'0000'0000'0100'0000'0000, //
+                0b0000'0100'0000'0000'0000'0000'0000'0100, //
+                0b0000'0000'0000'0100'0000'0000'0010'0000, //
+        };
 };

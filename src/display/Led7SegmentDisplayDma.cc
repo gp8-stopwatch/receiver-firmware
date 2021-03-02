@@ -13,6 +13,10 @@
 
 Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 {
+        /*--------------------------------------------------------------------------*/
+        /* Segment timer & DMA. This drives single segments.                        */
+        /*--------------------------------------------------------------------------*/
+
         static TIM_HandleTypeDef htim{};
 
         htim.Instance = TIM15;
@@ -24,9 +28,6 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         htim.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 
         __HAL_RCC_TIM15_CLK_ENABLE ();
-
-        /****************************************************************************/
-
         __HAL_RCC_DMA1_CLK_ENABLE ();
 
         static DMA_HandleTypeDef dmaHandle{};
@@ -50,25 +51,8 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
                 Error_Handler ();
         }
 
-        /*##-5- Select Callbacks functions called after Transfer complete and Transfer error */
-        // HAL_DMA_RegisterCallback (&DmaHandle, HAL_DMA_XFER_CPLT_CB_ID, TransferComplete);
-        // HAL_DMA_RegisterCallback (&DmaHandle, HAL_DMA_XFER_ERROR_CB_ID, TransferError);
-
-        // /*##-6- Configure NVIC for DMA transfer complete/error interrupts ##########*/
-        // /* Set Interrupt Group Priority */
-        // HAL_NVIC_SetPriority (DMA_INSTANCE_IRQ, 0, 0);
-
-        // /* Enable the DMA global Interrupt */
-        // HAL_NVIC_EnableIRQ (DMA_INSTANCE_IRQ);
-
-        static std::array<uint32_t, DISPLAY_NUM> displayBuffer{0b0000'0000'1010'1010'0000'0000'0000'0000,
-                                                               0b0000'0000'0000'0000'0000'0000'1111'1111};
-
-        /*##-7- Start the DMA transfer using the interrupt mode ####################*/
-        /* Configure the source, destination and buffer size DMA fields and Start DMA transfer */
-        /* Enable All the DMA interrupts */
-        if (HAL_DMA_Start /* _IT */ (&dmaHandle, reinterpret_cast<uint32_t> (displayBuffer.data ()), reinterpret_cast<uint32_t> (GPIOA->BSRR),
-                                     displayBuffer.size ())
+        if (HAL_DMA_Start (&dmaHandle, reinterpret_cast<uint32_t> (displayBuffer.data ()), reinterpret_cast<uint32_t> (&GPIOA->BSRR),
+                           displayBuffer.size ())
             != HAL_OK) {
                 Error_Handler ();
         }
@@ -79,81 +63,71 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
                 Error_Handler ();
         }
 
-        while (true) {
-        }
-}
+        /*--------------------------------------------------------------------------*/
+        /* Enable (common pin) timer & DMA. This enables individual displays.       */
+        /*--------------------------------------------------------------------------*/
 
-/*****************************************************************************/
+        htim.Instance = TIM7;
+        htim.Init.Prescaler = 48 - 1;
+        htim.Init.Period = 200 - 1;
+        __HAL_RCC_TIM7_CLK_ENABLE ();
+        dmaHandle.Instance = DMA1_Channel4;
+        __HAL_LINKDMA (&htim, hdma[TIM_DMA_ID_UPDATE], dmaHandle);
 
-void Led7SegmentDisplayDma::refresh ()
-{
-        if (brightness == 0) {
-                return;
-        }
-
-        // Change a digit at the beginning of each "brightnessCycle" and lit it up.
-        if (brightnessCycle == 0) {
-                turnDisplay (currentDigit, false);
-                ++currentDigit;
-                currentDigit %= 6;
-                outputDigit (currentDigit);
-                turnDisplay (currentDigit, true);
+        if (HAL_DMA_Init (htim.hdma[TIM_DMA_ID_UPDATE]) != HAL_OK) {
+                Error_Handler ();
         }
 
-        if (brightnessCycle >= brightness) {
-                turnDisplay (currentDigit, false);
+        if (HAL_TIM_Base_Init (&htim) != HAL_OK) {
+                Error_Handler ();
         }
 
-        ++brightnessCycle;
-        brightnessCycle %= MAX_BRIGHTNESS + 1;
+        if (HAL_DMA_Start (&dmaHandle, reinterpret_cast<uint32_t> (enableBuffer.data ()), reinterpret_cast<uint32_t> (&GPIOB->BSRR),
+                           enableBuffer.size ())
+            != HAL_OK) {
+                Error_Handler ();
+        }
+
+        __HAL_TIM_ENABLE_DMA (&htim, TIM_DMA_UPDATE);
+
+        if (HAL_TIM_Base_Start (&htim) != HAL_OK) {
+                Error_Handler ();
+        }
+
+        /*--------------------------------------------------------------------------*/
+        /* Synchronization of the above two timers.                                 */
+        /*--------------------------------------------------------------------------*/
+
+        TIM15->CNT = 0;
+        TIM7->CNT = 0;
 }
 
 /*****************************************************************************/
 
 void Led7SegmentDisplayDma::setDigit (uint8_t position, uint8_t digit)
 {
-        if (digit >= 0 && digit <= 0xf) {
-                digits[position] = digit;
-        }
-        else if (digit >= 48 && digit <= 57) {
-                digits[position] = digit - 48;
-        }
-        else if (digit >= 65 /*A*/ && digit <= 90 /*Z*/) {
-                digits[position] = digit - 55;
-        }
-        else if (digit >= 97 /*a*/ && digit <= 122 /*z*/) {
-                digits[position] = digit - 87;
-        }
-        else if (digit == '.') {
-                setDot (position, true);
-        }
-        else if (digit == ' ') {
-                digits[position] = SPACE_CHAR;
-        }
+        // if (digit >= 0 && digit <= 0xf) {
+        // }
+        // else if (digit >= 48 && digit <= 57) {
+        //         digit -= 48;
+        // }
+        // else if (digit >= 65 /*A*/ && digit <= 90 /*Z*/) {
+        //         digit -= 55;
+        // }
+        // else if (digit >= 97 /*a*/ && digit <= 122 /*z*/) {
+        //         digit -= 87;
+        // }
+        // else if (digit == '.') {
+        //         setDot (position, true);
+        // }
+        // else if (digit == ' ') {
+        //         digit = SPACE_CHAR_INDEX;
+        // }
+
+        displayBuffer[position] = ALL_SEGMENTS | FONTS[digit];
 }
 
 /****************************************************************************/
-
-void Led7SegmentDisplayDma::outputDigit (uint8_t position)
-{
-        if (flip) {
-                position = DISPLAY_NUM - 1 - position;
-        }
-
-        uint8_t font = fonts[digits[position]];
-
-        if (flip) {
-                font = flipFont (font);
-        }
-
-        for (uint8_t seg = 0; seg < 7; ++seg) {
-                *segment.at (seg) = !CA ^ bool (font & (1 << seg));
-        }
-
-        *segment.at (7) = !CA ^ bool (dots & (1 << position));
-}
-
-/*****************************************************************************/
 
 void Led7SegmentDisplayDma::setTime (Result10us time, Resolution res)
 {
@@ -234,7 +208,7 @@ void Led7SegmentDisplayDma::setDot (uint8_t number, bool on)
 void Led7SegmentDisplayDma::clear ()
 {
         for (size_t i = 0; i < DISPLAY_NUM; ++i) {
-                digits[i] = SPACE_CHAR;
+                displayBuffer.at (i) = NO_SEGMENTS;
         }
 
         dots = 0;

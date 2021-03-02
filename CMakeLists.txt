@@ -196,7 +196,7 @@ IF (DEFINED DEVICE)
         LIST (APPEND SOURCES 
         "${LIB_MICRO_ROOT}/src/HardwareTimer.cc"
         "src/display/Led7SegmentDisplayDma.cc"
-        "src/display/Led7SegmentDisplay.cc"
+        # "src/display/Led7SegmentDisplay.cc"
         )
     ENDIF ()
 

@@ -62,7 +62,7 @@ public:
         void setBrightness (uint8_t b) override { brightness = std::min<uint8_t> (MAX_BRIGHTNESS, b); }
         uint8_t getBrightness () const override { return brightness; }
 
-        void refresh () override;
+        void refresh ();
         void clear () override;
 
         static constexpr size_t SPACE_CHAR = 36;
