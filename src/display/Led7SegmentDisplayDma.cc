@@ -16,6 +16,10 @@ constexpr uint16_t PERIOD = 50;
 
 /****************************************************************************/
 
+uint16_t flipFont (uint16_t font) { return (font & 0x06) << 5 | (font & 0xc0) >> 5 | (font & 0x20) | (font & 0x08) >> 3 | (font & 0x01) << 3; }
+
+/****************************************************************************/
+
 Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 {
         // This method fils in the two buffers which would got transferred by the DMA later on.
@@ -204,18 +208,30 @@ void Led7SegmentDisplayDma::setDigit (uint8_t position, uint8_t digit)
                 digit = SPACE_CHAR_INDEX;
         }
 
+        int fPosition = (flip) ? (5 - position) : position;
+
         if (digit == '.') {
-                setDot (position, true);
+                if (flip) {
+                        --fPosition;
+
+                        if (fPosition >= 0) {
+                                setDot (fPosition, true);
+                        }
+                }
+                else {
+                        setDot (fPosition, true);
+                }
         }
         else {
-                displayBuffer.at (position) = ALL_SEGMENTS | FONTS.at (digit);
+                uint16_t fnt = (flip) ? (flipFont (FONTS.at (digit))) : (FONTS.at (digit));
+                displayBuffer.at (fPosition) = ALL_SEGMENTS | fnt;
         }
 
-        if (dots & (1 << position)) {
-                displayBuffer.at (position) &= ~DOT_MASK;
+        if (dots & (1 << fPosition)) {
+                displayBuffer.at (fPosition) &= ~DOT_MASK;
         }
         else {
-                displayBuffer.at (position) |= DOT_MASK;
+                displayBuffer.at (fPosition) |= DOT_MASK;
         }
 }
 
@@ -359,5 +375,16 @@ void Led7SegmentDisplayDma::setBrightness (uint8_t b)
                         auto idx = (j + l + MODULO_OFFSET) % enableBuffer.size ();
                         enableBuffer.at (idx) = ALL_ENABLE_OFF;
                 }
+        }
+}
+
+/****************************************************************************/
+
+void Led7SegmentDisplayDma::setFlip (bool b)
+{
+        flip = b;
+
+        for (auto &e : displayBuffer) {
+                e = flipFont (e);
         }
 }

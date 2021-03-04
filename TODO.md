@@ -37,7 +37,7 @@
   * [x] getFlip, setFlip - does not store values. Does the config work at all?
   * [ ] All the commands should be tested when 2 or more receivers are connected.
 * [x] factory reset does not work
-* [ ] Screen is flickering a little when there is nothing connected to the CAN. This is because the external trigger have higher priority than the screen, and is picking up the CAN signals via cross talk. Those (very fast) edges fire up the ISR very frequently 
+* [x] Screen is flickering a little when there is nothing connected to the CAN. This is because the external trigger have higher priority than the screen, and is picking up the CAN signals via cross talk. Those (very fast) edges fire up the ISR very frequently 
 * [x] I can see 50Hz on the LVDS outputs (R pin connected to the MCU). However there are pretty long danggling wires connected to this port. Maybe pull low? Pulling low helped.
 * [ ] Does noise detection even work? Why it is not reporting an noise-error when the cable is dangling (spurious pulses can be seen using the analyser).
 * [x] Increase Result type from uint32_t to 64. Store 1µs resolution. Improvement is hard to observe, but something changed for sure. See attached images at the bottom of this paragraph. Compared are two lists of results where two devices were configured like in test A3, but with signal gen instead of IR.
@@ -49,7 +49,7 @@
 1µs resolution:
 ![1µs resolution](doc/result-1us-substractions_2021-02-04_23-38-01.png)
 
-# Trigger (nose filtering)
+# Trigger (noise filtering)
 * [ ] ~~Signal strength reduction (/2) switch in the TX. For indoor use.~~ EDIT : adjust resistors and leave the switch as it is. Middle position will be what is current lowest, and the new lowest will be even lower.
 * [x] Minimum event length should be configurable (now 10ms)
 * [x] Trigger low steady time should be the same as the minimum event length.
@@ -76,7 +76,7 @@
 * [x] Można uprościć circular buffer
 * [x] Jeden event na raz. Teraz po beamRestored wrzuca jeszcze trigger, bo nie czyści stanu wewnętrznego.
 * [ ] Noise liczba spikow na długą i niezależna od ustawień jednostkę czasu np 1s. Ten okres powinien być zależny od charakteru typowych zakłóceń. Dzielimy sygnał na sekundowe odcinki. Histereza. Działa cały czas nawet gdy blind.
-  * [ ] Wykrywanie szumu musi być jakoś powiązane z aktualnym dutu cycle level. Jeśli nie będzie to możemy mieć sytuację że pokazuje się niski poziom szumu, ale z powodu wysokiego progu duty nie łapiemy trigeroe. No i to będzie wyglądało jak błąd! Załóżmy, że min trigger event jest 200µs (mało, ale załóżmy że tak jest). Wówczas tylko jeden jedyny noise spike o minimalnej długości (100µs) spowoduje, że już nie wiadomo czy to był trigger, czy nie. 
+  * [ ] Wykrywanie szumu musi być jakoś powiązane z aktualnym duty cycle level. Jeśli nie będzie to możemy mieć sytuację że pokazuje się niski poziom szumu, ale z powodu wysokiego progu duty nie łapiemy trigeroe. No i to będzie wyglądało jak błąd! Załóżmy, że min trigger event jest 200µs (mało, ale załóżmy że tak jest). Wówczas tylko jeden jedyny noise spike o minimalnej długości (100µs) spowoduje, że już nie wiadomo czy to był trigger, czy nie. 
 * [ ] No signal dzielimy sygnał na odcinku. Uzależnione od ustawień. Blond timer i min event . A może jednak nie uzależniać od blind timer?  Jak ktoś ustawy blind na 10 sekund to słabo będzie działać. Może jednak 1s tak samo jak z noise, ale w czasie blind time po prostu nie wykrywany ani trigeroe ani blind Jeżeli w odcinku czasu ty hiduty większe niż tteshold (ten sam co przy triger) to zgłaszamy. Żeby odwołać histereza
 * [ ] Draw a diagram of all of this.
 * [ ] Test minimum event length in unit tests.

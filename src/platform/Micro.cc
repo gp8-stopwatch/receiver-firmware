@@ -17,10 +17,10 @@ extern "C" void EXTI4_15_IRQHandler ()
                 __HAL_GPIO_EXTI_CLEAR_IT (GPIO_PIN_5);
                 getIrDetector ().onEdge ({getStopWatch ().getTimeFromIsr (), EdgePolarity (getIrTriggerInput ().get ())});
         }
-        else if (__HAL_GPIO_EXTI_GET_IT (GPIO_PIN_15) != RESET) {
-                __HAL_GPIO_EXTI_CLEAR_IT (GPIO_PIN_15);
-                getButton ().onToggle ();
-        }
+        // else if (__HAL_GPIO_EXTI_GET_IT (GPIO_PIN_15) != RESET) {
+        //         __HAL_GPIO_EXTI_CLEAR_IT (GPIO_PIN_15);
+        //         getButton ().onToggle ();
+        // }
 }
 
 /****************************************************************************/

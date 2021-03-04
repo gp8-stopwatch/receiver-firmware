@@ -41,7 +41,7 @@ public:
         void setTime (Result10us time, Resolution res) override;
         void setText (const char *s) override;
 
-        void setFlip (bool b) override { flip = b; }
+        void setFlip (bool b) override;
 
         /**
          * @brief batteryLevel 0 : blinking frame, 1 : frame, 2 : frame & 1 bar, 3 : frame & 2 bars
@@ -59,8 +59,6 @@ public:
         void setResolution (Resolution res) override;
 
 private:
-        uint8_t flipFont (uint8_t font) { return (font & 0xc0) | (font & 0x07) << 3 | (font & 0x38) >> 3; }
-
 #ifdef COMMON_ANODE
         static constexpr bool CA = true;
 #else
@@ -69,11 +67,11 @@ private:
 
         static constexpr int DISPLAY_NUM = 6;
         uint8_t dots = 0;
-        uint8_t currentDigit = 0;
+        // uint8_t currentDigit = 0;
 
         static constexpr uint8_t MAX_BRIGHTNESS = 4;
         uint8_t brightness{};
-        uint8_t brightnessCycle = 0;
+        // uint8_t brightnessCycle = 0;
 
         bool flip = false;
         Resolution resolution{};

@@ -36,7 +36,6 @@ constexpr Result1us msToResult1us (uint32_t r) { return r * 1000; }
  */
 enum ResultDisplayStyle { secondFraction = 0b00, milisecondOnly = 0b01, none = 0b11 };
 
-constexpr size_t DISPLAY_TIMER_PRIORITY = 2;
 constexpr size_t CAN_BUS_PRIORITY = 3; // CAN bus is no longer used for time synchronization, so low priority
 constexpr size_t BUTTON_EXTI_PRIORITY = 1;
 constexpr size_t IR_EXTI_PRIORITY = 1;

@@ -273,22 +273,17 @@ void init ()
         static Gpio sg (GPIOA, GPIO_PIN_5);  // A5
         static Gpio sdp (GPIOA, GPIO_PIN_8); // A8
 
-        // static HardwareTimer tim15 (TIM15, 48 - 1, 200 - 1); // Update 5kHz
-        // // static HardwareTimer tim15 (TIM15, 4800 - 1, 10000 - 1);
-        // HAL_NVIC_SetPriority (TIM15_IRQn, DISPLAY_TIMER_PRIORITY, 0);
-        // HAL_NVIC_EnableIRQ (TIM15_IRQn);
-        // tim15.setOnUpdate ([] { getDisplay ().refresh (); });
-
         // Everything turned ON:
         // d1 = d2 = d3 = d4 = d5 = d6 = true;
         // sa = sb = sc = sd = se = sf = sg = sdp = false;
 
-        // getDisplay ().setDigit (0, 'u');
-        // getDisplay ().setDigit (1, 'v');
-        // getDisplay ().setDigit (2, 'w');
-        // getDisplay ().setDigit (3, 'x');
-        // getDisplay ().setDigit (4, 'y');
-        // getDisplay ().setDigit (5, 'z');
+        // getDisplay ().setFlip (true);
+        // getDisplay ().setDigit (0, 0);
+        // getDisplay ().setDigit (1, 1);
+        // getDisplay ().setDigit (2, 2);
+        // getDisplay ().setDigit (3, 3);
+        // getDisplay ().setDigit (4, 4);
+        // getDisplay ().setDigit (5, 5);
         getDisplay ();
 
         // while (true) {
