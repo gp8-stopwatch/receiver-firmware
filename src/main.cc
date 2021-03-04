@@ -38,7 +38,12 @@ int main ()
         // Refresh stopwatch state to reflect the config.
         auto refreshSettings = [&] {
                 getDisplay ().setFlip (getConfig ().isFlip ());
-                // getIrDetector ().setActive (getConfig ().isIrSensorOn ());
+
+                auto br = getConfig ().getBrightness ();
+
+                if (br != Brightness::levelAuto) {
+                        getDisplay ().setBrightness (uint8_t (br));
+                }
 #ifdef WITH_SOUND
                 getBuzzer ().setActive (getConfig ().isBuzzerOn ());
 #endif

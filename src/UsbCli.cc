@@ -74,7 +74,7 @@ auto &getCli ()
                                  usbWrite ("result, resultMs, last, lastMs, date, isCounting, reset, clear, factory, help, battery, "
                                            "getFlip, "
                                            "setFlip, getIr, setIr, getSn, "
-                                           "setSn, getRes, setRes, getAuto, setAuto, periph, getBlind, setBlind\r\n\r\n");
+                                           "setSn, getRes, setRes, getAuto, setAuto, getBright, setBright, periph, getBlind, setBlind\r\n\r\n");
                          }),
                 cl::cmd (String ("battery"),
                          [] {
@@ -186,6 +186,36 @@ auto &getCli ()
                                  default:
                                          break;
                                  }
+                         }),
+
+                cl::cmd (String ("setBright"),
+                         [&] (String const &arg) {
+                                 if (arg == "auto") {
+                                         getConfig ().setBrightness (Brightness::levelAuto);
+                                 }
+                                 else if (!arg.empty () && arg[0] >= '1' && arg[0] <= '4') {
+                                         getConfig ().setBrightness (Brightness (arg[0] - '0'));
+                                 }
+                                 else {
+                                         usbWrite ("1-4 or auto\r\n\r\n");
+                                 }
+
+                                 refreshAll ();
+                         }),
+                cl::cmd (String ("getBright"),
+                         [] {
+                                 auto br = getConfig ().getBrightness ();
+
+                                 if (br == Brightness::levelAuto) {
+                                         usbWrite ("auto");
+                                 }
+                                 else {
+                                         std::array<char, 11> buf{};
+                                         itoa ((unsigned int)(br), buf.data ());
+                                         usbWrite (buf.cbegin ());
+                                 }
+
+                                 usbWrite ("\r\n\r\n");
                          }),
 
                 cl::cmd (String ("periph"),

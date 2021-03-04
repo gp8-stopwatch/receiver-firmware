@@ -7,6 +7,7 @@
  ****************************************************************************/
 
 #include "PowerManagement.h"
+#include "Container.h"
 #include "Debug.h"
 #include "ErrorHandler.h"
 #include <stm32f0xx_ll_adc.h>
@@ -192,7 +193,9 @@ void PowerManagement::run ()
         debug.println (newBrightness);
 #endif
 
-        display.setBrightness (newBrightness);
+        if (getConfig ().getBrightness () == Brightness::levelAuto) {
+                display.setBrightness (newBrightness);
+        }
 }
 
 /****************************************************************************/
