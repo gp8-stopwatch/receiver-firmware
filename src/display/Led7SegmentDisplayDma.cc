@@ -18,13 +18,14 @@ constexpr uint16_t PERIOD = 50;
 
 Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 {
+        // This method fils in the two buffers which would got transferred by the DMA later on.
         setBrightness (4);
 
         /*--------------------------------------------------------------------------*/
         /* Enable (common pin) timer & DMA. This enables individual displays.       */
         /*--------------------------------------------------------------------------*/
 
-        static TIM_HandleTypeDef htim{};
+        TIM_HandleTypeDef htim{};
 
         htim.Instance = TIM15;
         htim.Init.Prescaler = PRESCALER - 1;
@@ -37,7 +38,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         __HAL_RCC_TIM15_CLK_ENABLE ();
         __HAL_RCC_DMA1_CLK_ENABLE ();
 
-        static DMA_HandleTypeDef dmaHandle{};
+        DMA_HandleTypeDef dmaHandle{};
 
         dmaHandle.Init.Direction = DMA_MEMORY_TO_PERIPH;
         dmaHandle.Init.PeriphInc = DMA_PINC_DISABLE;
@@ -58,6 +59,14 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
                 Error_Handler ();
         }
 
+        /*
+         * enableBuffer (24 elements, each 32 bit) is transferred constatntly (thanks
+         * to the DMA circular mode) to the GPIOB->BSRR. First 16 bits of every element
+         * of this buffer is for clearing, and less signifficat 16 bits are for setting.
+         *
+         * Enable buffer is 4 (MAX_BRIGHTNESS) times bigger than the displayBuffer (which has only 6 elements).
+         * This is why TIM15 has to update 4 times faster. This is for brightness setting impl.
+         */
         if (HAL_DMA_Start (&dmaHandle, reinterpret_cast<uint32_t> (enableBuffer.data ()), reinterpret_cast<uint32_t> (&GPIOB->BSRR),
                            enableBuffer.size ())
             != HAL_OK) {
@@ -68,6 +77,13 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
         /*--------------------------------------------------------------------------*/
 
+        /*
+         * TIM15, even if it's faster than TIM16, is configured as a slave (this is the
+         * only option to synchronize them i.e. TIM15 cannot be master. Another drawback
+         * is that TIM15/16/17 are less flexible than TIM2 and 3, and only OC1 event of
+         * TIM16/17 can be uysed as a trigger for TIM15. This is why I'm configuguring
+         * the OC channel 1 below.
+         */
         TIM_SlaveConfigTypeDef sSlaveConfig{};
         sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
         sSlaveConfig.InputTrigger = TIM_TS_ITR2; // Table 71.
@@ -88,9 +104,13 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         /* Segment timer & DMA. This drives single segments.                        */
         /*--------------------------------------------------------------------------*/
 
+        /*
+         * Almost all the settings of TIM16 and DMA (the only DMA IP here)
+         * are the same. I'm reusing the init strucures.
+         */
         htim.Instance = TIM16;
         htim.Init.Prescaler = PRESCALER - 1;
-        htim.Init.Period = PERIOD * MAX_BRIGHTNESS - 1;
+        htim.Init.Period = PERIOD * MAX_BRIGHTNESS - 1; // Period is 4 times longer, so timer is 4 times slower than TIM15.
         __HAL_RCC_TIM16_CLK_ENABLE ();
         dmaHandle.Instance = DMA1_Channel3;
         __HAL_LINKDMA (&htim, hdma[TIM_DMA_ID_UPDATE], dmaHandle);
@@ -99,6 +119,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
                 Error_Handler ();
         }
 
+        // PWM because of this OC channel used as described above.
         if (HAL_TIM_PWM_Init (&htim) != HAL_OK) {
                 Error_Handler ();
         }
@@ -130,7 +151,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         sConfig.OCNPolarity = TIM_OCNPOLARITY_HIGH;
         sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
         sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
-        sConfig.Pulse = PERIOD * MAX_BRIGHTNESS - 1;
+        sConfig.Pulse = PERIOD * MAX_BRIGHTNESS - 1; // The same as ARR, so the OC1 event is generated simultaneously with UP event.
 
         if (HAL_TIM_PWM_ConfigChannel (&htim, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
                 Error_Handler ();
@@ -143,6 +164,9 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         /*--------------------------------------------------------------------------*/
 
         /*
+         * EDIT: This description may be inaccurate, since I changed the configuration
+         * a little bit after writing it, but the general idea still holds.
+         *
          * This "resynchronization" step makes TIM15 start 1 OC1 event after the TIM16,
          * and the number (text) displayed is shifted 1 place to the left. Without this
          * it would have been shifted 2 places to the left. The order of events is as
@@ -158,7 +182,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
          * the text is shifted on the display.
          */
         TIM15->CNT = 0;
-        TIM16->CNT = 100 - 1;
+        TIM16->CNT = PERIOD * MAX_BRIGHTNESS / 2 - 1;
 }
 
 /*****************************************************************************/
@@ -293,6 +317,30 @@ void Led7SegmentDisplayDma::setResolution (Resolution res)
 
 /****************************************************************************/
 
+/**
+ * This fills the enableBuffer so the enable pins are driven in a sequence.
+ * DMA is transferring the buffer in circular mode. Below are examples of
+ * how would the buffer look to obtain different brightnes intensity on the
+ * screen:
+ *
+ * Brightnes : 4 (max)      3                  2                  1
+ * en. disp. 0         en. disp. 0        en. disp. 0        en. disp. 0
+ * en. disp. 0         en. disp. 0        en. disp. 0        disable all
+ * en. disp. 0         en. disp. 0        disable all        disable all
+ * en. disp. 0         disable all        disable all        disable all
+ * en. disp. 1         en. disp. 1        en. disp. 1        en. disp. 1
+ * en. disp. 1         en. disp. 1        en. disp. 1        disable all
+ * en. disp. 1         en. disp. 1        disable all        disable all
+ * en. disp. 1         disable all        disable all        disable all
+ * en. disp. 2         en. disp. 2        en. disp. 2        en. disp. 2
+ * en. disp. 2         en. disp. 2        en. disp. 2        disable all
+ * ...                 ...                ...                ...
+ *
+ * The table above gives the general idea, but due to synchronization issues
+ * (synchr. between TIM15 and TIM16) the sequence is a little bit shifted (modulo 24).
+ * True sequence can be seen in the enableBuffer initialization, but the duty
+ * cycle idea is the same.
+ */
 void Led7SegmentDisplayDma::setBrightness (uint8_t b)
 {
         brightness = std::min<uint8_t> (MAX_BRIGHTNESS, b);
