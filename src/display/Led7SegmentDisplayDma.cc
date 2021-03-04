@@ -11,19 +11,24 @@
 #include "StopWatch.h"
 #include <array>
 
+constexpr uint16_t PRESCALER = 480;
+constexpr uint16_t PERIOD = 50;
+
 /****************************************************************************/
 
 Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 {
+        setBrightness (4);
+
         /*--------------------------------------------------------------------------*/
-        /* Segment timer & DMA. This drives single segments.                        */
+        /* Enable (common pin) timer & DMA. This enables individual displays.       */
         /*--------------------------------------------------------------------------*/
 
         static TIM_HandleTypeDef htim{};
 
         htim.Instance = TIM15;
-        htim.Init.Prescaler = 48 - 1;
-        htim.Init.Period = 200 - 1;
+        htim.Init.Prescaler = PRESCALER - 1;
+        htim.Init.Period = PERIOD - 1;
         htim.Init.CounterMode = TIM_COUNTERMODE_UP;
         htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
         htim.Init.RepetitionCounter = 0;
@@ -53,8 +58,8 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
                 Error_Handler ();
         }
 
-        if (HAL_DMA_Start (&dmaHandle, reinterpret_cast<uint32_t> (displayBuffer.data ()), reinterpret_cast<uint32_t> (&GPIOA->BSRR),
-                           displayBuffer.size ())
+        if (HAL_DMA_Start (&dmaHandle, reinterpret_cast<uint32_t> (enableBuffer.data ()), reinterpret_cast<uint32_t> (&GPIOB->BSRR),
+                           enableBuffer.size ())
             != HAL_OK) {
                 Error_Handler ();
         }
@@ -80,12 +85,12 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         }
 
         /*--------------------------------------------------------------------------*/
-        /* Enable (common pin) timer & DMA. This enables individual displays.       */
+        /* Segment timer & DMA. This drives single segments.                        */
         /*--------------------------------------------------------------------------*/
 
         htim.Instance = TIM16;
-        htim.Init.Prescaler = 48 - 1;
-        htim.Init.Period = 200 - 1;
+        htim.Init.Prescaler = PRESCALER - 1;
+        htim.Init.Period = PERIOD * MAX_BRIGHTNESS - 1;
         __HAL_RCC_TIM16_CLK_ENABLE ();
         dmaHandle.Instance = DMA1_Channel3;
         __HAL_LINKDMA (&htim, hdma[TIM_DMA_ID_UPDATE], dmaHandle);
@@ -98,8 +103,8 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
                 Error_Handler ();
         }
 
-        if (HAL_DMA_Start (&dmaHandle, reinterpret_cast<uint32_t> (enableBuffer.data ()), reinterpret_cast<uint32_t> (&GPIOB->BSRR),
-                           enableBuffer.size ())
+        if (HAL_DMA_Start (&dmaHandle, reinterpret_cast<uint32_t> (displayBuffer.data ()), reinterpret_cast<uint32_t> (&GPIOA->BSRR),
+                           displayBuffer.size ())
             != HAL_OK) {
                 Error_Handler ();
         }
@@ -125,7 +130,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         sConfig.OCNPolarity = TIM_OCNPOLARITY_HIGH;
         sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
         sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
-        sConfig.Pulse = 200 - 1;
+        sConfig.Pulse = PERIOD * MAX_BRIGHTNESS - 1;
 
         if (HAL_TIM_PWM_ConfigChannel (&htim, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
                 Error_Handler ();
@@ -284,4 +289,27 @@ void Led7SegmentDisplayDma::setResolution (Resolution res)
         static constexpr std::array INCREMENTS{1, 10, 100, 1000};
         factorIndex = int (res);
         prescaler = INCREMENTS.at (int (res));
+}
+
+/****************************************************************************/
+
+void Led7SegmentDisplayDma::setBrightness (uint8_t b)
+{
+        brightness = std::min<uint8_t> (MAX_BRIGHTNESS, b);
+        const auto MODULO_OFFSET = enableBuffer.size () - 1;
+
+        for (int i = 0; i < DISPLAY_NUM; ++i) {
+                int j = i * MAX_BRIGHTNESS;
+
+                int k{};
+                for (; k < brightness; ++k) {
+                        auto idx = (j + k + MODULO_OFFSET) % enableBuffer.size ();
+                        enableBuffer.at (idx) = ENABLE_MASKS.at (i);
+                }
+
+                for (int l = k; l < MAX_BRIGHTNESS; ++l) {
+                        auto idx = (j + l + MODULO_OFFSET) % enableBuffer.size ();
+                        enableBuffer.at (idx) = ALL_ENABLE_OFF;
+                }
+        }
 }

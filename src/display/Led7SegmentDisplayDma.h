@@ -51,7 +51,7 @@ public:
         void setBacklight (bool /*b*/) override {}
         bool getBacklight () const override { return true; }
 
-        void setBrightness (uint8_t b) override { brightness = std::min<uint8_t> (MAX_BRIGHTNESS, b); }
+        void setBrightness (uint8_t b) override;
         uint8_t getBrightness () const override { return brightness; }
 
         void clear () override;
@@ -61,19 +61,18 @@ public:
 private:
         uint8_t flipFont (uint8_t font) { return (font & 0xc0) | (font & 0x07) << 3 | (font & 0x38) >> 3; }
 
-private:
 #ifdef COMMON_ANODE
         static constexpr bool CA = true;
 #else
         static constexpr bool CA = false;
 #endif
 
-        static constexpr size_t DISPLAY_NUM = 6;
+        static constexpr int DISPLAY_NUM = 6;
         uint8_t dots = 0;
         uint8_t currentDigit = 0;
 
-        static constexpr uint8_t MAX_BRIGHTNESS = 5;
-        uint8_t brightness = MAX_BRIGHTNESS / 2;
+        static constexpr uint8_t MAX_BRIGHTNESS = 4;
+        uint8_t brightness{};
         uint8_t brightnessCycle = 0;
 
         bool flip = false;
@@ -88,13 +87,37 @@ private:
 
         std::array<uint32_t, DISPLAY_NUM> displayBuffer{};
 
-        const std::array<uint32_t, DISPLAY_NUM> enableBuffer{
-                0b0000'1000'0000'0000'0001'0000'0000'0000, // enable display 1 (PB12) shifted due to timers synchronization
-                0b0001'0000'0000'0000'0010'0000'0000'0000, // enable display 2 (PB13)
-                0b0010'0000'0000'0000'0000'0100'0000'0000, // enable display 3 (PB10)
-                0b0000'0100'0000'0000'0000'0000'0000'0100, // enable display 4 (PB2)
-                0b0000'0000'0000'0100'0000'0000'0010'0000, // enable display 5 (PB5)
-                0b0000'0000'0010'0000'0000'1000'0000'0000, // enable display 0 (PB11)
+        static constexpr auto ENABLE0_PIN_NUM = 11;
+        static constexpr auto ENABLE1_PIN_NUM = 12;
+        static constexpr auto ENABLE2_PIN_NUM = 13;
+        static constexpr auto ENABLE3_PIN_NUM = 10;
+        static constexpr auto ENABLE4_PIN_NUM = 2;
+        static constexpr auto ENABLE5_PIN_NUM = 5;
+
+        static constexpr uint32_t ENABLE0_MASK = (1 << (ENABLE5_PIN_NUM + 16)) | (1 << ENABLE0_PIN_NUM);
+        static constexpr uint32_t ENABLE1_MASK = (1 << (ENABLE0_PIN_NUM + 16)) | (1 << ENABLE1_PIN_NUM);
+        static constexpr uint32_t ENABLE2_MASK = (1 << (ENABLE1_PIN_NUM + 16)) | (1 << ENABLE2_PIN_NUM);
+        static constexpr uint32_t ENABLE3_MASK = (1 << (ENABLE2_PIN_NUM + 16)) | (1 << ENABLE3_PIN_NUM);
+        static constexpr uint32_t ENABLE4_MASK = (1 << (ENABLE3_PIN_NUM + 16)) | (1 << ENABLE4_PIN_NUM);
+        static constexpr uint32_t ENABLE5_MASK = (1 << (ENABLE4_PIN_NUM + 16)) | (1 << ENABLE5_PIN_NUM);
+
+        static constexpr uint32_t ALL_ENABLE_OFF = (1 << (ENABLE5_PIN_NUM + 16)) | (1 << (ENABLE0_PIN_NUM + 16)) | (1 << (ENABLE1_PIN_NUM + 16))
+                | (1 << (ENABLE2_PIN_NUM + 16)) | (1 << (ENABLE3_PIN_NUM + 16)) | (1 << (ENABLE4_PIN_NUM + 16));
+
+        static constexpr std::array ENABLE_MASKS = {
+                ENABLE5_MASK, // enable display 5 (PB5)
+                ENABLE0_MASK, // enable display 0 (PB11)
+                ENABLE1_MASK, // enable display 1 (PB12) shifted due to timers synchronization
+                ENABLE2_MASK, // enable display 2 (PB13)
+                ENABLE3_MASK, // enable display 3 (PB10)
+                ENABLE4_MASK, // enable display 4 (PB2)
+        };
+
+        std::array<uint32_t, DISPLAY_NUM * MAX_BRIGHTNESS> enableBuffer{
+                ENABLE5_MASK, ENABLE5_MASK, ENABLE5_MASK, ENABLE0_MASK, ENABLE0_MASK, ENABLE0_MASK, ENABLE0_MASK, ENABLE1_MASK, ENABLE1_MASK,
+                ENABLE1_MASK, ENABLE1_MASK, ENABLE2_MASK, ENABLE2_MASK, ENABLE2_MASK, ENABLE2_MASK, ENABLE3_MASK, ENABLE3_MASK, ENABLE3_MASK,
+                ENABLE3_MASK, ENABLE4_MASK, ENABLE4_MASK, ENABLE4_MASK, ENABLE4_MASK, ENABLE5_MASK
+
         };
 
         /// Corresponds to DSEG7 font as found on https://www.keshikan.net/fonts-e.html
