@@ -16,7 +16,10 @@ constexpr uint16_t PERIOD = 50;
 
 /****************************************************************************/
 
-uint16_t flipFont (uint16_t font) { return (font & 0x06) << 5 | (font & 0xc0) >> 5 | (font & 0x20) | (font & 0x08) >> 3 | (font & 0x01) << 3; }
+uint16_t flipFont (uint16_t font)
+{
+        return (font & 0x06) << 5 | (font & 0xc0) >> 5 | (font & 0x20) | (font & 0x08) >> 3 | (font & 0x01) << 3 | (font & 0x100);
+}
 
 /****************************************************************************/
 
@@ -193,9 +196,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
 void Led7SegmentDisplayDma::setDigit (uint8_t position, uint8_t digit)
 {
-        if (digit >= 0 && digit <= 0xf) {
-        }
-        else if (digit >= 48 && digit <= 57) {
+        if (digit >= 48 && digit <= 57) {
                 digit -= 48;
         }
         else if (digit >= 65 /*A*/ && digit <= 90 /*Z*/) {
@@ -208,26 +209,19 @@ void Led7SegmentDisplayDma::setDigit (uint8_t position, uint8_t digit)
                 digit = SPACE_CHAR_INDEX;
         }
 
-        int fPosition = (flip) ? (5 - position) : position;
+        int fPosition = (flip) ? (5 - position) : (position);
 
         if (digit == '.') {
-                if (flip) {
-                        --fPosition;
-
-                        if (fPosition >= 0) {
-                                setDot (fPosition, true);
-                        }
-                }
-                else {
-                        setDot (fPosition, true);
-                }
+                setDot (position, true);
         }
         else {
                 uint16_t fnt = (flip) ? (flipFont (FONTS.at (digit))) : (FONTS.at (digit));
                 displayBuffer.at (fPosition) = ALL_SEGMENTS | fnt;
         }
 
-        if (dots & (1 << fPosition)) {
+        auto fDots = (flip) ? (dots << 1) : (dots);
+
+        if (fDots & (1 << position)) {
                 displayBuffer.at (fPosition) &= ~DOT_MASK;
         }
         else {
@@ -249,12 +243,6 @@ void Led7SegmentDisplayDma::setTime (Result10us time, Resolution res)
 
         auto factorIndexCopy = factorIndex;
 
-        for (int i = 5; i >= 0; --i, ++factorIndexCopy) {
-                auto factor = FACTORS.at (factorIndexCopy);
-                setDigit (i, cntTmp % factor);
-                cntTmp /= factor;
-        }
-
         switch (res) {
         case Resolution::ms_10:
                 setDots (0b001010);
@@ -274,6 +262,12 @@ void Led7SegmentDisplayDma::setTime (Result10us time, Resolution res)
 
         default:
                 break;
+        }
+
+        for (int i = 5; i >= 0; --i, ++factorIndexCopy) {
+                auto factor = FACTORS.at (factorIndexCopy);
+                setDigit (i, cntTmp % factor);
+                cntTmp /= factor;
         }
 }
 
@@ -380,11 +374,33 @@ void Led7SegmentDisplayDma::setBrightness (uint8_t b)
 
 /****************************************************************************/
 
-void Led7SegmentDisplayDma::setFlip (bool b)
+void Led7SegmentDisplayDma::setFlip (bool f)
 {
-        flip = b;
+        if (flip != f) {
+                // Reverse the text direction
+                std::swap (displayBuffer.at (0), displayBuffer.at (5));
+                std::swap (displayBuffer.at (1), displayBuffer.at (4));
+                std::swap (displayBuffer.at (2), displayBuffer.at (3));
 
-        for (auto &e : displayBuffer) {
-                e = flipFont (e);
+                // Flip every letter / digit upside down
+                for (auto &e : displayBuffer) {
+                        e = ALL_SEGMENTS | flipFont (e); // All dots are lit
+                }
+
+                // Display all dots. When image is flipped, draw from right to left, and shift by 1.
+                for (int position = 0; position < DISPLAY_NUM; ++position) {
+
+                        int fPosition = (f) ? (5 - position) : (position);
+                        auto fDots = (f) ? (dots << 1) : (dots);
+
+                        if (fDots & (1 << position)) {
+                                displayBuffer.at (fPosition) &= ~DOT_MASK;
+                        }
+                        else {
+                                displayBuffer.at (fPosition) |= DOT_MASK;
+                        }
+                }
         }
+
+        flip = f;
 }
