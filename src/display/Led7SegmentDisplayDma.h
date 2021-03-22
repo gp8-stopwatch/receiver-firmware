@@ -92,29 +92,35 @@ private:
         static constexpr auto ENABLE4_PIN_NUM = 2;
         static constexpr auto ENABLE5_PIN_NUM = 5;
 
-        static constexpr uint32_t ENABLE0_MASK = (1 << (ENABLE5_PIN_NUM + 16)) | (1 << ENABLE0_PIN_NUM);
-        static constexpr uint32_t ENABLE1_MASK = (1 << (ENABLE0_PIN_NUM + 16)) | (1 << ENABLE1_PIN_NUM);
-        static constexpr uint32_t ENABLE2_MASK = (1 << (ENABLE1_PIN_NUM + 16)) | (1 << ENABLE2_PIN_NUM);
-        static constexpr uint32_t ENABLE3_MASK = (1 << (ENABLE2_PIN_NUM + 16)) | (1 << ENABLE3_PIN_NUM);
-        static constexpr uint32_t ENABLE4_MASK = (1 << (ENABLE3_PIN_NUM + 16)) | (1 << ENABLE4_PIN_NUM);
-        static constexpr uint32_t ENABLE5_MASK = (1 << (ENABLE4_PIN_NUM + 16)) | (1 << ENABLE5_PIN_NUM);
+        static constexpr uint32_t ENABLE0_ON = (1 << ENABLE0_PIN_NUM);
+        static constexpr uint32_t ENABLE1_ON = (1 << ENABLE1_PIN_NUM);
+        static constexpr uint32_t ENABLE2_ON = (1 << ENABLE2_PIN_NUM);
+        static constexpr uint32_t ENABLE3_ON = (1 << ENABLE3_PIN_NUM);
+        static constexpr uint32_t ENABLE4_ON = (1 << ENABLE4_PIN_NUM);
+        static constexpr uint32_t ENABLE5_ON = (1 << ENABLE5_PIN_NUM);
 
         static constexpr uint32_t ALL_ENABLE_OFF = (1 << (ENABLE5_PIN_NUM + 16)) | (1 << (ENABLE0_PIN_NUM + 16)) | (1 << (ENABLE1_PIN_NUM + 16))
                 | (1 << (ENABLE2_PIN_NUM + 16)) | (1 << (ENABLE3_PIN_NUM + 16)) | (1 << (ENABLE4_PIN_NUM + 16));
 
-        static constexpr std::array ENABLE_MASKS = {
-                ENABLE5_MASK, // enable display 5 (PB5)
-                ENABLE0_MASK, // enable display 0 (PB11)
-                ENABLE1_MASK, // enable display 1 (PB12) shifted due to timers synchronization
-                ENABLE2_MASK, // enable display 2 (PB13)
-                ENABLE3_MASK, // enable display 3 (PB10)
-                ENABLE4_MASK, // enable display 4 (PB2)
-        };
+        // static constexpr std::array ENABLE_MASKS = {
+        //         ENABLE5_MASK, // enable display 5 (PB5)
+        //         ENABLE0_MASK, // enable display 0 (PB11)
+        //         ENABLE1_MASK, // enable display 1 (PB12) shifted due to timers synchronization
+        //         ENABLE2_MASK, // enable display 2 (PB13)
+        //         ENABLE3_MASK, // enable display 3 (PB10)
+        //         ENABLE4_MASK, // enable display 4 (PB2)
+        // };
 
-        std::array<uint32_t, DISPLAY_NUM * MAX_BRIGHTNESS> enableBuffer{
-                ENABLE5_MASK, ENABLE5_MASK, ENABLE5_MASK, ENABLE0_MASK, ENABLE0_MASK, ENABLE0_MASK, ENABLE0_MASK, ENABLE1_MASK, ENABLE1_MASK,
-                ENABLE1_MASK, ENABLE1_MASK, ENABLE2_MASK, ENABLE2_MASK, ENABLE2_MASK, ENABLE2_MASK, ENABLE3_MASK, ENABLE3_MASK, ENABLE3_MASK,
-                ENABLE3_MASK, ENABLE4_MASK, ENABLE4_MASK, ENABLE4_MASK, ENABLE4_MASK, ENABLE5_MASK
+        // std::array<uint32_t, DISPLAY_NUM * MAX_BRIGHTNESS> enableBuffer{
+        //         ENABLE5_MASK, ENABLE5_MASK, ENABLE5_MASK, ENABLE0_MASK, ENABLE0_MASK, ENABLE0_MASK, ENABLE0_MASK, ENABLE1_MASK, ENABLE1_MASK,
+        //         ENABLE1_MASK, ENABLE1_MASK, ENABLE2_MASK, ENABLE2_MASK, ENABLE2_MASK, ENABLE2_MASK, ENABLE3_MASK, ENABLE3_MASK, ENABLE3_MASK,
+        //         ENABLE3_MASK, ENABLE4_MASK, ENABLE4_MASK, ENABLE4_MASK, ENABLE4_MASK, ENABLE5_MASK
+
+        // };
+
+        std::array<uint32_t, DISPLAY_NUM * 2> enableBuffer{
+                ENABLE0_ON, ALL_ENABLE_OFF, ENABLE1_ON, ALL_ENABLE_OFF, ENABLE2_ON, ALL_ENABLE_OFF,
+                ENABLE3_ON, ALL_ENABLE_OFF, ENABLE4_ON, ALL_ENABLE_OFF, ENABLE5_ON, ALL_ENABLE_OFF,
 
         };
 

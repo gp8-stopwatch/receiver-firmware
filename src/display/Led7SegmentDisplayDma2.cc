@@ -124,9 +124,9 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
         /*--------------------------------------------------------------------------*/
 
-        if (HAL_TIM_Base_Start (&htim) != HAL_OK) {
-                Error_Handler ();
-        }
+        // if (HAL_TIM_Base_Start (&htim) != HAL_OK) {
+        //         Error_Handler ();
+        // }
 
         /*--------------------------------------------------------------------------*/
         /* Segment timer & DMA. This drives single segments.                        */
@@ -138,7 +138,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
          */
         htim.Instance = TIM16;
         htim.Init.Prescaler = PRESCALER - 1;
-        htim.Init.Period = PERIOD * MAX_BRIGHTNESS - 1; // Period is 4 times longer, so timer is 4 times slower than TIM15.
+        htim.Init.Period = PERIOD * 2 - 1; // Period is 2 times longer, so timer is 2 times slower than TIM15.
         __HAL_RCC_TIM16_CLK_ENABLE ();
         dmaHandle.Instance = DMA1_Channel3;
         __HAL_LINKDMA (&htim, hdma[TIM_DMA_ID_UPDATE], dmaHandle);
@@ -172,20 +172,24 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
         /*--------------------------------------------------------------------------*/
 
-        // TIM_OC_InitTypeDef sConfig{};
-        sConfig.OCMode = TIM_OCMODE_PWM1;
-        sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
-        sConfig.OCFastMode = TIM_OCFAST_DISABLE;
-        sConfig.OCNPolarity = TIM_OCNPOLARITY_HIGH;
-        sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-        sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
-        sConfig.Pulse = PERIOD * MAX_BRIGHTNESS - 1; // The same as ARR, so the OC1 event is generated simultaneously with UP event.
+        // // TIM_OC_InitTypeDef sConfig{};
+        // sConfig.OCMode = TIM_OCMODE_PWM1;
+        // sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+        // sConfig.OCFastMode = TIM_OCFAST_DISABLE;
+        // sConfig.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+        // sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+        // sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
+        // sConfig.Pulse = PERIOD * MAX_BRIGHTNESS - 1; // The same as ARR, so the OC1 event is generated simultaneously with UP event.
 
-        if (HAL_TIM_PWM_ConfigChannel (&htim, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
-                Error_Handler ();
-        }
+        // if (HAL_TIM_PWM_ConfigChannel (&htim, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
+        //         Error_Handler ();
+        // }
 
-        if (HAL_TIM_PWM_Start (&htim, TIM_CHANNEL_1) != HAL_OK) {
+        // if (HAL_TIM_PWM_Start (&htim, TIM_CHANNEL_1) != HAL_OK) {
+        //         Error_Handler ();
+        // }
+
+        if (HAL_TIM_Base_Start (&htim) != HAL_OK) {
                 Error_Handler ();
         }
 
@@ -375,22 +379,22 @@ void Led7SegmentDisplayDma::setResolution (Resolution res)
 void Led7SegmentDisplayDma::setBrightness (uint8_t b)
 {
         brightness = std::min<uint8_t> (MAX_BRIGHTNESS, b);
-        const auto MODULO_OFFSET = enableBuffer.size () - 1;
+        // const auto MODULO_OFFSET = enableBuffer.size () - 1;
 
-        for (int i = 0; i < DISPLAY_NUM; ++i) {
-                int j = i * MAX_BRIGHTNESS;
+        // for (int i = 0; i < DISPLAY_NUM; ++i) {
+        //         int j = i * MAX_BRIGHTNESS;
 
-                int k{};
-                for (; k < brightness; ++k) {
-                        auto idx = (j + k + MODULO_OFFSET) % enableBuffer.size ();
-                        enableBuffer.at (idx) = ENABLE_MASKS.at (i);
-                }
+        //         int k{};
+        //         for (; k < brightness; ++k) {
+        //                 auto idx = (j + k + MODULO_OFFSET) % enableBuffer.size ();
+        //                 enableBuffer.at (idx) = ENABLE_MASKS.at (i);
+        //         }
 
-                for (int l = k; l < MAX_BRIGHTNESS; ++l) {
-                        auto idx = (j + l + MODULO_OFFSET) % enableBuffer.size ();
-                        enableBuffer.at (idx) = ALL_ENABLE_OFF;
-                }
-        }
+        //         for (int l = k; l < MAX_BRIGHTNESS; ++l) {
+        //                 auto idx = (j + l + MODULO_OFFSET) % enableBuffer.size ();
+        //                 enableBuffer.at (idx) = ALL_ENABLE_OFF;
+        //         }
+        // }
 }
 
 /****************************************************************************/
