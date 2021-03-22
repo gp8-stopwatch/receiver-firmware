@@ -93,7 +93,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         sConfig.OCNPolarity = TIM_OCNPOLARITY_HIGH;
         sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
         sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
-        sConfig.Pulse = PERIOD - 1;
+        sConfig.Pulse = PERIOD / 2 - 1;
 
         if (HAL_TIM_PWM_ConfigChannel (&htim, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
                 Error_Handler ();
@@ -112,15 +112,15 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
          * TIM16/17 can be uysed as a trigger for TIM15. This is why I'm configuguring
          * the OC channel 1 below.
          */
-        TIM_SlaveConfigTypeDef sSlaveConfig{};
-        sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
-        sSlaveConfig.InputTrigger = TIM_TS_ITR2; // Table 71.
-        sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
-        sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1;
+        // TIM_SlaveConfigTypeDef sSlaveConfig{};
+        // sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
+        // sSlaveConfig.InputTrigger = TIM_TS_ITR2; // Table 71.
+        // sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+        // sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1;
 
-        if (HAL_TIM_SlaveConfigSynchro (&htim, &sSlaveConfig) != HAL_OK) {
-                Error_Handler ();
-        }
+        // if (HAL_TIM_SlaveConfigSynchro (&htim, &sSlaveConfig) != HAL_OK) {
+        //         Error_Handler ();
+        // }
 
         /*--------------------------------------------------------------------------*/
 
@@ -162,13 +162,13 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
         /*--------------------------------------------------------------------------*/
 
-        TIM_MasterConfigTypeDef sMasterConfig{};
-        sMasterConfig.MasterOutputTrigger = TIM_TRGO_OC1; // I think that this has no effect
-        sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
+        // TIM_MasterConfigTypeDef sMasterConfig{};
+        // sMasterConfig.MasterOutputTrigger = TIM_TRGO_OC1; // I think that this has no effect
+        // sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
 
-        if (HAL_TIMEx_MasterConfigSynchronization (&htim, &sMasterConfig) != HAL_OK) {
-                Error_Handler ();
-        }
+        // if (HAL_TIMEx_MasterConfigSynchronization (&htim, &sMasterConfig) != HAL_OK) {
+        //         Error_Handler ();
+        // }
 
         /*--------------------------------------------------------------------------*/
 
