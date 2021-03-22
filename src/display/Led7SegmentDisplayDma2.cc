@@ -11,11 +11,6 @@
 #include "StopWatch.h"
 #include <array>
 
-constexpr uint16_t PRESCALER = 480;
-constexpr uint16_t PERIOD = 50;
-// constexpr uint16_t FPS = 90;
-// constexpr uint16_t PERIOD = 1000000 / FPS / 6 / 4;
-
 /****************************************************************************/
 
 uint16_t flipFont (uint16_t font)
