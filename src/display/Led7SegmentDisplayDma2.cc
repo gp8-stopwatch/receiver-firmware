@@ -34,7 +34,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         htim.Instance = TIM1;
         htim.Init.Prescaler = PRESCALER - 1;
         htim.Init.Period = PERIOD - 1;
-        htim.Init.CounterMode = TIM_COUNTERMODE_UP;
+        htim.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
         htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
         htim.Init.RepetitionCounter = 0;
         htim.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -89,7 +89,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
         sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
         // sConfig.Pulse = PERIOD / 2 - 1;
-        sConfig.Pulse = 2;
+        sConfig.Pulse = 25;
 
         if (HAL_TIM_PWM_ConfigChannel (&htim, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
                 Error_Handler ();
@@ -134,7 +134,8 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
          */
         htim.Instance = TIM16;
         htim.Init.Prescaler = PRESCALER - 1;
-        htim.Init.Period = PERIOD * 2 - 1;
+        // htim.Init.Period = PERIOD * 2 - 1;
+        htim.Init.Period = 98 - 1;
         // htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV2; // Period is 2 times longer, so timer is 2 times slower than TIM1.
 
         __HAL_RCC_TIM16_CLK_ENABLE ();
@@ -213,7 +214,8 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
          */
         TIM1->CNT = 0;
         // TIM16->CNT = PERIOD * MAX_BRIGHTNESS / 2 - 1;
-        TIM16->CNT = PERIOD - 1; // TODO This might be wrong
+        // TIM16->CNT = PERIOD - 1; // TODO This might be wrong
+        TIM16->CNT = 0;
 }
 
 /*****************************************************************************/
