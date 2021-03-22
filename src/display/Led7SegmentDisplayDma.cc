@@ -13,6 +13,8 @@
 
 constexpr uint16_t PRESCALER = 480;
 constexpr uint16_t PERIOD = 50;
+// constexpr uint16_t FPS = 90;
+// constexpr uint16_t PERIOD = 1000000 / FPS / 6 / 4;
 
 /****************************************************************************/
 
@@ -26,7 +28,7 @@ uint16_t flipFont (uint16_t font)
 Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 {
         // This method fils in the two buffers which would got transferred by the DMA later on.
-        setBrightness (4);
+        setBrightness (1);
 
         /*--------------------------------------------------------------------------*/
         /* Enable (common pin) timer & DMA. This enables individual displays.       */

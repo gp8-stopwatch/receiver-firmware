@@ -8,6 +8,7 @@
 
 #include "../Detector.h"
 #include "catch.hpp"
+#include <iostream>
 #include <vector>
 
 struct DetectorEvent {
@@ -89,6 +90,29 @@ TEST_CASE ("Edge cases", "[detector]")
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();
+
+        // SECTION ("Zupełnie co innego")
+        // {
+        //         std::string alStr = "std1\nstd2\nstd8\nrandA\nrandB\n";
+
+        //         size_t beg{};
+        //         size_t end{};
+        //         int i{};
+        //         while ((end = alStr.find ("\n", beg)) != std::string::npos && beg < alStr.size ()) {
+        //                 // INFO (i++ * 12);
+        //                 auto p = alStr.substr (beg, end - beg).c_str ();
+        //                 std::cerr << i++ * 12 << ", " << p << std::endl;
+        //                 // display.drawStr (12, i++ * 12, );
+        //                 beg = end + 1;
+        //         }
+        // }
+
+        // while ((end = alStr.find ("\n", beg)) != string::npos && beg < alStr.size ()) {
+        // auto slice = alStr.substr (beg, end - beg);
+        // Serial.println (slice.c_str ());
+        // display.drawStr (14, i++ * 12, slice.c_str ());
+        // beg = end + 1;
+        // }
 
         SECTION ("Simplest case 2 edges")
         {

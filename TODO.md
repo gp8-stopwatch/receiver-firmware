@@ -28,7 +28,7 @@
 * [ ] lvds pulses (on the output of the transceiver) are 10ms longer. Is 22ms, should be 12. Maybe it's nothing, but curious why.
 * [x] I have LVDS, I can lower the CAN bus bitrate
   * [x] I can lower the CAN bus IRQ priority. It still has 1, and a comment that it is low, when in fact it isn't. Dunno why. Lowered to 3.
-* [ ] Do not disable IRQs in InfraRedExti 
+* [ ] ~~Do not disable IRQs in InfraRedExti~~ EDIT : critical section is necessary.
 * [x] After resetting the main (regulrar) stopwatch, connected micro can send a stop or loop signal which instantenously shows a result on the screen, even though there were no counting on the screen. This first result should be ignored. EDIT it is, because FastStateMachine is in ready state, and then it ransitions to the Loop state.
 * [x] Legacy mode for Piotr.
 * [x] 22:09,495 shows as 22 09 49 on the screen. Piotr. Possible that he failed to upgrade to the newest. EDIT : cannot reproduce.
@@ -230,7 +230,7 @@ Solved. The problem was due to lack of USBD_CDC_ReceivePacket calls. So it seems
 * [x] ~~Reduce holes for CAN socket supports (thise 2 plastic one sticking out)~~ The case is holding the socket in place. Too much effort.
 * [x] Ldo for RTC should be 3v3 not 1v8. Voltage difference would be smaller.
 * [x] Przetestować RTC z tym małym LDO.
-* [x] Battery protection in software (for overdischarge)
+* [x] Battery protection in software (for overdischarge)  EDIT : **6.4mA in standby mode (a lot)**!
   * [x] When powered off no software is running. What is the current draw of ldo plus rtc? 0.5µA (includeing RTC + low Q LDO)
   * [x] Measure what all elements except the µC and LEDs are drawing, and whether we should optimize this, or leave alone.
   * [x] When powered on, simply go to sleep, calculate current, maybe modify HW so it draws less quiescent current.
