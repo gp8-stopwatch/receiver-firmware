@@ -67,9 +67,10 @@ private:
 
         static constexpr int DISPLAY_NUM = 6;
 
-        static constexpr uint16_t PRESCALER = 48;                           // CLK = 48 MHz / PRESCALER
-        static constexpr uint16_t FPS = 90;                                 // All 6 displays refreshed in sequence during one frame
-        static constexpr uint16_t PERIOD = 1000000 / FPS / DISPLAY_NUM / 2; // TODO Flickering on the slow-mo can be seen.
+        static constexpr uint16_t PRESCALER = 480; // CLK = 48 MHz / PRESCALER
+        // static constexpr uint16_t FPS = 90;                                 // All 6 displays refreshed in sequence during one frame
+        // static constexpr uint16_t PERIOD = 1000000 / FPS / DISPLAY_NUM / 2; // TODO Flickering on the slow-mo can be seen.
+        static constexpr uint16_t PERIOD = 50;
 
         uint8_t dots = 0;
         // uint8_t currentDigit = 0;

@@ -31,7 +31,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
         TIM_HandleTypeDef htim{};
 
-        htim.Instance = TIM15;
+        htim.Instance = TIM1;
         htim.Init.Prescaler = PRESCALER - 1;
         htim.Init.Period = PERIOD - 1;
         htim.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -39,7 +39,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         htim.Init.RepetitionCounter = 0;
         htim.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 
-        __HAL_RCC_TIM15_CLK_ENABLE ();
+        __HAL_RCC_TIM1_CLK_ENABLE ();
         __HAL_RCC_DMA1_CLK_ENABLE ();
 
         DMA_HandleTypeDef dmaHandle{};
@@ -51,7 +51,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         dmaHandle.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
         dmaHandle.Init.Mode = DMA_CIRCULAR;
         dmaHandle.Init.Priority = DMA_PRIORITY_HIGH;
-        dmaHandle.Instance = DMA1_Channel5;
+        dmaHandle.Instance = DMA1_Channel2;
 
         __HAL_LINKDMA (&htim, hdma[TIM_DMA_ID_CC1], dmaHandle);
 
@@ -69,7 +69,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
          * of this buffer is for clearing, and less signifficat 16 bits are for setting.
          *
          * Enable buffer is 4 (MAX_BRIGHTNESS) times bigger than the displayBuffer (which has only 6 elements).
-         * This is why TIM15 has to update 4 times faster. This is for brightness setting impl.
+         * This is why TIM1 has to update 4 times faster. This is for brightness setting impl.
          */
         if (HAL_DMA_Start (&dmaHandle, reinterpret_cast<uint32_t> (enableBuffer.data ()), reinterpret_cast<uint32_t> (&GPIOB->BSRR),
                            enableBuffer.size ())
@@ -88,7 +88,8 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         sConfig.OCNPolarity = TIM_OCNPOLARITY_HIGH;
         sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
         sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
-        sConfig.Pulse = PERIOD / 2 - 1;
+        // sConfig.Pulse = PERIOD / 2 - 1;
+        sConfig.Pulse = 2;
 
         if (HAL_TIM_PWM_ConfigChannel (&htim, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
                 Error_Handler ();
@@ -133,7 +134,9 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
          */
         htim.Instance = TIM16;
         htim.Init.Prescaler = PRESCALER - 1;
-        htim.Init.Period = PERIOD * 2 - 1; // Period is 2 times longer, so timer is 2 times slower than TIM15.
+        htim.Init.Period = PERIOD * 2 - 1;
+        // htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV2; // Period is 2 times longer, so timer is 2 times slower than TIM1.
+
         __HAL_RCC_TIM16_CLK_ENABLE ();
         dmaHandle.Instance = DMA1_Channel3;
         __HAL_LINKDMA (&htim, hdma[TIM_DMA_ID_UPDATE], dmaHandle);
@@ -143,7 +146,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         }
 
         // PWM because of this OC channel used as described above.
-        if (HAL_TIM_PWM_Init (&htim) != HAL_OK) {
+        if (HAL_TIM_Base_Init (&htim) != HAL_OK) {
                 Error_Handler ();
         }
 
@@ -194,22 +197,23 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
          * EDIT: This description may be inaccurate, since I changed the configuration
          * a little bit after writing it, but the general idea still holds.
          *
-         * This "resynchronization" step makes TIM15 start 1 OC1 event after the TIM16,
+         * This "resynchronization" step makes TIM1 start 1 OC1 event after the TIM16,
          * and the number (text) displayed is shifted 1 place to the left. Without this
          * it would have been shifted 2 places to the left. The order of events is as
          * follows:
-         * - TIM15 (slave) and TIM16 (master) start. TIM15 has CNT == 0, and TIM16 has CNT == 99
+         * - TIM1 (slave) and TIM16 (master) start. TIM1 has CNT == 0, and TIM16 has CNT == 99
          * (see below).
          * - After 100 ticks TIM16 generates UP and OC events (at the same time) and thus:
          *   - DMA request is generated and the first "enable" pin is set.
-         *   - TIM15->CNT is again reset to 0.
+         *   - TIM1->CNT is again reset to 0.
          * - After another 200 ticks BOTH TIM16 and TIM16 generate UP event and thus, additionaly
-         * to what happened durung previus cycle, TIM15 generates UP event and DMA request, and
+         * to what happened durung previus cycle, TIM1 generates UP event and DMA request, and
          * this triggers the DMA transfer of the first element in the displayBuffer. This is why
          * the text is shifted on the display.
          */
-        TIM15->CNT = 0;
-        TIM16->CNT = PERIOD * MAX_BRIGHTNESS / 2 - 1;
+        TIM1->CNT = 0;
+        // TIM16->CNT = PERIOD * MAX_BRIGHTNESS / 2 - 1;
+        TIM16->CNT = PERIOD - 1; // TODO This might be wrong
 }
 
 /*****************************************************************************/
@@ -367,7 +371,7 @@ void Led7SegmentDisplayDma::setResolution (Resolution res)
  * ...                 ...                ...                ...
  *
  * The table above gives the general idea, but due to synchronization issues
- * (synchr. between TIM15 and TIM16) the sequence is a little bit shifted (modulo 24).
+ * (synchr. between TIM1 and TIM16) the sequence is a little bit shifted (modulo 24).
  * True sequence can be seen in the enableBuffer initialization, but the duty
  * cycle idea is the same.
  */
