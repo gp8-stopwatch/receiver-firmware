@@ -38,6 +38,7 @@ public:
                 minTriggerEventMs = DEFAULT_MIN_TRIGGER_EVENT_MS;
                 noiseLevelHigh = DEFAULT_NOISE_LEVEL_HIGH;
                 noiseLevelLow = DEFAULT_NOISE_LEVEL_LOW;
+                fps = DEFAULT_FPS;
         }
 #endif
 
@@ -83,6 +84,9 @@ public:
         uint8_t getNoiseLevelLow () const { return noiseLevelLow; }
         void setNoiseLevelLow (uint8_t i);
 
+        uint16_t getFps () const { return fps; }
+        void setFps (uint16_t i);
+
 private:
         Resolution resolution : 2;
         Brightness brightness : 3;
@@ -98,6 +102,7 @@ private:
 
         uint16_t blindTime;
         uint16_t minTriggerEventMs;
+        uint16_t fps;
         uint8_t noiseLevelHigh; // This number or more to report noise condition
         uint8_t noiseLevelLow;  // Less than this number to restore normal operation
 };
@@ -106,7 +111,7 @@ extern bool &changed ();
 
 // static_assert (sizeof (Config) == 4);
 #ifndef UNIT_TEST
-static_assert (sizeof (Config) == 10);
+static_assert (sizeof (Config) == 12);
 #endif
 
 } // namespace cfg

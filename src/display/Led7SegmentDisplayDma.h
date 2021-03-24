@@ -72,10 +72,8 @@ private:
         friend void DMA1_Channel2_3_IRQHandler ();
 
         static constexpr int DISPLAY_NUM = 6;
-
-        static constexpr uint16_t DEFAULT_FPS = 45; // All 6 displays refreshed in sequence during one frame
         static constexpr uint16_t calculatePeriod (uint32_t fps) { return 1000000 / (fps * 24); } // TODO why 24 instead of 12?
-        static constexpr uint16_t PRESCALER = 48;
+        static constexpr uint16_t PRESCALER = 48;                                                 // CPU runs @ 48MHz
 
         uint8_t dots = 0;
 
@@ -83,6 +81,11 @@ private:
         static constexpr uint8_t MAX_BRIGHTNESS = 4;
         uint8_t brightness{};
         uint8_t prevBrightness{};
+        std::array<uint16_t, MAX_BRIGHTNESS> brightnessLookup{};
+
+        void doFps (unsigned int fps);
+        uint16_t fps{};
+        uint16_t prevFps{};
 
         bool flip = false;
         Resolution resolution{};

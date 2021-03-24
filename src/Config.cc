@@ -38,6 +38,7 @@ void Config::restoreDefaults ()
         setMinTriggerEventMs (def (minTriggerEventMs, DEFAULT_MIN_TRIGGER_EVENT_MS));
         setNoiseLevelHigh (def (noiseLevelHigh, DEFAULT_NOISE_LEVEL_HIGH));
         setNoiseLevelLow (def (noiseLevelLow, DEFAULT_NOISE_LEVEL_LOW));
+        setFps (def (fps, DEFAULT_FPS));
 }
 
 /****************************************************************************/
@@ -72,5 +73,13 @@ void Config::setMinTriggerEventMs (uint16_t i)
 
 void Config::setNoiseLevelHigh (uint8_t i) { noiseLevelHigh = std::min<uint8_t> (i, MAX_NOISE_LEVEL); }
 void Config::setNoiseLevelLow (uint8_t i) { noiseLevelLow = std::min<uint8_t> (i, MAX_NOISE_LEVEL); }
+
+/****************************************************************************/
+
+void Config::setFps (uint16_t i)
+{
+        fps = trim (i);
+        fps = std::max<uint16_t> (i, MINIMUM_FPS);
+}
 
 } // namespace cfg

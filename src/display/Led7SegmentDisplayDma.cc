@@ -129,8 +129,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
         sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
         // sConfig.Pulse = PERIOD / 2 - 1;
-        sConfig.Pulse = 3; // <- this controlls the brightness. Low value means high intensity. Correct value is 1-48 when PERIOD is 50 and
-                           // PRESCALER 480.
+        sConfig.Pulse = 3; // <- this controls the brightness. Low value means high intensity.
 
         if (HAL_TIM_PWM_ConfigChannel (&htim, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
                 Error_Handler ();
@@ -189,8 +188,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
                 Error_Handler ();
         }
 
-        // TIM1->CNT = 0;
-        // TIM15->CNT = 0;
+        doFps (DEFAULT_FPS);
 
         instance = this;
         HAL_NVIC_SetPriority (DMA1_Channel2_3_IRQn, 3, 0);
@@ -206,17 +204,13 @@ extern "C" void DMA1_Channel2_3_IRQHandler ()
 
         if (instance->brightness != instance->prevBrightness) {
                 instance->prevBrightness = instance->brightness;
-                // constexpr std::array<uint8_t, Led7SegmentDisplayDma::MAX_BRIGHTNESS> brightnessLookup = {48, 33, 18, 3};
-
-                constexpr auto cp = Led7SegmentDisplayDma::calculatePeriod (Led7SegmentDisplayDma::DEFAULT_FPS);
-                constexpr auto minB = cp - 2;
-                constexpr auto maxB = 3;
-                constexpr auto step = (minB - maxB) / (Led7SegmentDisplayDma::MAX_BRIGHTNESS - 1);
-                constexpr std::array<uint16_t, Led7SegmentDisplayDma::MAX_BRIGHTNESS> brightnessLookup
-                        = {minB, maxB + 2 * step, maxB + step, maxB};
-
-                TIM1->CCR1 = brightnessLookup.at (instance->brightness - 1);
+                TIM1->CCR1 = instance->brightnessLookup.at (instance->brightness - 1);
         }
+
+        // if (instance->fps != instance->prevFps) {
+        //         instance->prevFps = instance->fps;
+        //         // instance->doFps (instance->fps);
+        // }
 }
 
 /*****************************************************************************/
@@ -362,10 +356,32 @@ void Led7SegmentDisplayDma::setBrightness (uint8_t b)
 
 /****************************************************************************/
 
-void Led7SegmentDisplayDma::setFps (unsigned int fps)
+void Led7SegmentDisplayDma::setFps (unsigned int fps) { this->fps = fps; }
+
+void Led7SegmentDisplayDma::doFps (unsigned int fps)
 {
         // TIM1->PSC = calculatePrescaler (fps);
         // TIM15->PSC = calculatePrescaler (fps);
+
+        auto newPeriod = calculatePeriod (fps);
+        // __disable_irq ();
+        TIM1->ARR = newPeriod;
+        TIM15->ARR = newPeriod * 2 - 1;
+
+        // constexpr std::array<uint8_t, Led7SegmentDisplayDma::MAX_BRIGHTNESS> brightnessLookup = {48, 33, 18, 3};
+
+        auto cp = newPeriod; // 30 fps -> 1388
+        auto minB = cp - 2;  // 1386
+        auto maxB = 3;
+        auto step = (minB - maxB) / Led7SegmentDisplayDma::MAX_BRIGHTNESS; // 1383 / 4 == 345
+
+        // TODO assumes that MAX_BRIGHTNESS equals 4.
+        brightnessLookup.at (3) = maxB;            // 3
+        brightnessLookup.at (2) = maxB + 2 * step; // 693
+        brightnessLookup.at (1) = maxB + 3 * step; // 1038
+        brightnessLookup.at (0) = maxB + 4 * step; // 1383
+
+        // __enable_irq ();
 }
 
 /****************************************************************************/

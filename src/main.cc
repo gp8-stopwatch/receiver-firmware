@@ -38,6 +38,7 @@ int main ()
         // Refresh stopwatch state to reflect the config.
         auto refreshSettings = [&] {
                 getDisplay ().setFlip (getConfig ().isFlip ());
+                getDisplay ().setFps (getConfig ().getFps ());
 
                 auto br = getConfig ().getBrightness ();
 

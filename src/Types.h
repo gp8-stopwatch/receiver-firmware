@@ -90,6 +90,8 @@ static constexpr int LOOP_DISPLAY_TIMEOUT = DEFAULT_BLIND_TIME_MS - 1000;
 static constexpr uint8_t DEFAULT_NOISE_LEVEL_HIGH = 3;
 static constexpr uint8_t DEFAULT_NOISE_LEVEL_LOW = 1;
 static constexpr uint8_t MAX_NOISE_LEVEL = 15;
+static constexpr uint16_t DEFAULT_FPS = 30;
+static constexpr uint16_t MINIMUM_FPS = 20;
 
 #ifndef UNIT_TEST
 const etl::function_fv<__disable_irq> lock{};

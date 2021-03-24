@@ -67,14 +67,13 @@ auto &getCli ()
                                  readConfigFromFlash ();
                                  getConfig ().restoreDefaults ();
                                  refreshAll ();
-                                 // HAL_NVIC_SystemReset (); // TODO uncoment and test
+                                 //  HAL_NVIC_SystemReset (); // TODO does not work
                          }),
                 cl::cmd (String ("help"),
                          [] {
                                  usbWrite ("result, resultMs, last, lastMs, date, isCounting, reset, clear, factory, help, battery, "
-                                           "getFlip, "
-                                           "setFlip, getIr, setIr, getSn, "
-                                           "setSn, getRes, setRes, getAuto, setAuto, getBright, setBright, periph, getBlind, setBlind\r\n\r\n");
+                                           "getFlip, setFlip, getIr, setIr, getSn, setSn, getRes, setRes, getAuto, setAuto, getBright, "
+                                           "setBright, periph, setFps, getFps, getBlind, setBlind\r\n\r\n");
                          }),
                 cl::cmd (String ("battery"),
                          [] {
@@ -215,6 +214,24 @@ auto &getCli ()
                                          usbWrite (buf.cbegin ());
                                  }
 
+                                 usbWrite ("\r\n\r\n");
+                         }),
+
+                cl::cmd (String ("setFps"),
+                         [&] (String const &arg) {
+                                 int i = std::atoi (arg.c_str ());
+
+                                 if (i < MINIMUM_FPS || i > std::numeric_limits<uint16_t>::max () - 1) {
+                                         usbWrite ("Correct values are [20, 65534]\r\n\r\n"); // TODO minimum FPS is assumed to be 20
+                                         return;
+                                 }
+
+                                 getConfig ().setFps (i);
+                                 refreshAll ();
+                         }),
+                cl::cmd (String ("getFps"),
+                         [] {
+                                 print ((unsigned)getConfig ().getFps ());
                                  usbWrite ("\r\n\r\n");
                          }),
 
