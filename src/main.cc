@@ -75,8 +75,9 @@ int main ()
                 // getBeam ().run ();
                 getIrDetector ().run (getStopWatch ().getTime ());
 
+#ifdef WITH_USB
                 usbcli::run ();
-
+#endif
                 if (displayTimer.isExpired ()) {
 
                         /*

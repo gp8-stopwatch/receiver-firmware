@@ -58,6 +58,8 @@ public:
 
         void setResolution (Resolution res) override;
 
+        void setFps (unsigned int fps) override;
+
 private:
 #ifdef COMMON_ANODE
         static constexpr bool CA = true;
@@ -67,14 +69,14 @@ private:
 
         static constexpr int DISPLAY_NUM = 6;
 
-        static constexpr uint16_t PRESCALER = 480; // CLK = 48 MHz / PRESCALER
-        // static constexpr uint16_t FPS = 90;                                 // All 6 displays refreshed in sequence during one frame
-        // static constexpr uint16_t PERIOD = 1000000 / FPS / DISPLAY_NUM / 2; // TODO Flickering on the slow-mo can be seen.
+        static constexpr uint16_t FPS = 30; // All 6 displays refreshed in sequence during one frame
         static constexpr uint16_t PERIOD = 50;
+        static constexpr uint16_t calculatePrescaler (uint16_t fps) { return 48000000 / (PERIOD * DISPLAY_NUM * 4 * fps); }
 
         uint8_t dots = 0;
         // uint8_t currentDigit = 0;
 
+        static constexpr uint8_t MIN_BRIGHTNESS = 1;
         static constexpr uint8_t MAX_BRIGHTNESS = 4;
         uint8_t brightness{};
         // uint8_t brightnessCycle = 0;
@@ -125,8 +127,8 @@ private:
         // };
 
         std::array<uint32_t, DISPLAY_NUM * 2> enableBuffer{
-                ENABLE0_ON, ALL_ENABLE_OFF, ENABLE1_ON, ALL_ENABLE_OFF, ENABLE2_ON, ALL_ENABLE_OFF,
-                ENABLE3_ON, ALL_ENABLE_OFF, ENABLE4_ON, ALL_ENABLE_OFF, ENABLE5_ON, ALL_ENABLE_OFF,
+                ENABLE5_ON, ALL_ENABLE_OFF, ENABLE0_ON, ALL_ENABLE_OFF, ENABLE1_ON, ALL_ENABLE_OFF,
+                ENABLE2_ON, ALL_ENABLE_OFF, ENABLE3_ON, ALL_ENABLE_OFF, ENABLE4_ON, ALL_ENABLE_OFF,
 
         };
 

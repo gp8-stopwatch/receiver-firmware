@@ -46,6 +46,8 @@ struct IDisplay {
         virtual void setFlip (bool b) = 0;
 
         virtual void setResolution (Resolution res) = 0;
+
+        virtual void setFps (unsigned int fps) = 0;
 };
 
 /**

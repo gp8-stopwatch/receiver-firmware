@@ -33,7 +33,7 @@ set(WITH_TEST_TRIGGER_MOD_2 OFF CACHE BOOL "When ON test trigger is deaf every s
 set(FLASH_QUEUE_SIZE 4 CACHE STRING "Results are stored into protected queue from an ISR. This is the size of this queue.")
 set(WITH_RTC ON CACHE BOOL "Complie RTC support")
 # Warning! Turn on!
-set(WITH_POWER_MANAGER OFF CACHE BOOL "Complie power sensing support") 
+set(WITH_POWER_MANAGER ON CACHE BOOL "Complie power sensing support") 
 set(WITH_CHECK_SENSOR_STATUS ON CACHE BOOL "If on, the device checks for external sensors and queries their state")
 set(WITH_BUTTON ON CACHE BOOL "Compile button support")
 set(PLATFORM_REGULAR ON CACHE BOOL "")
@@ -52,7 +52,7 @@ set(PLATFORM_REGULAR ON CACHE BOOL "")
 # set(WITH_RTC OFF CACHE BOOL "Complie RTC support")
 # set(WITH_POWER_MANAGER OFF CACHE BOOL "Complie power sensing support")
 # set(WITH_CHECK_SENSOR_STATUS OFF CACHE BOOL "If on, the device checks for external sensors and queries their state")
-# set(WITH_BUTTON ON CACHE BOOL "Compile button support")
+# set(WITH_BUTTON OFF CACHE BOOL "Compile button support")
 # set(PLATFORM_MICRO ON CACHE BOOL "")
 
 # Huge display without built in receiver
@@ -154,7 +154,6 @@ IF (DEFINED DEVICE)
         "src/Config.cc"
         "src/Container.cc"
         "src/DisplayMenu.cc"
-        "src/UsbCli.cc"
 
         "${LIB_MICRO_ROOT}/src/ErrorHandler.c"
         "${LIB_MICRO_ROOT}/src/TimerF.cc"
@@ -196,8 +195,7 @@ IF (DEFINED DEVICE)
     IF (WITH_DISPLAY)
         LIST (APPEND SOURCES 
         "${LIB_MICRO_ROOT}/src/HardwareTimer.cc"
-        "src/display/Led7SegmentDisplayDma2.cc"
-        # "src/display/Led7SegmentDisplay.cc"
+        "src/display/Led7SegmentDisplayDma.cc"
         )
     ENDIF ()
 
@@ -211,6 +209,8 @@ IF (DEFINED DEVICE)
         "src/usb/usbd_desc.c"
         "src/usb/usbd_ioreq.c"
         "src/usb/UsbHelpers.cc"
+        
+        "src/UsbCli.cc"
         )        
     ENDIF ()
 

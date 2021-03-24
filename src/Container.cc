@@ -119,20 +119,16 @@ CanProtocol &getProtocol ()
 
 Rtc &getRtc ()
 {
-#ifdef WITH_RTC
         static Rtc rtc;
         return rtc;
-#endif
 }
 
 /****************************************************************************/
 
 History &getHistory ()
 {
-#ifdef WITH_HISTORY
         static History history{getRtc ()};
         return history;
-#endif
 }
 
 /****************************************************************************/
@@ -206,14 +202,14 @@ EdgeFilter &getExtDetector ()
 
 /****************************************************************************/
 
+#ifdef WITH_BUTTON
 Button &getButton ()
 {
-#ifdef WITH_BUTTON
         static Gpio buttonPin (GPIOB, GPIO_PIN_15, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL);
         static Button button (buttonPin);
         return button;
-#endif
 }
+#endif
 
 /****************************************************************************/
 
@@ -335,6 +331,7 @@ void init ()
         /*+-------------------------------------------------------------------------+*/
 
         getHistory ();
+#ifdef WITH_FLASH
         static FlashEepromStorage<2048, 4> hiScoreStorage (4, 1, size_t (&_hiscore_storage_address));
         hiScoreStorage.init ();
         getHistory ().setHiScoreStorage (&hiScoreStorage);
@@ -342,6 +339,7 @@ void init ()
         static FlashEepromStorage<2048, 4> historyStorage (12, 2, size_t (&_history_storage_address));
         historyStorage.init ();
         getHistory ().setHistoryStorage (&historyStorage);
+#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| Backlight, beeper                                                       |*/
@@ -408,8 +406,10 @@ void init ()
         /*| Button                                                                  |*/
         /*+-------------------------------------------------------------------------+*/
 
+#ifdef WITH_BUTTON
         HAL_NVIC_SetPriority (BUTTON_IRQn, BUTTON_EXTI_PRIORITY, 0);
         HAL_NVIC_EnableIRQ (BUTTON_IRQn);
+#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| Battery, light sensor, others                                            |*/
@@ -427,7 +427,9 @@ void init ()
         /*| USB                                                                     |*/
         /*+-------------------------------------------------------------------------+*/
 
+#ifdef WITH_USB
         usbcli::init ();
+#endif
 }
 
 } // namespace container

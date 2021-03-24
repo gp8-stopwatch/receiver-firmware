@@ -16,6 +16,8 @@
 #include <storage/ICircullarQueueStorage.h>
 #include <storage/IRandomAccessStorage.h>
 
+#ifdef WITH_HISTORY
+
 class History {
 public:
         static constexpr size_t MAX_RESULTS_NUM = 64;
@@ -55,3 +57,34 @@ private:
         etl::queue_spsc_locked<Result10us, FLASH_QUEUE_SIZE, etl::memory_model::MEMORY_MODEL_SMALL> flashQueue{lock, unlock};
         Rtc &rtc;
 };
+
+#else
+
+class History {
+public:
+        static constexpr size_t MAX_RESULTS_NUM = 64;
+        explicit History (Rtc & /* r */) {}
+
+        void store (Result10us t) {}
+        void run () {}
+
+        struct Entry {
+                RTC_DateTypeDef date;
+                Time time;
+                Result10us result;
+        };
+
+        Result10us getHiScore () const { return 0; }
+        History::Entry getEntry (size_t index) const { return {}; }
+
+        void printHistory (ResultDisplayStyle ra = ResultDisplayStyle::secondFraction) const {}
+        void printLast (ResultDisplayStyle ra = ResultDisplayStyle::secondFraction) const {}
+
+        void setHistoryStorage (ICircullarQueueStorage * /* value */) {}
+        void setHiScoreStorage (IRandomAccessStorage * /* value */) {}
+
+        void clearHiScore () {}
+        void clearResults () {}
+};
+
+#endif

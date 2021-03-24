@@ -6,10 +6,15 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
-#include "ErrorHandler.h"
 #include "Led7SegmentDisplayDma.h"
+#include "ErrorHandler.h"
 #include "StopWatch.h"
 #include <array>
+
+constexpr uint16_t PRESCALER = 480;
+constexpr uint16_t PERIOD = 50;
+// constexpr uint16_t FPS = 90;
+// constexpr uint16_t PERIOD = 1000000 / FPS / 6 / 4;
 
 /****************************************************************************/
 
@@ -22,7 +27,7 @@ uint16_t flipFont (uint16_t font)
 
 Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 {
-        // This method fills in the two buffers which would got transferred by the DMA later on.
+        // This method fils in the two buffers which would got transferred by the DMA later on.
         setBrightness (1);
 
         /*--------------------------------------------------------------------------*/
@@ -31,15 +36,15 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
         TIM_HandleTypeDef htim{};
 
-        htim.Instance = TIM1;
+        htim.Instance = TIM15;
         htim.Init.Prescaler = PRESCALER - 1;
         htim.Init.Period = PERIOD - 1;
-        htim.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
+        htim.Init.CounterMode = TIM_COUNTERMODE_UP;
         htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
         htim.Init.RepetitionCounter = 0;
         htim.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 
-        __HAL_RCC_TIM1_CLK_ENABLE ();
+        __HAL_RCC_TIM15_CLK_ENABLE ();
         __HAL_RCC_DMA1_CLK_ENABLE ();
 
         DMA_HandleTypeDef dmaHandle{};
@@ -51,15 +56,15 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         dmaHandle.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
         dmaHandle.Init.Mode = DMA_CIRCULAR;
         dmaHandle.Init.Priority = DMA_PRIORITY_HIGH;
-        dmaHandle.Instance = DMA1_Channel2;
+        dmaHandle.Instance = DMA1_Channel5;
 
-        __HAL_LINKDMA (&htim, hdma[TIM_DMA_ID_CC1], dmaHandle);
+        __HAL_LINKDMA (&htim, hdma[TIM_DMA_ID_UPDATE], dmaHandle);
 
-        if (HAL_DMA_Init (htim.hdma[TIM_DMA_ID_CC1]) != HAL_OK) {
+        if (HAL_DMA_Init (htim.hdma[TIM_DMA_ID_UPDATE]) != HAL_OK) {
                 Error_Handler ();
         }
 
-        if (HAL_TIM_PWM_Init (&htim) != HAL_OK) {
+        if (HAL_TIM_Base_Init (&htim) != HAL_OK) {
                 Error_Handler ();
         }
 
@@ -69,7 +74,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
          * of this buffer is for clearing, and less signifficat 16 bits are for setting.
          *
          * Enable buffer is 4 (MAX_BRIGHTNESS) times bigger than the displayBuffer (which has only 6 elements).
-         * This is why TIM1 has to update 4 times faster. This is for brightness setting impl.
+         * This is why TIM15 has to update 4 times faster. This is for brightness setting impl.
          */
         if (HAL_DMA_Start (&dmaHandle, reinterpret_cast<uint32_t> (enableBuffer.data ()), reinterpret_cast<uint32_t> (&GPIOB->BSRR),
                            enableBuffer.size ())
@@ -77,27 +82,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
                 Error_Handler ();
         }
 
-        __HAL_TIM_ENABLE_DMA (&htim, TIM_DMA_CC1);
-
-        /*--------------------------------------------------------------------------*/
-
-        TIM_OC_InitTypeDef sConfig{};
-        sConfig.OCMode = TIM_OCMODE_PWM1;
-        sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
-        sConfig.OCFastMode = TIM_OCFAST_DISABLE;
-        sConfig.OCNPolarity = TIM_OCNPOLARITY_HIGH;
-        sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-        sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
-        // sConfig.Pulse = PERIOD / 2 - 1;
-        sConfig.Pulse = 25;
-
-        if (HAL_TIM_PWM_ConfigChannel (&htim, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
-                Error_Handler ();
-        }
-
-        if (HAL_TIM_PWM_Start (&htim, TIM_CHANNEL_1) != HAL_OK) {
-                Error_Handler ();
-        }
+        __HAL_TIM_ENABLE_DMA (&htim, TIM_DMA_UPDATE);
 
         /*--------------------------------------------------------------------------*/
 
@@ -108,21 +93,21 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
          * TIM16/17 can be uysed as a trigger for TIM15. This is why I'm configuguring
          * the OC channel 1 below.
          */
-        // TIM_SlaveConfigTypeDef sSlaveConfig{};
-        // sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
-        // sSlaveConfig.InputTrigger = TIM_TS_ITR2; // Table 71.
-        // sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
-        // sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1;
+        TIM_SlaveConfigTypeDef sSlaveConfig{};
+        sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
+        sSlaveConfig.InputTrigger = TIM_TS_ITR2; // Table 71.
+        sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+        sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1;
 
-        // if (HAL_TIM_SlaveConfigSynchro (&htim, &sSlaveConfig) != HAL_OK) {
-        //         Error_Handler ();
-        // }
+        if (HAL_TIM_SlaveConfigSynchro (&htim, &sSlaveConfig) != HAL_OK) {
+                Error_Handler ();
+        }
 
         /*--------------------------------------------------------------------------*/
 
-        // if (HAL_TIM_Base_Start (&htim) != HAL_OK) {
-        //         Error_Handler ();
-        // }
+        if (HAL_TIM_Base_Start (&htim) != HAL_OK) {
+                Error_Handler ();
+        }
 
         /*--------------------------------------------------------------------------*/
         /* Segment timer & DMA. This drives single segments.                        */
@@ -134,10 +119,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
          */
         htim.Instance = TIM16;
         htim.Init.Prescaler = PRESCALER - 1;
-        // htim.Init.Period = PERIOD * 2 - 1;
-        htim.Init.Period = 98 - 1;
-        // htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV2; // Period is 2 times longer, so timer is 2 times slower than TIM1.
-
+        htim.Init.Period = PERIOD * MAX_BRIGHTNESS - 1; // Period is 4 times longer, so timer is 4 times slower than TIM15.
         __HAL_RCC_TIM16_CLK_ENABLE ();
         dmaHandle.Instance = DMA1_Channel3;
         __HAL_LINKDMA (&htim, hdma[TIM_DMA_ID_UPDATE], dmaHandle);
@@ -147,7 +129,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         }
 
         // PWM because of this OC channel used as described above.
-        if (HAL_TIM_Base_Init (&htim) != HAL_OK) {
+        if (HAL_TIM_PWM_Init (&htim) != HAL_OK) {
                 Error_Handler ();
         }
 
@@ -161,34 +143,30 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
         /*--------------------------------------------------------------------------*/
 
-        // TIM_MasterConfigTypeDef sMasterConfig{};
-        // sMasterConfig.MasterOutputTrigger = TIM_TRGO_OC1; // I think that this has no effect
-        // sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
+        TIM_MasterConfigTypeDef sMasterConfig{};
+        sMasterConfig.MasterOutputTrigger = TIM_TRGO_OC1; // I think that this has no effect
+        sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
 
-        // if (HAL_TIMEx_MasterConfigSynchronization (&htim, &sMasterConfig) != HAL_OK) {
-        //         Error_Handler ();
-        // }
+        if (HAL_TIMEx_MasterConfigSynchronization (&htim, &sMasterConfig) != HAL_OK) {
+                Error_Handler ();
+        }
 
         /*--------------------------------------------------------------------------*/
 
-        // // TIM_OC_InitTypeDef sConfig{};
-        // sConfig.OCMode = TIM_OCMODE_PWM1;
-        // sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
-        // sConfig.OCFastMode = TIM_OCFAST_DISABLE;
-        // sConfig.OCNPolarity = TIM_OCNPOLARITY_HIGH;
-        // sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-        // sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
-        // sConfig.Pulse = PERIOD * MAX_BRIGHTNESS - 1; // The same as ARR, so the OC1 event is generated simultaneously with UP event.
+        TIM_OC_InitTypeDef sConfig{};
+        sConfig.OCMode = TIM_OCMODE_PWM1;
+        sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+        sConfig.OCFastMode = TIM_OCFAST_DISABLE;
+        sConfig.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+        sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+        sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
+        sConfig.Pulse = PERIOD * MAX_BRIGHTNESS - 1; // The same as ARR, so the OC1 event is generated simultaneously with UP event.
 
-        // if (HAL_TIM_PWM_ConfigChannel (&htim, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
-        //         Error_Handler ();
-        // }
+        if (HAL_TIM_PWM_ConfigChannel (&htim, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
+                Error_Handler ();
+        }
 
-        // if (HAL_TIM_PWM_Start (&htim, TIM_CHANNEL_1) != HAL_OK) {
-        //         Error_Handler ();
-        // }
-
-        if (HAL_TIM_Base_Start (&htim) != HAL_OK) {
+        if (HAL_TIM_PWM_Start (&htim, TIM_CHANNEL_1) != HAL_OK) {
                 Error_Handler ();
         }
 
@@ -198,24 +176,22 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
          * EDIT: This description may be inaccurate, since I changed the configuration
          * a little bit after writing it, but the general idea still holds.
          *
-         * This "resynchronization" step makes TIM1 start 1 OC1 event after the TIM16,
+         * This "resynchronization" step makes TIM15 start 1 OC1 event after the TIM16,
          * and the number (text) displayed is shifted 1 place to the left. Without this
          * it would have been shifted 2 places to the left. The order of events is as
          * follows:
-         * - TIM1 (slave) and TIM16 (master) start. TIM1 has CNT == 0, and TIM16 has CNT == 99
+         * - TIM15 (slave) and TIM16 (master) start. TIM15 has CNT == 0, and TIM16 has CNT == 99
          * (see below).
          * - After 100 ticks TIM16 generates UP and OC events (at the same time) and thus:
          *   - DMA request is generated and the first "enable" pin is set.
-         *   - TIM1->CNT is again reset to 0.
+         *   - TIM15->CNT is again reset to 0.
          * - After another 200 ticks BOTH TIM16 and TIM16 generate UP event and thus, additionaly
-         * to what happened durung previus cycle, TIM1 generates UP event and DMA request, and
+         * to what happened durung previus cycle, TIM15 generates UP event and DMA request, and
          * this triggers the DMA transfer of the first element in the displayBuffer. This is why
          * the text is shifted on the display.
          */
-        TIM1->CNT = 0;
-        // TIM16->CNT = PERIOD * MAX_BRIGHTNESS / 2 - 1;
-        // TIM16->CNT = PERIOD - 1; // TODO This might be wrong
-        TIM16->CNT = 0;
+        TIM15->CNT = 0;
+        TIM16->CNT = PERIOD * MAX_BRIGHTNESS / 2 - 1;
 }
 
 /*****************************************************************************/
@@ -373,29 +349,29 @@ void Led7SegmentDisplayDma::setResolution (Resolution res)
  * ...                 ...                ...                ...
  *
  * The table above gives the general idea, but due to synchronization issues
- * (synchr. between TIM1 and TIM16) the sequence is a little bit shifted (modulo 24).
+ * (synchr. between TIM15 and TIM16) the sequence is a little bit shifted (modulo 24).
  * True sequence can be seen in the enableBuffer initialization, but the duty
  * cycle idea is the same.
  */
 void Led7SegmentDisplayDma::setBrightness (uint8_t b)
 {
         brightness = std::min<uint8_t> (MAX_BRIGHTNESS, b);
-        // const auto MODULO_OFFSET = enableBuffer.size () - 1;
+        const auto MODULO_OFFSET = enableBuffer.size () - 1;
 
-        // for (int i = 0; i < DISPLAY_NUM; ++i) {
-        //         int j = i * MAX_BRIGHTNESS;
+        for (int i = 0; i < DISPLAY_NUM; ++i) {
+                int j = i * MAX_BRIGHTNESS;
 
-        //         int k{};
-        //         for (; k < brightness; ++k) {
-        //                 auto idx = (j + k + MODULO_OFFSET) % enableBuffer.size ();
-        //                 enableBuffer.at (idx) = ENABLE_MASKS.at (i);
-        //         }
+                int k{};
+                for (; k < brightness; ++k) {
+                        auto idx = (j + k + MODULO_OFFSET) % enableBuffer.size ();
+                        enableBuffer.at (idx) = ENABLE_MASKS.at (i);
+                }
 
-        //         for (int l = k; l < MAX_BRIGHTNESS; ++l) {
-        //                 auto idx = (j + l + MODULO_OFFSET) % enableBuffer.size ();
-        //                 enableBuffer.at (idx) = ALL_ENABLE_OFF;
-        //         }
-        // }
+                for (int l = k; l < MAX_BRIGHTNESS; ++l) {
+                        auto idx = (j + l + MODULO_OFFSET) % enableBuffer.size ();
+                        enableBuffer.at (idx) = ALL_ENABLE_OFF;
+                }
+        }
 }
 
 /****************************************************************************/

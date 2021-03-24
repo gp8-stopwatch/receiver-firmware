@@ -28,6 +28,8 @@ struct Time {
                                  This parameter can be a value of @ref RTC_AM_PM_Definitions */
 };
 
+#ifdef WITH_RTC
+
 /**
  * @brief The Rtc class
  */
@@ -53,3 +55,25 @@ private:
 
         mutable RTC_HandleTypeDef rtcHandle;
 };
+
+#else
+
+class Rtc {
+public:
+        Rtc () = default;
+        void activateWakeup (uint32_t timeUnits) {}
+        void deactivateWakeup () {}
+
+        // void setDate (MicroDate d);
+        std::pair<RTC_DateTypeDef, Time> getDate () const { return {}; }
+
+        void backupRegisterWrite (uint32_t backupRegister, uint32_t data) {}
+        uint32_t backupRegisterRead (uint32_t /* backupRegister */) const { return 0; }
+
+        enum class Set { none, hour, minute, second, year, month, day };
+
+        void timeAdd (Set set) {}
+        void dateAdd (Set set) {}
+};
+
+#endif
