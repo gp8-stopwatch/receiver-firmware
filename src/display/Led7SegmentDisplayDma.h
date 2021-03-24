@@ -73,21 +73,16 @@ private:
 
         static constexpr int DISPLAY_NUM = 6;
 
-        static constexpr uint16_t FPS = 160; // All 6 displays refreshed in sequence during one frame
-        static constexpr uint16_t PERIOD = 50;
-        // static constexpr uint16_t calculatePrescaler (uint16_t fps) { return 48000000 / (PERIOD * DISPLAY_NUM * 4 * fps); }
-
-        // static constexpr uint16_t calculatePrescaler (uint16_t fps) { return 200; }
-        static constexpr uint16_t calculatePrescaler (uint16_t fps) { return 667; } // 30
+        static constexpr uint16_t DEFAULT_FPS = 45; // All 6 displays refreshed in sequence during one frame
+        static constexpr uint16_t calculatePeriod (uint32_t fps) { return 1000000 / (fps * 24); } // TODO why 24 instead of 12?
+        static constexpr uint16_t PRESCALER = 48;
 
         uint8_t dots = 0;
-        // uint8_t currentDigit = 0;
 
         static constexpr uint8_t MIN_BRIGHTNESS = 1;
         static constexpr uint8_t MAX_BRIGHTNESS = 4;
         uint8_t brightness{};
         uint8_t prevBrightness{};
-        // uint8_t brightnessCycle = 0;
 
         bool flip = false;
         Resolution resolution{};
@@ -118,25 +113,9 @@ private:
         static constexpr uint32_t ALL_ENABLE_OFF = (1 << (ENABLE5_PIN_NUM + 16)) | (1 << (ENABLE0_PIN_NUM + 16)) | (1 << (ENABLE1_PIN_NUM + 16))
                 | (1 << (ENABLE2_PIN_NUM + 16)) | (1 << (ENABLE3_PIN_NUM + 16)) | (1 << (ENABLE4_PIN_NUM + 16));
 
-        // static constexpr std::array ENABLE_MASKS = {
-        //         ENABLE5_MASK, // enable display 5 (PB5)
-        //         ENABLE0_MASK, // enable display 0 (PB11)
-        //         ENABLE1_MASK, // enable display 1 (PB12) shifted due to timers synchronization
-        //         ENABLE2_MASK, // enable display 2 (PB13)
-        //         ENABLE3_MASK, // enable display 3 (PB10)
-        //         ENABLE4_MASK, // enable display 4 (PB2)
-        // };
-
-        // std::array<uint32_t, DISPLAY_NUM * MAX_BRIGHTNESS> enableBuffer{
-        //         ENABLE5_MASK, ENABLE5_MASK, ENABLE5_MASK, ENABLE0_MASK, ENABLE0_MASK, ENABLE0_MASK, ENABLE0_MASK, ENABLE1_MASK, ENABLE1_MASK,
-        //         ENABLE1_MASK, ENABLE1_MASK, ENABLE2_MASK, ENABLE2_MASK, ENABLE2_MASK, ENABLE2_MASK, ENABLE3_MASK, ENABLE3_MASK, ENABLE3_MASK,
-        //         ENABLE3_MASK, ENABLE4_MASK, ENABLE4_MASK, ENABLE4_MASK, ENABLE4_MASK, ENABLE5_MASK
-
-        // };
-
         std::array<uint32_t, DISPLAY_NUM * 2> enableBuffer{
-                ENABLE5_ON, ALL_ENABLE_OFF, ENABLE0_ON, ALL_ENABLE_OFF, ENABLE1_ON, ALL_ENABLE_OFF,
-                ENABLE2_ON, ALL_ENABLE_OFF, ENABLE3_ON, ALL_ENABLE_OFF, ENABLE4_ON, ALL_ENABLE_OFF,
+                ENABLE4_ON, ALL_ENABLE_OFF, ENABLE5_ON, ALL_ENABLE_OFF, ENABLE0_ON, ALL_ENABLE_OFF,
+                ENABLE1_ON, ALL_ENABLE_OFF, ENABLE2_ON, ALL_ENABLE_OFF, ENABLE3_ON, ALL_ENABLE_OFF,
 
         };
 
