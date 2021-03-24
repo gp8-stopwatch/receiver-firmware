@@ -81,6 +81,25 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
         /*--------------------------------------------------------------------------*/
 
+        /*
+         * TIM15, even if it's faster than TIM15, is configured as a slave (this is the
+         * only option to synchronize them i.e. TIM15 cannot be master. Another drawback
+         * is that TIM15/16/17 are less flexible than TIM2 and 3, and only OC1 event of
+         * TIM15/17 can be uysed as a trigger for TIM15. This is why I'm configuguring
+         * the OC channel 1 below.
+         */
+        TIM_SlaveConfigTypeDef sSlaveConfig{};
+        sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
+        sSlaveConfig.InputTrigger = TIM_TS_ITR0; // TIM15 is the master. See table 62 or 71.
+        sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+        sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1;
+
+        if (HAL_TIM_SlaveConfigSynchro (&htim, &sSlaveConfig) != HAL_OK) {
+                Error_Handler ();
+        }
+
+        /*--------------------------------------------------------------------------*/
+
         TIM_OC_InitTypeDef sConfig{};
         sConfig.OCMode = TIM_OCMODE_PWM1;
         sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
@@ -89,9 +108,8 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
         sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
         // sConfig.Pulse = PERIOD / 2 - 1;
-        sConfig.Pulse = 3; // <- this controlls the brightness. Low value means high intensity. Correct value is 3-48 when PERIOD is 50 and
-                           // PRESCALER 480. If the two timers were synchronized, then we could achieve better accuracy and higher brightness
-                           // range. The accuracy drops when timers run faster (i.e. when PRESCALER is lower).
+        sConfig.Pulse = 3; // <- this controlls the brightness. Low value means high intensity. Correct value is 1-48 when PERIOD is 50 and
+                           // PRESCALER 480.
 
         if (HAL_TIM_PWM_ConfigChannel (&htim, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
                 Error_Handler ();
@@ -106,16 +124,16 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         /*--------------------------------------------------------------------------*/
 
         /*
-         * Almost all the settings of TIM16 and DMA (the only DMA IP here)
+         * Almost all the settings of TIM15 and DMA (the only DMA IP here)
          * are the same. I'm reusing the init strucures.
          */
-        htim.Instance = TIM16;
+        htim.Instance = TIM15;
         htim.Init.Prescaler = calculatePrescaler (FPS) - 1;
         // htim.Init.Period = PERIOD * 2 - 1;
         htim.Init.Period = 98 - 1; // This was found exparimentally, and I don't really understand why there's 98 instead of 100.
 
-        __HAL_RCC_TIM16_CLK_ENABLE ();
-        dmaHandle.Instance = DMA1_Channel3;
+        __HAL_RCC_TIM15_CLK_ENABLE ();
+        dmaHandle.Instance = DMA1_Channel5;
         __HAL_LINKDMA (&htim, hdma[TIM_DMA_ID_UPDATE], dmaHandle);
 
         if (HAL_DMA_Init (htim.hdma[TIM_DMA_ID_UPDATE]) != HAL_OK) {
@@ -137,12 +155,22 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
         /*--------------------------------------------------------------------------*/
 
+        TIM_MasterConfigTypeDef sMasterConfig{};
+        sMasterConfig.MasterOutputTrigger = TIM_TRGO_OC1; // I think that this has no effect
+        sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
+
+        if (HAL_TIMEx_MasterConfigSynchronization (&htim, &sMasterConfig) != HAL_OK) {
+                Error_Handler ();
+        }
+
+        /*--------------------------------------------------------------------------*/
+
         if (HAL_TIM_Base_Start (&htim) != HAL_OK) {
                 Error_Handler ();
         }
 
         TIM1->CNT = 0;
-        TIM16->CNT = 0;
+        TIM15->CNT = 0;
 }
 
 /*****************************************************************************/
@@ -300,7 +328,7 @@ void Led7SegmentDisplayDma::setResolution (Resolution res)
  * ...                 ...                ...                ...
  *
  * The table above gives the general idea, but due to synchronization issues
- * (synchr. between TIM1 and TIM16) the sequence is a little bit shifted (modulo 24).
+ * (synchr. between TIM1 and TIM15) the sequence is a little bit shifted (modulo 24).
  * True sequence can be seen in the enableBuffer initialization, but the duty
  * cycle idea is the same.
  */
@@ -309,30 +337,32 @@ void Led7SegmentDisplayDma::setBrightness (uint8_t b)
         brightness = std::max<uint8_t> (MIN_BRIGHTNESS, b);
         brightness = std::min<uint8_t> (MAX_BRIGHTNESS, b);
 
+#if 0
         GPIOB->BSRR = ALL_ENABLE_OFF;
 
         // TIM1->CR1 &= ~TIM_CR1_CEN;
-        // TIM16->CR1 &= ~TIM_CR1_CEN;
+        // TIM15->CR1 &= ~TIM_CR1_CEN;
 
         DMA1_Channel2->CCR &= ~DMA_CCR_EN;
-        DMA1_Channel3->CCR &= ~DMA_CCR_EN;
+        DMA1_Channel5->CCR &= ~DMA_CCR_EN;
 
-        DMA1->IFCR = DMA_FLAG_GL2 | DMA_FLAG_GL3;
+        DMA1->IFCR = DMA_FLAG_GL2 | DMA_FLAG_GL5;
 
         DMA1_Channel2->CNDTR = enableBuffer.size ();  // 12
-        DMA1_Channel3->CNDTR = displayBuffer.size (); // 6
+        DMA1_Channel5->CNDTR = displayBuffer.size (); // 6
 
-        DMA1_Channel3->CCR |= DMA_CCR_EN;
+        DMA1_Channel5->CCR |= DMA_CCR_EN;
         DMA1_Channel2->CCR |= DMA_CCR_EN;
 
         constexpr std::array<uint8_t, MAX_BRIGHTNESS> brightnessLookup = {48, 33, 18, 3};
         TIM1->CCR1 = brightnessLookup.at (brightness - 1);
         // TIM1->CCR1 = 33;
         TIM1->CNT = 0;
-        TIM16->CNT = 0;
+        TIM15->CNT = 0;
 
         // TIM1->CR1 |= TIM_CR1_CEN;
-        // TIM16->CR1 |= TIM_CR1_CEN;
+        // TIM15->CR1 |= TIM_CR1_CEN;
+#endif
 }
 
 /****************************************************************************/
@@ -340,7 +370,7 @@ void Led7SegmentDisplayDma::setBrightness (uint8_t b)
 void Led7SegmentDisplayDma::setFps (unsigned int fps)
 {
         TIM1->PSC = calculatePrescaler (fps);
-        TIM16->PSC = calculatePrescaler (fps);
+        TIM15->PSC = calculatePrescaler (fps);
 }
 
 /****************************************************************************/

@@ -6,8 +6,8 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
-#include "Led7SegmentDisplayDma.h"
 #include "ErrorHandler.h"
+#include "Led7SegmentDisplayDma.h"
 #include "StopWatch.h"
 #include <array>
 
