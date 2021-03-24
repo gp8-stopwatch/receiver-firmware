@@ -20,10 +20,17 @@ uint16_t flipFont (uint16_t font)
 
 /****************************************************************************/
 
+Led7SegmentDisplayDma *instance{};
+
 Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 {
-        // This method fills in the two buffers which would got transferred by the DMA later on.
-        // setBrightness (1);
+        /*
+         * Brightness is physically changed by changing the duty cycle of TIM1 channel1.
+         * The setBrightness only validates the argument given, and stores it in a variable.
+         * Actual "action" is taken in the DMA1_Channel2_3_IRQHandler ISR.
+         */
+        prevBrightness = 1;
+        setBrightness (1);
 
         /*--------------------------------------------------------------------------*/
         /* Enable (common pin) timer & DMA. This enables individual displays.       */
@@ -33,11 +40,23 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
         htim.Instance = TIM1;
         htim.Init.Prescaler = calculatePrescaler (FPS) - 1;
-        htim.Init.Period = PERIOD - 1;
-        htim.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
+        htim.Init.Period = PERIOD /* - 1 */;                    // Period is constant and equals 50 (not 49). Read below.
+        htim.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3; // This is very important, read next comment below.
         htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
         htim.Init.RepetitionCounter = 0;
         htim.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+
+        /*
+         * In the above piece of code I configured the TIM1 in the so called "center aligned"
+         * mode with period eual to 49. This means, that the counter register will follow this
+         * progression: 0, 1, 2 ... 47, 48, 49, 48, 47 ... 2, 1,  |  0, 1, 2 ...
+         * I marked the end of the cycle with pipe character | which helps to realize, that the
+         * true number of counter incerements in ecah update cycle is not 100 but rather 98! Notice,
+         * that after 49 (i.e. after 50th tick) the counter register counts from 48 to 1, so we
+         * have 50 + 48 ticks.
+         *
+         * And this is why
+         */
 
         __HAL_RCC_TIM1_CLK_ENABLE ();
         __HAL_RCC_DMA1_CLK_ENABLE ();
@@ -52,6 +71,8 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         dmaHandle.Init.Mode = DMA_CIRCULAR;
         dmaHandle.Init.Priority = DMA_PRIORITY_HIGH;
         dmaHandle.Instance = DMA1_Channel2;
+
+        DMA1_Channel2->CCR |= DMA_CCR_TCIE; // Transfer complete enable
 
         __HAL_LINKDMA (&htim, hdma[TIM_DMA_ID_CC1], dmaHandle);
 
@@ -129,8 +150,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
          */
         htim.Instance = TIM15;
         htim.Init.Prescaler = calculatePrescaler (FPS) - 1;
-        // htim.Init.Period = PERIOD * 2 - 1;
-        htim.Init.Period = 98 - 1; // This was found exparimentally, and I don't really understand why there's 98 instead of 100.
+        htim.Init.Period = PERIOD * 2 - 1; // Counter counts from 0 to 99, meaning 100 ticks.
 
         __HAL_RCC_TIM15_CLK_ENABLE ();
         dmaHandle.Instance = DMA1_Channel5;
@@ -169,8 +189,26 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
                 Error_Handler ();
         }
 
-        TIM1->CNT = 0;
-        TIM15->CNT = 0;
+        // TIM1->CNT = 0;
+        // TIM15->CNT = 0;
+
+        instance = this;
+        HAL_NVIC_SetPriority (DMA1_Channel2_3_IRQn, 3, 0);
+        HAL_NVIC_EnableIRQ (DMA1_Channel2_3_IRQn);
+}
+
+/*****************************************************************************/
+
+extern "C" void DMA1_Channel2_3_IRQHandler ()
+{
+        // Clear the flag
+        DMA1->IFCR = DMA_FLAG_TC2;
+
+        if (instance->brightness != instance->prevBrightness) {
+                instance->prevBrightness = instance->brightness;
+                constexpr std::array<uint8_t, Led7SegmentDisplayDma::MAX_BRIGHTNESS> brightnessLookup = {48, 33, 18, 3};
+                TIM1->CCR1 = brightnessLookup.at (instance->brightness - 1);
+        }
 }
 
 /*****************************************************************************/
@@ -306,63 +344,12 @@ void Led7SegmentDisplayDma::setResolution (Resolution res)
         prescaler = INCREMENTS.at (int (res));
 }
 
-/****************************************************************************/
-
 /**
- * This fills the enableBuffer so the enable pins are driven in a sequence.
- * DMA is transferring the buffer in circular mode. Below are examples of
- * how would the buffer look to obtain different brightnes intensity on the
- * screen:
- *
- * Brightnes : 4 (max)      3                  2                  1
- * en. disp. 0         en. disp. 0        en. disp. 0        en. disp. 0
- * en. disp. 0         en. disp. 0        en. disp. 0        disable all
- * en. disp. 0         en. disp. 0        disable all        disable all
- * en. disp. 0         disable all        disable all        disable all
- * en. disp. 1         en. disp. 1        en. disp. 1        en. disp. 1
- * en. disp. 1         en. disp. 1        en. disp. 1        disable all
- * en. disp. 1         en. disp. 1        disable all        disable all
- * en. disp. 1         disable all        disable all        disable all
- * en. disp. 2         en. disp. 2        en. disp. 2        en. disp. 2
- * en. disp. 2         en. disp. 2        en. disp. 2        disable all
- * ...                 ...                ...                ...
- *
- * The table above gives the general idea, but due to synchronization issues
- * (synchr. between TIM1 and TIM15) the sequence is a little bit shifted (modulo 24).
- * True sequence can be seen in the enableBuffer initialization, but the duty
- * cycle idea is the same.
  */
 void Led7SegmentDisplayDma::setBrightness (uint8_t b)
 {
         brightness = std::max<uint8_t> (MIN_BRIGHTNESS, b);
         brightness = std::min<uint8_t> (MAX_BRIGHTNESS, b);
-
-#if 0
-        GPIOB->BSRR = ALL_ENABLE_OFF;
-
-        // TIM1->CR1 &= ~TIM_CR1_CEN;
-        // TIM15->CR1 &= ~TIM_CR1_CEN;
-
-        DMA1_Channel2->CCR &= ~DMA_CCR_EN;
-        DMA1_Channel5->CCR &= ~DMA_CCR_EN;
-
-        DMA1->IFCR = DMA_FLAG_GL2 | DMA_FLAG_GL5;
-
-        DMA1_Channel2->CNDTR = enableBuffer.size ();  // 12
-        DMA1_Channel5->CNDTR = displayBuffer.size (); // 6
-
-        DMA1_Channel5->CCR |= DMA_CCR_EN;
-        DMA1_Channel2->CCR |= DMA_CCR_EN;
-
-        constexpr std::array<uint8_t, MAX_BRIGHTNESS> brightnessLookup = {48, 33, 18, 3};
-        TIM1->CCR1 = brightnessLookup.at (brightness - 1);
-        // TIM1->CCR1 = 33;
-        TIM1->CNT = 0;
-        TIM15->CNT = 0;
-
-        // TIM1->CR1 |= TIM_CR1_CEN;
-        // TIM15->CR1 |= TIM_CR1_CEN;
-#endif
 }
 
 /****************************************************************************/

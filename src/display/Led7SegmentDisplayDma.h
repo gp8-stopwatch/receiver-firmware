@@ -19,6 +19,8 @@
 #error "Define either COMMON_ANODE or COMMON_CATHODE macro"
 #endif
 
+extern "C" void DMA1_Channel2_3_IRQHandler ();
+
 /**
  * See AN4666 Application note. Parallel synchronous transmission using GPIO and DMA
  * Important : for this "driver" to work, all the segmnents have to be connected to the
@@ -67,11 +69,16 @@ private:
         static constexpr bool CA = false;
 #endif
 
+        friend void DMA1_Channel2_3_IRQHandler ();
+
         static constexpr int DISPLAY_NUM = 6;
 
-        static constexpr uint16_t FPS = 30; // All 6 displays refreshed in sequence during one frame
+        static constexpr uint16_t FPS = 160; // All 6 displays refreshed in sequence during one frame
         static constexpr uint16_t PERIOD = 50;
-        static constexpr uint16_t calculatePrescaler (uint16_t fps) { return 48000000 / (PERIOD * DISPLAY_NUM * 4 * fps); }
+        // static constexpr uint16_t calculatePrescaler (uint16_t fps) { return 48000000 / (PERIOD * DISPLAY_NUM * 4 * fps); }
+
+        // static constexpr uint16_t calculatePrescaler (uint16_t fps) { return 200; }
+        static constexpr uint16_t calculatePrescaler (uint16_t fps) { return 667; } // 30
 
         uint8_t dots = 0;
         // uint8_t currentDigit = 0;
@@ -79,6 +86,7 @@ private:
         static constexpr uint8_t MIN_BRIGHTNESS = 1;
         static constexpr uint8_t MAX_BRIGHTNESS = 4;
         uint8_t brightness{};
+        uint8_t prevBrightness{};
         // uint8_t brightnessCycle = 0;
 
         bool flip = false;
