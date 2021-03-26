@@ -95,16 +95,15 @@ Gpio &getExtTriggerInput ()
 
 /****************************************************************************/
 
+#ifdef WITH_CAN
 Can &getCan ()
 {
-#ifdef WITH_CAN
         static Gpio canGpio1 (CAN_PORT_1, CAN_PIN_1, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH, CAN_ALTERNATE);
         static Gpio canGpio2 (CAN_PORT_2, CAN_PIN_2, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH, CAN_ALTERNATE);
 
         // 24 - 125kbps, 60 : 50kbps
         static Can can (nullptr, 60, CAN_SJW_3TQ, CAN_BS1_12TQ, CAN_BS2_3TQ);
         return can;
-#endif
 }
 
 /****************************************************************************/
@@ -114,6 +113,7 @@ CanProtocol &getProtocol ()
         static CanProtocol protocol (getCan (), *MICRO_CONTROLLER_UID, myDeviceType);
         return protocol;
 }
+#endif
 
 /****************************************************************************/
 
@@ -313,12 +313,14 @@ void init ()
         /*| CAN                                                                     |*/
         /*+-------------------------------------------------------------------------+*/
 
+#ifdef WITH_CAN
         HAL_NVIC_SetPriority (CEC_CAN_IRQn, CAN_BUS_PRIORITY, 0);
         HAL_NVIC_EnableIRQ (CEC_CAN_IRQn);
         getProtocol ();
         getCan ().setCanCallback (&getProtocol ());
         getCan ().setFilterAndMask (0x00000000, 0x00000000, true);
         getCan ().interrupts (true, false);
+#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| RTC                                                                     |*/

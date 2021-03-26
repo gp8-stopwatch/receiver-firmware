@@ -19,7 +19,7 @@
 #error "Define either COMMON_ANODE or COMMON_CATHODE macro"
 #endif
 
-extern "C" void DMA1_Channel2_3_IRQHandler ();
+// extern "C" void DMA1_Channel2_3_IRQHandler ();
 
 /**
  * See AN4666 Application note. Parallel synchronous transmission using GPIO and DMA
@@ -43,7 +43,7 @@ public:
         void setTime (Result10us time, Resolution res) override;
         void setText (const char *s) override;
 
-        void setFlip (bool b) override;
+        void setFlip (bool f) override;
 
         /**
          * @brief batteryLevel 0 : blinking frame, 1 : frame, 2 : frame & 1 bar, 3 : frame & 2 bars
@@ -69,7 +69,7 @@ private:
         static constexpr bool CA = false;
 #endif
 
-        friend void DMA1_Channel2_3_IRQHandler ();
+        // friend void DMA1_Channel2_3_IRQHandler ();
 
         void init (uint16_t fps);
 
@@ -86,7 +86,7 @@ private:
         std::array<uint16_t, MAX_BRIGHTNESS> brightnessLookup{};
 
         void recalculateBrightnessTable (unsigned int fps);
-        uint16_t fps{};
+        // uint16_t fps{};
         uint16_t prevFps{};
 
         bool flip = false;
