@@ -82,7 +82,7 @@ private:
         static constexpr uint8_t MIN_BRIGHTNESS = 1;
         static constexpr uint8_t MAX_BRIGHTNESS = 4;
         uint8_t brightness{};
-        uint8_t prevBrightness{};
+        // uint8_t prevBrightness{};
         std::array<uint16_t, MAX_BRIGHTNESS> brightnessLookup{};
 
         void recalculateBrightnessTable (unsigned int fps);
@@ -119,8 +119,8 @@ private:
                 | (1 << (ENABLE2_PIN_NUM + 16)) | (1 << (ENABLE3_PIN_NUM + 16)) | (1 << (ENABLE4_PIN_NUM + 16));
 
         std::array<uint32_t, DISPLAY_NUM * 2> enableBuffer{
-                ENABLE4_ON, ALL_ENABLE_OFF, ENABLE5_ON, ALL_ENABLE_OFF, ENABLE0_ON, ALL_ENABLE_OFF,
-                ENABLE1_ON, ALL_ENABLE_OFF, ENABLE2_ON, ALL_ENABLE_OFF, ENABLE3_ON, ALL_ENABLE_OFF,
+                ENABLE0_ON, ALL_ENABLE_OFF, ENABLE1_ON, ALL_ENABLE_OFF, ENABLE2_ON, ALL_ENABLE_OFF,
+                ENABLE3_ON, ALL_ENABLE_OFF, ENABLE4_ON, ALL_ENABLE_OFF, ENABLE5_ON, ALL_ENABLE_OFF,
 
         };
 

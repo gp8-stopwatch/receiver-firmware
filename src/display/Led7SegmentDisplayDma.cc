@@ -48,7 +48,7 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
          * The setBrightness only validates the argument given, and stores it in a variable.
          * Actual "action" is taken in the DMA1_Channel2_3_IRQHandler ISR.
          */
-        prevBrightness = brightness = MAX_BRIGHTNESS;
+        /* prevBrightness =  */ brightness = MAX_BRIGHTNESS;
         recalculateBrightnessTable (fps);
 
         /*--------------------------------------------------------------------------*/
@@ -154,10 +154,6 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
                 Error_Handler ();
         }
 
-        if (HAL_TIM_PWM_Start (&htimEn, TIM_CHANNEL_1) != HAL_OK) {
-                Error_Handler ();
-        }
-
         /*--------------------------------------------------------------------------*/
         /* Segment timer & DMA. This drives single segments.                        */
         /*--------------------------------------------------------------------------*/
@@ -204,7 +200,13 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
 
         /*--------------------------------------------------------------------------*/
 
-        if (HAL_TIM_Base_Start (&htimSeg) != HAL_OK) {
+        if (HAL_TIM_PWM_Start (&htimEn, TIM_CHANNEL_1) != HAL_OK) { // Slave
+                Error_Handler ();
+        }
+
+        TIM15->CNT = calculatePeriod (fps) * 2 - 2;
+
+        if (HAL_TIM_Base_Start (&htimSeg) != HAL_OK) { // Master
                 Error_Handler ();
         }
 
@@ -365,11 +367,11 @@ void Led7SegmentDisplayDma::setResolution (Resolution res)
 void Led7SegmentDisplayDma::setBrightness (uint8_t b)
 {
         // __disable_irq ();
-        // brightness = std::max<uint8_t> (MIN_BRIGHTNESS, b);
-        // brightness = std::min<uint8_t> (MAX_BRIGHTNESS, b);
+        brightness = std::max<uint8_t> (MIN_BRIGHTNESS, b);
+        brightness = std::min<uint8_t> (MAX_BRIGHTNESS, b);
         // __enable_irq ();
 
-        TIM1->CCR1 = brightnessLookup.at (b - 1);
+        TIM1->CCR1 = brightnessLookup.at (brightness - 1);
 }
 
 /****************************************************************************/
