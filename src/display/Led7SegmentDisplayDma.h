@@ -71,6 +71,8 @@ private:
 
         friend void DMA1_Channel2_3_IRQHandler ();
 
+        void init (uint16_t fps);
+
         static constexpr int DISPLAY_NUM = 6;
         static constexpr uint16_t calculatePeriod (uint32_t fps) { return 1000000 / (fps * 24); } // TODO why 24 instead of 12?
         static constexpr uint16_t PRESCALER = 48;                                                 // CPU runs @ 48MHz
@@ -83,7 +85,7 @@ private:
         uint8_t prevBrightness{};
         std::array<uint16_t, MAX_BRIGHTNESS> brightnessLookup{};
 
-        void doFps (unsigned int fps);
+        void recalculateBrightnessTable (unsigned int fps);
         uint16_t fps{};
         uint16_t prevFps{};
 

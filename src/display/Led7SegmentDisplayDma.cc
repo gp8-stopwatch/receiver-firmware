@@ -23,7 +23,26 @@ uint16_t flipFont (uint16_t font)
 Led7SegmentDisplayDma *instance{};
 
 Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
+{ /* init (DEFAULT_FPS); */
+}
+
+void Led7SegmentDisplayDma::init (uint16_t fps)
 {
+        TIM1->CR1 &= ~TIM_CR1_CEN;
+        TIM15->CR1 &= ~TIM_CR1_CEN;
+
+        /*
+         * Only counter overflow generates an update event. If it wer set to 0,
+         * then also setting UG bit and update generation through slave mode
+         * controller would generarte this.
+         */
+        // TIM1->CR1 |= TIM_CR1_URS;
+        // TIM15->CR1 |= TIM_CR1_URS;
+
+        // ARR register is not buffered (0)
+        // TIM1->CR1 &= TIM_CR1_ARPE;
+        // TIM16->CR1 &= TIM_CR1_ARPE;
+
         /*
          * Brightness is physically changed by changing the duty cycle of TIM1 channel1.
          * The setBrightness only validates the argument given, and stores it in a variable.
@@ -36,15 +55,15 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         /* Enable (common pin) timer & DMA. This enables individual displays.       */
         /*--------------------------------------------------------------------------*/
 
-        TIM_HandleTypeDef htim{};
+        TIM_HandleTypeDef htimEn{};
 
-        htim.Instance = TIM1;
-        htim.Init.Prescaler = PRESCALER - 1;
-        htim.Init.Period = calculatePeriod (DEFAULT_FPS) /* - 1 */; // Period is constant and equals 50 (not 49). Read below.
-        htim.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;     // This is very important, read next comment below.
-        htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-        htim.Init.RepetitionCounter = 0;
-        htim.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+        htimEn.Instance = TIM1;
+        htimEn.Init.Prescaler = PRESCALER - 1;
+        htimEn.Init.Period = calculatePeriod (fps) /* - 1 */;     // Period is constant and equals 50 (not 49). Read below.
+        htimEn.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3; // This is very important, read next comment below.
+        htimEn.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+        htimEn.Init.RepetitionCounter = 0;
+        htimEn.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
 
         /*
          * In the above piece of code I configured the TIM1 in the so called "center aligned"
@@ -74,13 +93,13 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
         DMA1_Channel2->CCR |= DMA_CCR_TCIE; // Transfer complete enable
 
-        __HAL_LINKDMA (&htim, hdma[TIM_DMA_ID_CC1], dmaHandle);
+        __HAL_LINKDMA (&htimEn, hdma[TIM_DMA_ID_CC1], dmaHandle);
 
-        if (HAL_DMA_Init (htim.hdma[TIM_DMA_ID_CC1]) != HAL_OK) {
+        if (HAL_DMA_Init (htimEn.hdma[TIM_DMA_ID_CC1]) != HAL_OK) {
                 Error_Handler ();
         }
 
-        if (HAL_TIM_PWM_Init (&htim) != HAL_OK) {
+        if (HAL_TIM_PWM_Init (&htimEn) != HAL_OK) {
                 Error_Handler ();
         }
 
@@ -98,7 +117,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
                 Error_Handler ();
         }
 
-        __HAL_TIM_ENABLE_DMA (&htim, TIM_DMA_CC1);
+        __HAL_TIM_ENABLE_DMA (&htimEn, TIM_DMA_CC1);
 
         /*--------------------------------------------------------------------------*/
 
@@ -115,7 +134,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
         sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1;
 
-        if (HAL_TIM_SlaveConfigSynchro (&htim, &sSlaveConfig) != HAL_OK) {
+        if (HAL_TIM_SlaveConfigSynchro (&htimEn, &sSlaveConfig) != HAL_OK) {
                 Error_Handler ();
         }
 
@@ -131,11 +150,11 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         // sConfig.Pulse = PERIOD / 2 - 1;
         sConfig.Pulse = 3; // <- this controls the brightness. Low value means high intensity.
 
-        if (HAL_TIM_PWM_ConfigChannel (&htim, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
+        if (HAL_TIM_PWM_ConfigChannel (&htimEn, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
                 Error_Handler ();
         }
 
-        if (HAL_TIM_PWM_Start (&htim, TIM_CHANNEL_1) != HAL_OK) {
+        if (HAL_TIM_PWM_Start (&htimEn, TIM_CHANNEL_1) != HAL_OK) {
                 Error_Handler ();
         }
 
@@ -143,24 +162,25 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         /* Segment timer & DMA. This drives single segments.                        */
         /*--------------------------------------------------------------------------*/
 
-        /*
-         * Almost all the settings of TIM15 and DMA (the only DMA IP here)
-         * are the same. I'm reusing the init strucures.
-         */
-        htim.Instance = TIM15;
-        htim.Init.Prescaler = PRESCALER - 1;
-        htim.Init.Period = calculatePeriod (DEFAULT_FPS) * 2 - 1; // Counter counts from 0 to 99, meaning 100 ticks.
+        TIM_HandleTypeDef htimSeg{};
+        htimSeg.Instance = TIM15;
+        htimSeg.Init.Prescaler = PRESCALER - 1;
+        htimSeg.Init.Period = calculatePeriod (fps) * 2 - 1; // Counter counts from 0 to 99, meaning 100 ticks.
+        htimSeg.Init.CounterMode = TIM_COUNTERMODE_UP;
+        htimSeg.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+        htimSeg.Init.RepetitionCounter = 0;
+        htimSeg.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
 
         __HAL_RCC_TIM15_CLK_ENABLE ();
         dmaHandle.Instance = DMA1_Channel5;
-        __HAL_LINKDMA (&htim, hdma[TIM_DMA_ID_UPDATE], dmaHandle);
+        __HAL_LINKDMA (&htimSeg, hdma[TIM_DMA_ID_UPDATE], dmaHandle);
 
-        if (HAL_DMA_Init (htim.hdma[TIM_DMA_ID_UPDATE]) != HAL_OK) {
+        if (HAL_DMA_Init (htimSeg.hdma[TIM_DMA_ID_UPDATE]) != HAL_OK) {
                 Error_Handler ();
         }
 
         // PWM because of this OC channel used as described above.
-        if (HAL_TIM_Base_Init (&htim) != HAL_OK) {
+        if (HAL_TIM_Base_Init (&htimSeg) != HAL_OK) {
                 Error_Handler ();
         }
 
@@ -170,7 +190,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
                 Error_Handler ();
         }
 
-        __HAL_TIM_ENABLE_DMA (&htim, TIM_DMA_UPDATE);
+        __HAL_TIM_ENABLE_DMA (&htimSeg, TIM_DMA_UPDATE);
 
         /*--------------------------------------------------------------------------*/
 
@@ -178,17 +198,17 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
         sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE; // I think that this has no effect
         sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
 
-        if (HAL_TIMEx_MasterConfigSynchronization (&htim, &sMasterConfig) != HAL_OK) {
+        if (HAL_TIMEx_MasterConfigSynchronization (&htimSeg, &sMasterConfig) != HAL_OK) {
                 Error_Handler ();
         }
 
         /*--------------------------------------------------------------------------*/
 
-        if (HAL_TIM_Base_Start (&htim) != HAL_OK) {
+        if (HAL_TIM_Base_Start (&htimSeg) != HAL_OK) {
                 Error_Handler ();
         }
 
-        doFps (DEFAULT_FPS);
+        recalculateBrightnessTable (fps);
 
         instance = this;
         HAL_NVIC_SetPriority (DMA1_Channel2_3_IRQn, 3, 0);
@@ -209,7 +229,7 @@ extern "C" void DMA1_Channel2_3_IRQHandler ()
 
         // if (instance->fps != instance->prevFps) {
         //         instance->prevFps = instance->fps;
-        //         // instance->doFps (instance->fps);
+        //         instance->doFps (instance->fps);
         // }
 }
 
@@ -356,19 +376,13 @@ void Led7SegmentDisplayDma::setBrightness (uint8_t b)
 
 /****************************************************************************/
 
-void Led7SegmentDisplayDma::setFps (unsigned int fps) { this->fps = fps; }
+void Led7SegmentDisplayDma::setFps (unsigned int fps) { init (fps); }
 
-void Led7SegmentDisplayDma::doFps (unsigned int fps)
+/****************************************************************************/
+
+void Led7SegmentDisplayDma::recalculateBrightnessTable (unsigned int fps)
 {
-        // TIM1->PSC = calculatePrescaler (fps);
-        // TIM15->PSC = calculatePrescaler (fps);
-
         auto newPeriod = calculatePeriod (fps);
-        // __disable_irq ();
-        TIM1->ARR = newPeriod;
-        TIM15->ARR = newPeriod * 2 - 1;
-
-        // constexpr std::array<uint8_t, Led7SegmentDisplayDma::MAX_BRIGHTNESS> brightnessLookup = {48, 33, 18, 3};
 
         auto cp = newPeriod; // 30 fps -> 1388
         auto minB = cp - 2;  // 1386
@@ -380,8 +394,6 @@ void Led7SegmentDisplayDma::doFps (unsigned int fps)
         brightnessLookup.at (2) = maxB + 2 * step; // 693
         brightnessLookup.at (1) = maxB + 3 * step; // 1038
         brightnessLookup.at (0) = maxB + 4 * step; // 1383
-
-        // __enable_irq ();
 }
 
 /****************************************************************************/
