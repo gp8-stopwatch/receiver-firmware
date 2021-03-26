@@ -79,7 +79,8 @@ void Config::setNoiseLevelLow (uint8_t i) { noiseLevelLow = std::min<uint8_t> (i
 void Config::setFps (uint16_t i)
 {
         fps = trim (i);
-        fps = std::max<uint16_t> (i, MINIMUM_FPS);
+        fps = std::max<uint16_t> (i, MIN_FPS);
+        fps = std::min<uint16_t> (i, MAX_FPS);
 }
 
 } // namespace cfg

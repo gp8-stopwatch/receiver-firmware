@@ -9,13 +9,14 @@
 #include "Detector.h"
 
 #ifndef UNIT_TEST
-#include "Gpio.h"
-Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
-#define debugPin(x) senseOn.set (x)
+// #include "Gpio.h"
+// Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
+// #define debugPin(x) senseOn.set (x)
+#define debugPin(x)
 #include "Container.h"
 #else
 #define __disable_irq(x) x // NOLINT this is for unit testing
-#define __enable_irq(x) x // NOLINT
+#define __enable_irq(x) x  // NOLINT
 #define debugPin(x)
 #endif
 

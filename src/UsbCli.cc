@@ -221,8 +221,9 @@ auto &getCli ()
                          [&] (String const &arg) {
                                  int i = std::atoi (arg.c_str ());
 
-                                 if (i < MINIMUM_FPS || i > std::numeric_limits<uint16_t>::max () - 1) {
-                                         usbWrite ("Correct values are [20, 65534]\r\n\r\n"); // TODO minimum FPS is assumed to be 20
+                                 if (i < MIN_FPS || i > MAX_FPS) {
+                                         usbWrite ("Correct values are [20, 10000]\r\n\r\n"); // TODO FPS is assumed to be between 20 and 10000.
+                                                                                              // Hardcoded
                                          return;
                                  }
 

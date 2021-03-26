@@ -147,8 +147,7 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         sConfig.OCNPolarity = TIM_OCNPOLARITY_HIGH;
         sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
         sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
-        // sConfig.Pulse = PERIOD / 2 - 1;
-        sConfig.Pulse = brightnessLookup.at (3); // <- this controls the brightness. Low value means high intensity.
+        sConfig.Pulse = brightnessLookup.at (brightness - 1); // <- this controls the brightness. Low Pulse value means high intensity.
 
         if (HAL_TIM_PWM_ConfigChannel (&htimEn, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
                 Error_Handler ();
@@ -378,6 +377,8 @@ void Led7SegmentDisplayDma::setBrightness (uint8_t b)
 
 void Led7SegmentDisplayDma::setFps (unsigned int fps)
 {
+        fps = std::max<uint16_t> (MIN_FPS, fps);
+        fps = std::min<uint16_t> (MAX_FPS, fps);
         if (prevFps != fps) {
                 init (fps);
                 prevFps = fps;
@@ -389,26 +390,14 @@ void Led7SegmentDisplayDma::setFps (unsigned int fps)
 void Led7SegmentDisplayDma::recalculateBrightnessTable (unsigned int fps)
 {
         auto newPeriod = calculatePeriod (fps);
-
-        // auto cp = newPeriod; // 30 fps -> 1388
-        // auto minB = cp - 2;  // 1386
-        // auto maxB = 3;
-        // auto step = (minB - maxB) / Led7SegmentDisplayDma::MAX_BRIGHTNESS; // 1383 / 4 == 345
-
-        // // TODO assumes that MAX_BRIGHTNESS equals 4.
-        // brightnessLookup.at (3) = maxB;            // 3
-        // brightnessLookup.at (2) = maxB + 2 * step; // 693
-        // brightnessLookup.at (1) = maxB + 3 * step; // 1038
-        // brightnessLookup.at (0) = maxB + 4 * step; // 1383
-
         auto maxB = 3; // Max brightness
         auto step = newPeriod / (Led7SegmentDisplayDma::MAX_BRIGHTNESS + 1);
 
-        // TODO assumes that MAX_BRIGHTNESS equals 4.            30     960
-        brightnessLookup.at (3) = maxB;                       // 3      3
-        brightnessLookup.at (2) = maxB + 2 * step;            // 557    19
-        brightnessLookup.at (1) = maxB + 3 * step;            // 834    27
-        brightnessLookup.at (0) = maxB + 4 * step + step / 2; // 1249   39
+        // TODO assumes that MAX_BRIGHTNESS equals 4.            30     960     10000
+        brightnessLookup.at (3) = maxB;                       // 3      3       3
+        brightnessLookup.at (2) = maxB + 2 * step;            // 557    19      3
+        brightnessLookup.at (1) = maxB + 3 * step;            // 834    27      3
+        brightnessLookup.at (0) = maxB + 4 * step + step / 2; // 1249   39      3
 }
 
 /****************************************************************************/
