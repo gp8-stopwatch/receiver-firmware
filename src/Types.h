@@ -42,7 +42,7 @@ constexpr size_t IR_EXTI_PRIORITY = 1;
 constexpr size_t EXT_TRIGGER_INPUT_EXTI_PRIORITY = 1;
 constexpr size_t SYS_TICK_PRIORITY = 4;
 
-inline const char *VERSION = "1.0.7";
+inline const char *VERSION = "1.1.0";
 
 constexpr int LOW_VOLTAGE_MV = 3000;
 constexpr int LOW_VOLTAGE_CRITICAL_MV = 2900;
