@@ -45,8 +45,6 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
 
         /*
          * Brightness is physically changed by changing the duty cycle of TIM1 channel1.
-         * The setBrightness only validates the argument given, and stores it in a variable.
-         * Actual "action" is taken in the DMA1_Channel2_3_IRQHandler ISR.
          */
         /* prevBrightness =  */ brightness = MAX_BRIGHTNESS;
         recalculateBrightnessTable (fps);
@@ -67,14 +65,16 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
 
         /*
          * In the above piece of code I configured the TIM1 in the so called "center aligned"
-         * mode with period eual to 49. This means, that the counter register will follow this
-         * progression: 0, 1, 2 ... 47, 48, 49, 48, 47 ... 2, 1,  |  0, 1, 2 ...
-         * I marked the end of the cycle with pipe character | which helps to realize, that the
-         * true number of counter incerements in ecah update cycle is not 100 but rather 98! Notice,
-         * that after 49 (i.e. after 50th tick) the counter register counts from 48 to 1, so we
+         * mode. If the calculatePeriod (fps) retured 50, and we would substract 1 as usual,
+         * the counter register would follow this progression: 0, 1, 2 ... 47, 48, 49, 48, 47 ... 2, 1,  |  0, 1, 2 ...
+         *
+         * I marked the end of the cycle with pipe character "|"" which helps to realize, that the
+         * true number of counter incerements in ecah update cycle would not equal 100 but rather 98!
+         * Notice that after 49 (i.e. after 50th tick) the counter register counts from 48 to 1, so we
          * have 50 + 48 ticks.
          *
-         * And this is why
+         * And this is why the "-1" is commented out in the above code, but is left in the TIM15
+         * configuration.
          */
 
         __HAL_RCC_TIM1_CLK_ENABLE ();
@@ -122,11 +122,9 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         /*--------------------------------------------------------------------------*/
 
         /*
-         * TIM15, even if it's faster than TIM15, is configured as a slave (this is the
-         * only option to synchronize them i.e. TIM15 cannot be master. Another drawback
-         * is that TIM15/16/17 are less flexible than TIM2 and 3, and only OC1 event of
-         * TIM15/17 can be uysed as a trigger for TIM15. This is why I'm configuguring
-         * the OC channel 1 below.
+         * TIM1 is configured as a slave (this is the only option to synchronize TIM1 and
+         * TIM15. I need TIM1 as this is the only remaining timer which implements the
+         * center aligned mode.
          */
         TIM_SlaveConfigTypeDef sSlaveConfig{};
         sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
@@ -139,6 +137,35 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         }
 
         /*--------------------------------------------------------------------------*/
+
+        /*
+         * And this is how the brightness is implemented. The TIM1 is set up in the
+         * center aligned mode (lets assume ARR == 50). Both timers would follow
+         * this plot:
+         *
+         *              -            -            -            -
+         *             / \          / \          / \          / \
+         *            /   \        /   \        /   \        /   \
+         *  TIM1     /     \      /     \      /     \      /     \
+         *          a       b    /       \    /       \    /       \
+         *         /         \  /         \  /         \  /         \
+         *        /           \/           \/           \/           \
+         *
+         *                    c            |            -            -
+         *                  -/|          -/|          -/|          -/|
+         *                -/  |        -/  |        -/  |        -/  |
+         *  TIM15       -/    |      -/    |      -/    |      -/    |
+         *            -/      |    -/      |    -/      |    -/      |
+         *          -/        |  -/        |  -/        |  -/        |
+         *        -/          |-/          |-/          |-/          |
+         *
+         * As time passes, at the point "a" the apropriate enable pin gets turned
+         * ON by the DMA, and then it gets turned off at the point "b". DMA is fired
+         * when the counter (CNT) value matches that configured  in the output compare channel 1
+         * (see directly below). This match occurs 2 times every TIM15 perid. At the point
+         * "c" next character is transferred byt he DMA to the "segment" pins. Changing
+         * the distance between points "a" and "b" the brightness is altered.
+         */
 
         TIM_OC_InitTypeDef sConfig{};
         sConfig.OCMode = TIM_OCMODE_PWM1;
@@ -165,6 +192,13 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         htimSeg.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
         htimSeg.Init.RepetitionCounter = 0;
         htimSeg.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+
+        /*
+         * Above, the period is set to twice the value compared to TIM1 minus 1 but the
+         * mode is UP instead of the "center-aligned". If calculatePeriod (fps) gave 50,
+         * then the counter would conunt from 0 to 99 which is exactly 100 times. As You
+         * can see this is two times more than what TIM1 counts to.
+         */
 
         __HAL_RCC_TIM15_CLK_ENABLE ();
         dmaHandle.Instance = DMA1_Channel5;
@@ -203,6 +237,11 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
                 Error_Handler ();
         }
 
+        /*
+         * This strange value is configured to assure that promptly after this line
+         * we would get the UP event on the TIM15, and as a consequence on the TIM1
+         * as well because they are synchronized.
+         */
         TIM15->CNT = calculatePeriod (fps) * 2 - 2;
 
         if (HAL_TIM_Base_Start (&htimSeg) != HAL_OK) { // Master
