@@ -29,7 +29,7 @@
 #include "Types.h"
 #include "Usart.h"
 #include "UsbCli.h"
-#include "detectors/Detector.h"
+#include "detector/Detector.h"
 #include <cstdbool>
 #include <cstring>
 #include <etl/string.h>

@@ -6,7 +6,7 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
-#include "../detectors/Detector.h"
+#include "../detector/Detector.h"
 #include <vector>
 
 // struct DetectorEvent {

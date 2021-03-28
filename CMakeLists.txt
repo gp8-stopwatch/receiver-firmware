@@ -147,7 +147,7 @@ IF (DEFINED DEVICE)
         "src/main.cc"
         "src/Button.cc"
         "src/FastStateMachine.cc"
-        "src/detectors/Detector.cc"
+        "src/detector/Detector.cc"
         "src/StopWatch.cc"
         "src/Config.cc"
         "src/Container.cc"
@@ -284,7 +284,7 @@ ELSE()
         "src/test/00CatchInit.cc"
         "src/test/02Itoa.cc"
         "src/test/03EdgeDetectors.cc"
-        "src/detectors/Detector.cc"
+        "src/detector/Detector.cc"
         "src/Config.cc"
     )
 
@@ -292,7 +292,7 @@ ELSE()
 
     ADD_EXECUTABLE(profile
         "src/test/DetectorProfile.cc"
-        "src/detectors/Detector.cc"
+        "src/detector/Detector.cc"
         "src/Config.cc"
     )
 
