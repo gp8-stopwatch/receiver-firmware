@@ -13,7 +13,6 @@
 #include "Debug.h"
 #include "History.h"
 #include "IDisplay.h"
-#include "InfraRedBeamExti.h"
 #include "StopWatch.h"
 #include "UsbHelpers.h"
 

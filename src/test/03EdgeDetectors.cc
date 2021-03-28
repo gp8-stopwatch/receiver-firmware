@@ -6,7 +6,7 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
-#include "../Detector.h"
+#include "../detectors/Detector.h"
 #include "catch.hpp"
 #include <iostream>
 #include <vector>

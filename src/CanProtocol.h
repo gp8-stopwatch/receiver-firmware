@@ -9,7 +9,6 @@
 #pragma once
 #include "Can.h"
 #include "ICanCallback.h"
-#include "InfraRedBeamExti.h"
 #include "Types.h"
 #include <cstdint>
 #include <etl/vector.h>
@@ -62,7 +61,7 @@ public:
         InfoRespDataCollection &getInfoRespDataCollection () { return lastInfoResponseData; }
         InfoRespDataCollection const &getInfoRespDataCollection () const { return lastInfoResponseData; }
 
-        void setBeam (IInfraRedBeam *b) { beam = b; }
+        // void setBeam (IInfraRedBeam *b) { beam = b; }
 
 private:
         void onCanNewFrame (CanFrame const &frame) override;
@@ -74,6 +73,6 @@ private:
         IProtocolCallback *callback{};
         uint32_t uid;
         DeviceType deviceType;
-        IInfraRedBeam *beam{};
+        // IInfraRedBeam *beam{};
         InfoRespDataCollection lastInfoResponseData;
 };

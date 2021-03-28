@@ -8,9 +8,9 @@
 
 #pragma once
 #include "CanProtocol.h"
-#include "Detector.h"
 #include "Timer.h"
 #include "Types.h"
+#include "detectors/Detector.h"
 #include <etl/queue.h>
 #include <optional>
 

@@ -29,18 +29,19 @@ void CanProtocol::onCanNewFrame (CanFrame const &frame)
                 auto messageId = frame.data[0];
 
                 if (Message (messageId) == Message::INFO_REQ) {
-                        Expects (beam);
+                        // Expects (beam);
                         uint16_t tmp = uint16_t (frame.data[1]) | uint16_t (frame.data[2]) << 8;
                         getConfig ().setBlindTime (tmp);
                         BeamState state;
 
-                        if (!beam->isActive ()) {
-                                state = BeamState::blind;
-                        }
-                        else {
-                                // TODO detect noise
-                                state = (beam->getBeamState () == IrBeam::triggerFalling) ? (BeamState::yes) : (BeamState::no);
-                        }
+                        //  TODO implement
+                        // if (!beam->isActive ()) {
+                        //         state = BeamState::blind;
+                        // }
+                        // else {
+                        //         // TODO detect noise
+                        //         state = (beam->getBeamState () == IrBeam::triggerFalling) ? (BeamState::yes) : (BeamState::no);
+                        // }
 
                         if (!can.send (CanFrame{uid, true, 3, uint8_t (Message::INFO_RESP), uint8_t (deviceType), uint8_t (state)},
                                        CAN_SEND_TIMEOUT)) {

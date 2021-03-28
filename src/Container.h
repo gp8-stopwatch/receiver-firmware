@@ -14,14 +14,12 @@
 #include "Config.h"
 #include "Container.h"
 #include "Debug.h"
-#include "Detector.h"
 #include "DisplayMenu.h"
 #include "ErrorHandler.h"
 #include "FastStateMachine.h"
 #include "Gpio.h"
 #include "HardwareTimer.h"
 #include "History.h"
-#include "InfraRedBeamExti.h"
 #include "Led7SegmentDisplay.h"
 #include "Led7SegmentDisplayDma.h"
 #include "PowerManagement.h"
@@ -31,6 +29,7 @@
 #include "Types.h"
 #include "Usart.h"
 #include "UsbCli.h"
+#include "detectors/Detector.h"
 #include <cstdbool>
 #include <cstring>
 #include <etl/string.h>
