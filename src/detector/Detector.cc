@@ -10,14 +10,19 @@
 
 #ifndef UNIT_TEST
 #include "Gpio.h"
-Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
-#define debugPin(x) senseOn.set (x)
-// #define debugPin(x)
+Gpio consoleRx{GPIOA, GPIO_PIN_10, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
+#define stateChangePin(x) consoleRx.set (x)
+
+Gpio consoleTx{GPIOA, GPIO_PIN_9, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
+#define triggerOutputPin() HAL_GPIO_TogglePin (GPIOA, GPIO_PIN_9)
+
+// #define stateChangePin(x)
+// #define triggerOutputPin(x)
 #include "Container.h"
 #else
 #define __disable_irq(x) x // NOLINT this is for unit testing
 #define __enable_irq(x) x // NOLINT
-#define debugPin(x)
+#define stateChangePin(x)
 #endif
 
 /*****************************************************************************/
@@ -114,7 +119,7 @@ void EdgeFilter::onEdge (Edge const &e)
                 if (pwmState != PwmState::high) {
                         pwmState = PwmState::high;
                         highStateStart = firstRising->timePoint;
-                        debugPin (true);
+                        stateChangePin (true);
                 }
         }
         else if (lowDuration * 100 >= cycleTresholdCalculated || // PWM of the slice is low
@@ -122,13 +127,13 @@ void EdgeFilter::onEdge (Edge const &e)
                 if (pwmState != PwmState::low) {
                         pwmState = PwmState::low;
                         lowStateStart = firstFalling->timePoint;
-                        debugPin (false);
+                        stateChangePin (false);
                 }
         }
         else if (pwmState != PwmState::middle) { // Previous conditions for level durations weren't satisfied
                 pwmState = PwmState::middle;
                 middleStateStart = firstFalling->timePoint;
-                debugPin (false);
+                stateChangePin (false);
         }
 
         /*--------------------------------------------------------------------------*/
@@ -142,6 +147,8 @@ void EdgeFilter::onEdge (Edge const &e)
 
                 if (longHighState && longLowState && isBeamClean ()) {
                         callback->report (DetectorEventType::trigger, highStateStart);
+                        triggerOutputPin ();
+
                         if (getConfig ().getBlindTime () > 0) {
                                 blindState = BlindState::blind;
                                 blindStateStart = e.timePoint;
@@ -188,7 +195,7 @@ void EdgeFilter::run (Result1us const &now)
                                 pwmState = PwmState::high;
                                 highStateStart = lastSignalChange;
                                 __enable_irq ();
-                                debugPin (true);
+                                stateChangePin (true);
                         }
                 }
                 else {
@@ -197,7 +204,7 @@ void EdgeFilter::run (Result1us const &now)
                                 pwmState = PwmState::low;
                                 lowStateStart = lastSignalChange;
                                 __enable_irq ();
-                                debugPin (false);
+                                stateChangePin (false);
                         }
                 }
         }
@@ -313,6 +320,8 @@ void EdgeFilter::run (Result1us const &now)
                 if (longHighState && longLowState && isBeamClean ()) {
                         __disable_irq ();
                         callback->report (DetectorEventType::trigger, currentHighStateStart);
+                        triggerOutputPin ();
+
                         if (getConfig ().getBlindTime () > 0) {
                                 blindState = BlindState::blind;
                                 blindStateStart = now;

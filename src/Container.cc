@@ -302,7 +302,7 @@ void init ()
         /*| Debug UART                                                              |*/
         /*+-------------------------------------------------------------------------+*/
 
-        static Gpio debugUartGpios (DEBUG_PORT, DEBUG_PINS, GPIO_MODE_AF_OD, GPIO_PULLUP, GPIO_SPEED_FREQ_HIGH, DEBUG_ALTERNATE);
+        // static Gpio debugUartGpios (DEBUG_PORT, DEBUG_PINS, GPIO_MODE_AF_OD, GPIO_PULLUP, GPIO_SPEED_FREQ_HIGH, DEBUG_ALTERNATE);
         static Usart debugUart (DEBUG_UART, 115200);
 
         static Debug debug (&debugUart);
