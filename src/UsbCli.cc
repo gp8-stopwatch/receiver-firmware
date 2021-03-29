@@ -72,8 +72,8 @@ auto &getCli ()
                 cl::cmd (String ("help"),
                          [] {
                                  usbWrite ("result, resultMs, last, lastMs, date, isCounting, reset, clear, factory, help, battery, "
-                                           "getFlip, setFlip, getIr, setIr, getSn, setSn, getRes, setRes, getAuto, setAuto, getBright, "
-                                           "setBright, periph, setFps, getFps, getBlind, setBlind\r\n\r\n");
+                                           "flip, ir, sn, res, auto, bright, "
+                                           "periph, fps, blind, trigger\r\n\r\n");
                          }),
                 cl::cmd (String ("battery"),
                          [] {
@@ -87,153 +87,170 @@ auto &getCli ()
                                  usbWrite ("%\r\n\r\n");
                          }),
 
-                cl::cmd (String ("getFlip"), [] { usbWrite ((getConfig ().isFlip ()) ? ("1\r\n\r\n") : ("0\r\n\r\n")); }),
-                cl::cmd (String ("setFlip"),
+                cl::cmd (String ("flip"),
                          [&] (String const &arg) {
-                                 getConfig ().setFlip (bool (std::atoi (arg.c_str ())));
-                                 refreshAll ();
-                         }),
-
-                cl::cmd (String ("getIr"), [] { usbWrite ((getConfig ().isIrSensorOn ()) ? ("1\r\n\r\n") : ("0\r\n\r\n")); }),
-                cl::cmd (String ("setIr"),
-                         [&] (String const &arg) {
-                                 getConfig ().setIrSensorOn (bool (std::atoi (arg.c_str ())));
-                                 refreshAll ();
-                         }),
-
-                cl::cmd (String ("getSn"), [] { usbWrite ((getConfig ().isBuzzerOn ()) ? ("1\r\n\r\n") : ("0\r\n\r\n")); }),
-                cl::cmd (String ("setSn"),
-                         [&] (String const &arg) {
-                                 getConfig ().setBuzzerOn (bool (std::atoi (arg.c_str ())));
-                                 refreshAll ();
-                         }),
-
-                cl::cmd (String ("getRes"),
-                         [] {
-                                 switch (getConfig ().getResolution ()) {
-                                 case Resolution::ms_10:
-                                         usbWrite ("10ms\r\n\r\n");
-                                         break;
-
-                                 case Resolution::ms_1:
-                                         usbWrite ("1ms\r\n\r\n");
-                                         break;
-
-                                 case Resolution::us_100:
-                                         usbWrite ("100us\r\n\r\n");
-                                         break;
-
-                                 case Resolution::us_10:
-                                         usbWrite ("10us\r\n\r\n");
-                                         break;
-
-                                 default:
-                                         break;
-                                 }
-                         }),
-                cl::cmd (String ("setRes"),
-                         [&] (String const &arg) {
-                                 if (arg == "10ms") {
-                                         getConfig ().setResolution (Resolution::ms_10);
-                                 }
-                                 else if (arg == "1ms") {
-                                         getConfig ().setResolution (Resolution::ms_1);
-                                 }
-                                 else if (arg == "100us") {
-                                         getConfig ().setResolution (Resolution::us_100);
-                                 }
-                                 else if (arg == "10us") {
-                                         getConfig ().setResolution (Resolution::us_10);
+                                 if (arg.empty ()) {
+                                         usbWrite ((getConfig ().isFlip ()) ? ("1\r\n\r\n") : ("0\r\n\r\n"));
                                  }
                                  else {
-                                         usbWrite ("Valid options : 10ms, 1ms, 100us, 10us\r\n\r\n");
+                                         getConfig ().setFlip (bool (std::atoi (arg.c_str ())));
+                                         refreshAll ();
                                  }
-
-                                 refreshAll ();
                          }),
 
-                cl::cmd (String ("setAuto"),
+                cl::cmd (String ("ir"),
                          [&] (String const &arg) {
-                                 if (arg == "s") {
-                                         getConfig ().setAutoDisplayResult (ResultDisplayStyle::secondFraction);
-                                 }
-                                 else if (arg == "ms") {
-                                         getConfig ().setAutoDisplayResult (ResultDisplayStyle::milisecondOnly);
-                                 }
-                                 else if (arg == "none") {
-                                         getConfig ().setAutoDisplayResult (ResultDisplayStyle::none);
+                                 if (arg.empty ()) {
+                                         usbWrite ((getConfig ().isIrSensorOn ()) ? ("1\r\n\r\n") : ("0\r\n\r\n"));
                                  }
                                  else {
-                                         usbWrite ("Valid options : s, ms, none\r\n\r\n");
-                                 }
-                         }),
-                cl::cmd (String ("getAuto"),
-                         [] {
-                                 switch (getConfig ().getAutoDisplayResult ()) {
-                                 case ResultDisplayStyle::secondFraction:
-                                         usbWrite ("s\r\n\r\n");
-                                         break;
-
-                                 case ResultDisplayStyle::milisecondOnly:
-                                         usbWrite ("ms\r\n\r\n");
-                                         break;
-
-                                 case ResultDisplayStyle::none:
-                                         usbWrite ("none\r\n\r\n");
-                                         break;
-
-                                 default:
-                                         break;
+                                         getConfig ().setIrSensorOn (bool (std::atoi (arg.c_str ())));
+                                         refreshAll ();
                                  }
                          }),
 
-                cl::cmd (String ("setBright"),
+                cl::cmd (String ("sn"),
                          [&] (String const &arg) {
-                                 if (arg == "auto") {
-                                         getConfig ().setBrightness (Brightness::levelAuto);
-                                 }
-                                 else if (!arg.empty () && arg[0] >= '1' && arg[0] <= '4') {
-                                         getConfig ().setBrightness (Brightness (arg[0] - '0'));
+                                 if (arg.empty ()) {
+                                         usbWrite ((getConfig ().isBuzzerOn ()) ? ("1\r\n\r\n") : ("0\r\n\r\n"));
                                  }
                                  else {
-                                         usbWrite ("1-4 or auto\r\n\r\n");
+                                         getConfig ().setBuzzerOn (bool (std::atoi (arg.c_str ())));
+                                         refreshAll ();
                                  }
-
-                                 refreshAll ();
                          }),
-                cl::cmd (String ("getBright"),
-                         [] {
-                                 auto br = getConfig ().getBrightness ();
 
-                                 if (br == Brightness::levelAuto) {
-                                         usbWrite ("auto");
+                cl::cmd (String ("res"),
+                         [&] (String const &arg) {
+                                 if (arg.empty ()) {
+                                         switch (getConfig ().getResolution ()) {
+                                         case Resolution::ms_10:
+                                                 usbWrite ("10ms\r\n\r\n");
+                                                 break;
+
+                                         case Resolution::ms_1:
+                                                 usbWrite ("1ms\r\n\r\n");
+                                                 break;
+
+                                         case Resolution::us_100:
+                                                 usbWrite ("100us\r\n\r\n");
+                                                 break;
+
+                                         case Resolution::us_10:
+                                                 usbWrite ("10us\r\n\r\n");
+                                                 break;
+
+                                         default:
+                                                 break;
+                                         }
                                  }
                                  else {
-                                         std::array<char, 11> buf{};
-                                         itoa ((unsigned int)(br), buf.data ());
-                                         usbWrite (buf.cbegin ());
-                                 }
+                                         if (arg == "10ms") {
+                                                 getConfig ().setResolution (Resolution::ms_10);
+                                         }
+                                         else if (arg == "1ms") {
+                                                 getConfig ().setResolution (Resolution::ms_1);
+                                         }
+                                         else if (arg == "100us") {
+                                                 getConfig ().setResolution (Resolution::us_100);
+                                         }
+                                         else if (arg == "10us") {
+                                                 getConfig ().setResolution (Resolution::us_10);
+                                         }
+                                         else {
+                                                 usbWrite ("Valid options : 10ms, 1ms, 100us, 10us\r\n\r\n");
+                                         }
 
-                                 usbWrite ("\r\n\r\n");
+                                         refreshAll ();
+                                 }
                          }),
 
-                cl::cmd (String ("setFps"),
+                cl::cmd (String ("auto"),
                          [&] (String const &arg) {
-                                 int i = std::atoi (arg.c_str ());
+                                 if (arg.empty ()) {
+                                         switch (getConfig ().getAutoDisplayResult ()) {
+                                         case ResultDisplayStyle::secondFraction:
+                                                 usbWrite ("s\r\n\r\n");
+                                                 break;
 
-                                 if (i < MIN_FPS || i > MAX_FPS) {
-                                         usbWrite ("Correct values are [20, 10000]\r\n\r\n"); // TODO FPS is assumed to be between 20 and 10000.
-                                                                                              // Hardcoded
-                                         return;
+                                         case ResultDisplayStyle::milisecondOnly:
+                                                 usbWrite ("ms\r\n\r\n");
+                                                 break;
+
+                                         case ResultDisplayStyle::none:
+                                                 usbWrite ("none\r\n\r\n");
+                                                 break;
+
+                                         default:
+                                                 break;
+                                         }
                                  }
-
-                                 getConfig ().setFps (i);
-                                 refreshAll ();
+                                 else {
+                                         if (arg == "s") {
+                                                 getConfig ().setAutoDisplayResult (ResultDisplayStyle::secondFraction);
+                                         }
+                                         else if (arg == "ms") {
+                                                 getConfig ().setAutoDisplayResult (ResultDisplayStyle::milisecondOnly);
+                                         }
+                                         else if (arg == "none") {
+                                                 getConfig ().setAutoDisplayResult (ResultDisplayStyle::none);
+                                         }
+                                         else {
+                                                 usbWrite ("Valid options : s, ms, none\r\n\r\n");
+                                         }
+                                 }
                          }),
-                cl::cmd (String ("getFps"),
-                         [] {
-                                 print ((unsigned)getConfig ().getFps ());
-                                 usbWrite ("\r\n\r\n");
+
+                cl::cmd (String ("bright"),
+                         [&] (String const &arg) {
+                                 if (arg.empty ()) {
+                                         auto br = getConfig ().getBrightness ();
+
+                                         if (br == Brightness::levelAuto) {
+                                                 usbWrite ("auto");
+                                         }
+                                         else {
+                                                 std::array<char, 11> buf{};
+                                                 itoa ((unsigned int)(br), buf.data ());
+                                                 usbWrite (buf.cbegin ());
+                                         }
+
+                                         usbWrite ("\r\n\r\n");
+                                 }
+                                 else {
+
+                                         if (arg == "auto") {
+                                                 getConfig ().setBrightness (Brightness::levelAuto);
+                                         }
+                                         else if (!arg.empty () && arg[0] >= '1' && arg[0] <= '4') {
+                                                 getConfig ().setBrightness (Brightness (arg[0] - '0'));
+                                         }
+                                         else {
+                                                 usbWrite ("1-4 or auto\r\n\r\n");
+                                         }
+
+                                         refreshAll ();
+                                 }
+                         }),
+
+                cl::cmd (String ("fps"),
+                         [&] (String const &arg) {
+                                 if (arg.empty ()) {
+                                         print ((unsigned)getConfig ().getFps ());
+                                         usbWrite ("\r\n\r\n");
+                                 }
+                                 else {
+                                         int i = std::atoi (arg.c_str ());
+
+                                         if (i < MIN_FPS || i > MAX_FPS) {
+                                                 usbWrite ("Correct values are [20, 10000]\r\n\r\n"); // TODO FPS is assumed to be between 20 and
+                                                                                                      // 10000. Hardcoded
+                                                 return;
+                                         }
+
+                                         getConfig ().setFps (i);
+                                         refreshAll ();
+                                 }
                          }),
 
                 cl::cmd (String ("periph"),
@@ -283,22 +300,42 @@ auto &getCli ()
                                  print ("\r\n");
                          }),
 
-                cl::cmd (String ("getBlind"),
+                cl::cmd (String ("blind"),
                          [&] (String const &arg) {
-                                 print ((unsigned)getConfig ().getBlindTime ());
-                                 usbWrite ("\r\n\r\n");
-                         }),
-                cl::cmd (String ("setBlind"),
-                         [&] (String const &arg) {
-                                 int i = std::atoi (arg.c_str ());
-
-                                 if (i < 0 || i > std::numeric_limits<uint16_t>::max () - 1) {
-                                         usbWrite ("Correct values are [0, 65534]\r\n\r\n");
-                                         return;
+                                 if (arg.empty ()) {
+                                         print ((unsigned)getConfig ().getBlindTime ());
+                                         usbWrite ("\r\n\r\n");
                                  }
+                                 else {
+                                         int i = std::atoi (arg.c_str ());
 
-                                 getConfig ().setBlindTime (i);
-                                 refreshAll ();
+                                         if (i < 0 || i > std::numeric_limits<uint16_t>::max () - 1) {
+                                                 usbWrite ("Correct values are [0, 65534]ms\r\n\r\n");
+                                                 return;
+                                         }
+
+                                         getConfig ().setBlindTime (i);
+                                         refreshAll ();
+                                 }
+                         }),
+
+                cl::cmd (String ("trigger"),
+                         [&] (String const &arg) {
+                                 if (arg.empty ()) {
+                                         print ((unsigned)getConfig ().getMinTreggerEventMs ());
+                                         usbWrite ("\r\n\r\n");
+                                 }
+                                 else {
+                                         int i = std::atoi (arg.c_str ());
+
+                                         if (i < 0 || i > std::numeric_limits<uint16_t>::max () - 1) {
+                                                 usbWrite ("Correct values are [0, 65534]ms\r\n\r\n");
+                                                 return;
+                                         }
+
+                                         getConfig ().setMinTriggerEventMs (i);
+                                         refreshAll ();
+                                 }
                          })
 
         );

@@ -32,7 +32,7 @@ void CanProtocol::onCanNewFrame (CanFrame const &frame)
                         // Expects (beam);
                         uint16_t tmp = uint16_t (frame.data[1]) | uint16_t (frame.data[2]) << 8;
                         getConfig ().setBlindTime (tmp);
-                        BeamState state;
+                        BeamState state{};
 
                         //  TODO implement
                         // if (!beam->isActive ()) {

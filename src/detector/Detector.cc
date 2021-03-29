@@ -9,14 +9,14 @@
 #include "Detector.h"
 
 #ifndef UNIT_TEST
-// #include "Gpio.h"
-// Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
-// #define debugPin(x) senseOn.set (x)
-#define debugPin(x)
+#include "Gpio.h"
+Gpio senseOn{GPIOB, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
+#define debugPin(x) senseOn.set (x)
+// #define debugPin(x)
 #include "Container.h"
 #else
 #define __disable_irq(x) x // NOLINT this is for unit testing
-#define __enable_irq(x) x  // NOLINT
+#define __enable_irq(x) x // NOLINT
 #define debugPin(x)
 #endif
 
@@ -142,8 +142,10 @@ void EdgeFilter::onEdge (Edge const &e)
 
                 if (longHighState && longLowState && isBeamClean ()) {
                         callback->report (DetectorEventType::trigger, highStateStart);
-                        blindState = BlindState::blind;
-                        blindStateStart = e.timePoint;
+                        if (getConfig ().getBlindTime () > 0) {
+                                blindState = BlindState::blind;
+                                blindStateStart = e.timePoint;
+                        }
                         reset (); // To prevent reporting twice
                 }
         }
@@ -311,8 +313,10 @@ void EdgeFilter::run (Result1us const &now)
                 if (longHighState && longLowState && isBeamClean ()) {
                         __disable_irq ();
                         callback->report (DetectorEventType::trigger, currentHighStateStart);
-                        blindState = BlindState::blind;
-                        blindStateStart = now;
+                        if (getConfig ().getBlindTime () > 0) {
+                                blindState = BlindState::blind;
+                                blindStateStart = now;
+                        }
                         reset ();
                         __enable_irq ();
                 }
