@@ -23,6 +23,7 @@ Gpio consoleTx{GPIOA, GPIO_PIN_9, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
 #define __disable_irq(x) x // NOLINT this is for unit testing
 #define __enable_irq(x) x // NOLINT
 #define stateChangePin(x)
+#define triggerOutputPin(x)
 #endif
 
 /*****************************************************************************/
@@ -160,7 +161,11 @@ void EdgeFilter::onEdge (Edge const &e)
 
 /****************************************************************************/
 
+#ifndef UNIT_TEST
 void EdgeFilter::run ()
+#else
+void EdgeFilter::run (Result1us now)
+#endif
 {
         if (!active || queue.empty ()) {
                 return;
@@ -168,7 +173,10 @@ void EdgeFilter::run ()
 
         __disable_irq ();
         auto back = queue.back ();
+        // auto lastButOne = queue.getE1 ();
+#ifndef UNIT_TEST
         auto now = stopWatch.getTime ();
+#endif
         __enable_irq ();
 
         /*--------------------------------------------------------------------------*/
@@ -189,6 +197,8 @@ void EdgeFilter::run ()
         /*--------------------------------------------------------------------------*/
 
         Result1us lastSignalChange = back.timePoint;
+        // Result1us lastLevelDuration = lastSignalChange - lastButOne.timePoint;
+        // bool lastSignalChangeLongAgo = now - lastSignalChange > std::min<Result1us> (minTriggerEvent1Us, lastLevelDuration);
         bool lastSignalChangeLongAgo = now - lastSignalChange >= minTriggerEvent1Us;
 
         if (lastSignalChangeLongAgo) {

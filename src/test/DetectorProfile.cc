@@ -32,6 +32,6 @@ int main ()
         for (Result1us i = 0; i < 10000; ++i) {
                 edgeFilter.onEdge ({i * 200, EdgePolarity::rising});
                 edgeFilter.onEdge ({i * 200 + 100, EdgePolarity::falling});
-                // edgeFilter.run (i * 200 + 100);
+                edgeFilter.run (i * 200 + 100);
         }
 }

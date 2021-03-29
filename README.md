@@ -48,6 +48,11 @@ Test trigger PB3
 # Current draw when powered on (by RTC & LDO)
 1.9 - 2.5 µA
 
+# Valgrind
+```sh
+valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes ./profile 
+```
 
 FAQ
 * Noise error : check terminator switches. Check if cables are connected on both sides.
+
