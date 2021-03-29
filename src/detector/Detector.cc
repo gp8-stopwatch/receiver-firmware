@@ -160,15 +160,21 @@ void EdgeFilter::onEdge (Edge const &e)
 
 /****************************************************************************/
 
-void EdgeFilter::run (Result1us const &now)
+void EdgeFilter::run ()
 {
         if (!active || queue.empty ()) {
                 return;
         }
 
+        __disable_irq ();
+        auto back = queue.back ();
+        auto now = stopWatch.getTime ();
+        __enable_irq ();
+
         /*--------------------------------------------------------------------------*/
         /* Blind state.                                                             */
         /*--------------------------------------------------------------------------*/
+
         if (blindState == BlindState::blind) {
                 if (now - blindStateStart >= msToResult1us (getConfig ().getBlindTime ())) {
                         blindState = BlindState::notBlind;
@@ -181,9 +187,6 @@ void EdgeFilter::run (Result1us const &now)
         /*--------------------------------------------------------------------------*/
         /* Steady state detection, pwmState correction.                             */
         /*--------------------------------------------------------------------------*/
-        __disable_irq ();
-        auto back = queue.back ();
-        __enable_irq ();
 
         Result1us lastSignalChange = back.timePoint;
         bool lastSignalChangeLongAgo = now - lastSignalChange >= minTriggerEvent1Us;

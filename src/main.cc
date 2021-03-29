@@ -74,7 +74,7 @@ int main ()
 #endif
 
                 // getBeam ().run ();
-                getIrDetector ().run (getStopWatch ().getTime ());
+                getIrDetector ().run ();
 
 #ifdef WITH_USB
                 usbcli::run ();

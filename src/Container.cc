@@ -185,7 +185,7 @@ EdgeFilter &getIrDetector ()
 {
         // static EdgeDetector triggerDetector{};
         static DetectorCallback tc;
-        static EdgeFilter edgeFilter{/* &triggerDetector, */ EdgeFilter::PwmState (getIrTriggerInput ().get ())};
+        static EdgeFilter edgeFilter{/* &triggerDetector, */ EdgeFilter::PwmState (getIrTriggerInput ().get ()), getStopWatch ()};
         edgeFilter.setCallback (&tc);
         return edgeFilter;
 }
@@ -195,7 +195,7 @@ EdgeFilter &getExtDetector ()
         // static EdgeDetector triggerDetector{};
         static DetectorCallback tc;
         // TODO different detector.
-        static EdgeFilter edgeFilter{/* &triggerDetector,  */ EdgeFilter::PwmState (getExtTriggerInput ().get ())};
+        static EdgeFilter edgeFilter{/* &triggerDetector,  */ EdgeFilter::PwmState (getExtTriggerInput ().get ()), getStopWatch ()};
         edgeFilter.setCallback (&tc);
         return edgeFilter;
 }

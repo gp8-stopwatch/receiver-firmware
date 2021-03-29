@@ -8,6 +8,7 @@
 
 #pragma once
 #include "Config.h"
+#include "StopWatch.h"
 #include "Types.h"
 #include <cstdint>
 #include <etl/circular_buffer.h>
@@ -89,7 +90,7 @@ class EdgeFilter {
 public:
         enum class PwmState { low = 0, high = 1, middle };
 
-        EdgeFilter (PwmState initialState) : pwmState{initialState}
+        EdgeFilter (PwmState initialState, StopWatch &st) : stopWatch{st}, pwmState{initialState}
         {
                 recalculateConstants ();
 
@@ -110,7 +111,7 @@ public:
         void onEdge (Edge const &e);
 
         /// "main" context. As frequently as possible.
-        void run (Result1us const &now);
+        void run ();
 
         void setCallback (IEdgeDetectorCallback *cb) { callback = cb; }
 
@@ -143,6 +144,8 @@ public:
         bool isBeamClean () const { return beamState == BeamState::present && noiseState == NoiseState::noNoise; }
 
 private:
+        StopWatch &stopWatch;
+
         void reset ()
         {
                 highStateStart = middleStateStart = lowStateStart;
