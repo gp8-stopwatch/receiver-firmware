@@ -47,26 +47,39 @@ struct Edge {
 class EdgeQueue {
 public:
         bool empty () const { return _empty; }
-        Edge &back () { return e2; }
+        Edge &back () { return e6; }
         Edge &front () { return e0; }
 
         Edge &getE0 () { return e0; }
         Edge &getE1 () { return e1; }
-        Edge &getE2 () { return e2; }
+        // Edge &getE2 () { return e2; }
+        // Edge &getE3 () { return e3; }
+        // Edge &getE4 () { return e4; }
 
         void push (Edge const &e)
         {
                 e0 = e1;
                 e1 = e2;
-                e2 = e;
+                e2 = e3;
+                e3 = e4;
+                e4 = e5;
+                e5 = e6;
+                e6 = e;
                 _empty = false;
         }
+
+        Result1us getDurationA () const { return (e1.timePoint - e0.timePoint) + (e3.timePoint - e2.timePoint) + (e5.timePoint - e4.timePoint); }
+        Result1us getDurationB () const { return (e2.timePoint - e1.timePoint) + (e4.timePoint - e3.timePoint) + (e6.timePoint - e5.timePoint); }
 
 private:
         bool _empty{true};
         Edge e0;
         Edge e1;
         Edge e2;
+        Edge e3;
+        Edge e4;
+        Edge e5;
+        Edge e6;
 };
 
 // Warning! Due to optimization reasons, the values below has to be in sync with enum Event

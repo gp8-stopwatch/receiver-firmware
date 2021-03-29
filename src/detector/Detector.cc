@@ -79,9 +79,9 @@ void EdgeFilter::onEdge (Edge const &e)
 
         // Calculate duty cycle of present slice of the signal
         Result1us cycleTresholdCalculated = (queue.back ().timePoint - queue.front ().timePoint)
-                * getConfig ().getDutyTresholdPercent ();                           // slice length times treshold. See equation in the docs.
-        Result1us hiDuration = queue.getE1 ().timePoint - queue.getE0 ().timePoint; // We assume for now, that queue.getE0() is rising
-        Result1us lowDuration = queue.getE2 ().timePoint - queue.getE1 ().timePoint;
+                * getConfig ().getDutyTresholdPercent (); // slice length times treshold. See equation in the docs.
+        Result1us hiDuration = queue.getDurationA ();     // We assume for now, that queue.getE0() is rising
+        Result1us lowDuration = queue.getDurationB ();
 
         // Find out which edge in the queue is rising, which falling.
         auto *firstRising = &queue.getE0 (); // Pointers are smaller than Edge object
