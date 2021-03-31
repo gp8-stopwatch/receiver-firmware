@@ -117,7 +117,6 @@ void EdgeFilter::onEdge (Edge const &e)
         /* PWM State transitions depending on dutyCycle and recent level length.    */
         /*--------------------------------------------------------------------------*/
 
-        // TODO this calculation can overflow 32bits, consider removing * 100, and assume duty == 50? That would elminate middle state as well.
         if ((hiDuration /* * 100 */ > cycleTresholdCalculated) || // PWM of the slice is high
             longHighEdge)                                         // Or the high level was long itself
         {
@@ -127,8 +126,8 @@ void EdgeFilter::onEdge (Edge const &e)
                         stateChangePin (true);
                 }
         }
-        /* else */ if ((lowDuration /* * 100 */ >= cycleTresholdCalculated) || // PWM of the slice is low
-                       longLowEdge) {                                          // Or the low level was long enogh itself
+        else if ((lowDuration /* * 100 */ >= cycleTresholdCalculated) || // PWM of the slice is low
+                 longLowEdge) {                                          // Or the low level was long enogh itself
                 if (pwmState != PwmState::low) {
                         pwmState = PwmState::low;
                         lowStateStart = firstFalling->fullTimePoint;
@@ -145,8 +144,8 @@ void EdgeFilter::onEdge (Edge const &e)
         /* Check trigger event conditions.                                          */
         /*--------------------------------------------------------------------------*/
 
-        if (highStateStart < lowStateStart &&    // Correct order of states : first middleState, then High, and at the end low
-            middleStateStart < highStateStart) { // No middle state between high and low
+        if (highStateStart < lowStateStart /* &&    // Correct order of states : first middleState, then High, and at the end low
+            middleStateStart < highStateStart */) { // No middle state between high and low
                 bool longHighState = resultLS (lowStateStart - highStateStart) >= minTriggerEvent1Us;
                 bool longLowState = resultLS (e.fullTimePoint - lowStateStart) >= minTriggerEvent1Us;
 
@@ -200,9 +199,7 @@ void EdgeFilter::run (Result1us now)
         /* Steady state detection, pwmState correction.                             */
         /*--------------------------------------------------------------------------*/
 
-        Result1us lastSignalChange = back.fullTimePoint;
-        // Result1us lastLevelDuration = lastSignalChange - lastButOne.timePoint;
-        // bool lastSignalChangeLongAgo = now - lastSignalChange > std::min<Result1us> (minTriggerEvent1Us, lastLevelDuration);
+        auto lastSignalChange = back.fullTimePoint;
         bool lastSignalChangeLongAgo = resultLS (now - lastSignalChange) >= minTriggerEvent1Us;
 
         if (lastSignalChangeLongAgo) {
@@ -230,7 +227,7 @@ void EdgeFilter::run (Result1us now)
         auto currentState = pwmState;
         auto currentHighStateStart = highStateStart;
         auto currentLowStateStart = lowStateStart;
-        auto currentMiddleStateStart = middleStateStart;
+        // auto currentMiddleStateStart = middleStateStart;
         __enable_irq ();
 
         /*--------------------------------------------------------------------------*/
@@ -328,8 +325,8 @@ void EdgeFilter::run (Result1us now)
                 bool longLowState{};
 
                 if (currentState == PwmState::low &&                // Correct current state
-                    currentHighStateStart < currentLowStateStart && // And correct order of previous pwmStates
-                    currentMiddleStateStart < currentHighStateStart) {
+                    currentHighStateStart < currentLowStateStart /* && // And correct order of previous pwmStates
+                    currentMiddleStateStart < currentHighStateStart */) {
 
                         longHighState = resultLS (currentLowStateStart - currentHighStateStart) >= minTriggerEvent1Us;
                         longLowState = resultLS (now - currentLowStateStart) >= minTriggerEvent1Us;
