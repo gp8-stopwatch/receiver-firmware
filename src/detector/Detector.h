@@ -32,6 +32,8 @@ enum class EdgePolarity { falling = 0, rising = 1 };
  * Signal edge with polarity and time of occurence.
  */
 struct Edge {
+        Edge () = default;
+        Edge (Result1us const &ft, EdgePolarity pol) : fullTimePoint{ft}, timePoint{resultLS (ft)}, polarity{pol} {}
         // Result1us timePoint{}; // 64 bits
         Result1us fullTimePoint{}; // 64 bits
         Result1usLS timePoint{};   // 32 bits, less significant portion of fullTimePoint. Up to 70 minutes can be stored here.
@@ -121,14 +123,22 @@ public:
                 recalculateConstants ();
 
                 if (pwmState == PwmState::low) {
-                        queue.push ({0, 0, EdgePolarity::rising});
-                        queue.push ({0, 0, EdgePolarity::falling});
+                        queue.push ({0, EdgePolarity::rising});
+                        queue.push ({0, EdgePolarity::falling});
+                        queue.push ({0, EdgePolarity::rising});
+                        queue.push ({0, EdgePolarity::falling});
+                        queue.push ({0, EdgePolarity::rising});
+                        queue.push ({0, EdgePolarity::falling});
                 }
                 else {
                         // Possibly remove this, and assume that initial state is always low. Then initial checks in onEdge would assure that
                         // edges are in correct order?
-                        queue.push ({0, 0, EdgePolarity::falling});
-                        queue.push ({0, 0, EdgePolarity::rising});
+                        queue.push ({0, EdgePolarity::falling});
+                        queue.push ({0, EdgePolarity::rising});
+                        queue.push ({0, EdgePolarity::falling});
+                        queue.push ({0, EdgePolarity::rising});
+                        queue.push ({0, EdgePolarity::falling});
+                        queue.push ({0, EdgePolarity::rising});
                         // beamState = BeamState::absent;
                 }
         }

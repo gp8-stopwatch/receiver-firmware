@@ -128,7 +128,7 @@ TEST_CASE ("Edge cases", "[detector]")
                 sim.signal ({10000, 20000}, 30000); // NOLINT
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::trigger);
-                REQUIRE (events.front ().timePoint == 10 * 1000);
+                REQUIRE (uint64_t (events.front ().timePoint) == 10 * 1000);
         }
 
         SECTION ("Simplest case 3 edges")
@@ -198,6 +198,24 @@ TEST_CASE ("Edge cases", "[detector]")
                  * 0    10ms   20ms  25(100) 30ms    50ms
                  */
                 sim.signal ({10000, 15000, 15100, 20000, 25000, 25100}, 50000); // NOLINT
+                REQUIRE (events.size () == 1);
+                REQUIRE (events.front ().type == DetectorEventType::trigger);
+                REQUIRE (events.front ().timePoint == 10 * 1000);
+        }
+
+        SECTION ("Rising at the end, 1 noise")
+        {
+
+                /*
+                 *        +--+---+   +   +
+                 *        |  |   |   |   |
+                 *        |  |   |   |   |
+                 *        |  |   |   |   |
+                 *        |  |   |   |   |
+                 * -------+  +   +---+---+
+                 * 0    10ms   20ms     30ms
+                 */
+                sim.signal ({10000, 15000, 15100, 20000, 25000, 25100, 30000}); // NOLINT
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::trigger);
                 REQUIRE (events.front ().timePoint == 10 * 1000);
@@ -673,13 +691,15 @@ TEST_CASE ("Noise level", "[detector]")
                 uint32_t timePoint{};
 
                 // NOLINTNEXTLINE 2 This is actually 2 seconds worth of signal
-                for (uint32_t i = 0; i < msToResult1us (EdgeFilter::NOISE_CALCULATION_PERIOD_MS) / EdgeFilter::MIN_NOISE_SPIKE_1US + 10; ++i) {
-                        timePoint = i * EdgeFilter::MIN_NOISE_SPIKE_1US * 2;                   // Every 20ms
-                        sim.signal ({timePoint, timePoint + EdgeFilter::MIN_NOISE_SPIKE_1US}); // NOLINT
+                for (uint32_t i = 0;
+                     i < uint64_t (msToResult1us (EdgeFilter::NOISE_CALCULATION_PERIOD_MS)) / uint32_t (EdgeFilter::MIN_NOISE_SPIKE_1US) + 10;
+                     ++i) {
+                        timePoint = i * uint32_t (EdgeFilter::MIN_NOISE_SPIKE_1US) * 2;                   // Every 20ms
+                        sim.signal ({timePoint, timePoint + uint32_t (EdgeFilter::MIN_NOISE_SPIKE_1US)}); // NOLINT
                 }
 
                 // This is only to recalulate the noise
-                sim.signal ({}, timePoint + EdgeFilter::MIN_NOISE_SPIKE_1US + 1); // NOLINT
+                sim.signal ({}, timePoint + uint32_t (EdgeFilter::MIN_NOISE_SPIKE_1US) + 1); // NOLINT
                 REQUIRE (edgeFilter.getNoiseLevel () == 15);
         }
 
@@ -692,13 +712,14 @@ TEST_CASE ("Noise level", "[detector]")
                 auto noiseSpikeLen = EdgeFilter::MIN_NOISE_SPIKE_1US / 2;
                 uint32_t timePoint{};
 
-                for (uint32_t i = 0; i < msToResult1us (EdgeFilter::NOISE_CALCULATION_PERIOD_MS) / noiseSpikeLen + 10; ++i) { // NOLINT
-                        uint32_t timePoint = i * noiseSpikeLen * 2;                                                           // Every 20ms
+                for (uint32_t i = 0; i < uint32_t (resultLS (msToResult1us (EdgeFilter::NOISE_CALCULATION_PERIOD_MS)) / noiseSpikeLen + 10);
+                     ++i) {                                                    // NOLINT
+                        uint32_t timePoint = i * uint32_t (noiseSpikeLen * 2); // Every 20ms
                         // sim.signal ({timePoint, timePoint + noiseSpikeLen});                                                  // NOLINT
 
                         edgeFilter.onEdge ({timePoint, EdgePolarity::rising});
-                        edgeFilter.onEdge ({timePoint + noiseSpikeLen, EdgePolarity::falling});
-                        edgeFilter.run (timePoint + noiseSpikeLen);
+                        edgeFilter.onEdge ({timePoint + uint32_t (noiseSpikeLen), EdgePolarity::falling});
+                        edgeFilter.run (timePoint + uint32_t (noiseSpikeLen));
                 }
 
                 // This is only to recalulate the noise
@@ -707,182 +728,182 @@ TEST_CASE ("Noise level", "[detector]")
         }
 }
 
-TEST_CASE ("Duty cycle", "[detector]")
-{
-        TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-        edgeFilter.setCallback (&tc);
-        SignalSimulator sim{edgeFilter};
-        events.clear ();
+// TEST_CASE ("Duty cycle", "[detector]")
+// {
+//         TestDetectorCallback tc;
+//         EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+//         edgeFilter.setCallback (&tc);
+//         SignalSimulator sim{edgeFilter};
+//         events.clear ();
 
-        SECTION ("Duty cycle 100")
-        {
-                /*
-                 *        +-----+
-                 *        |     |
-                 *        |     |
-                 *        |     |
-                 *        |     |
-                 * -------+     +-------+
-                 * 0    10ms   20ms     30ms
-                 */
-                getConfig ().setDutyTresholdPercent (100); // NOLINT
-                sim.signal ({10000, 20000}, 30000);        // NOLINT
-                REQUIRE (events.size () == 1);
-                REQUIRE (events.front ().type == DetectorEventType::trigger);
-                REQUIRE (events.front ().timePoint == 10 * 1000);
-        }
+//         SECTION ("Duty cycle 100")
+//         {
+//                 /*
+//                  *        +-----+
+//                  *        |     |
+//                  *        |     |
+//                  *        |     |
+//                  *        |     |
+//                  * -------+     +-------+
+//                  * 0    10ms   20ms     30ms
+//                  */
+//                 getConfig ().setDutyTresholdPercent (100); // NOLINT
+//                 sim.signal ({10000, 20000}, 30000);        // NOLINT
+//                 REQUIRE (events.size () == 1);
+//                 REQUIRE (events.front ().type == DetectorEventType::trigger);
+//                 REQUIRE (events.front ().timePoint == 10 * 1000);
+//         }
 
-        SECTION ("Duty cycle 100 - 2")
-        {
+//         SECTION ("Duty cycle 100 - 2")
+//         {
 
-                /*
-                 *        +--+---+
-                 *        |  |   |
-                 *        |  |   |
-                 *        |  |   |
-                 *        |  |   |
-                 * -------+  +   +-------+
-                 * 0    10ms   20ms     30ms
-                 */
-                getConfig ().setDutyTresholdPercent (100);        // NOLINT
-                sim.signal ({10000, 15000, 15100, 20000}, 30000); // NOLINT
-                REQUIRE (events.empty ());
-        }
+//                 /*
+//                  *        +--+---+
+//                  *        |  |   |
+//                  *        |  |   |
+//                  *        |  |   |
+//                  *        |  |   |
+//                  * -------+  +   +-------+
+//                  * 0    10ms   20ms     30ms
+//                  */
+//                 getConfig ().setDutyTresholdPercent (100);        // NOLINT
+//                 sim.signal ({10000, 15000, 15100, 20000}, 30000); // NOLINT
+//                 REQUIRE (events.empty ());
+//         }
 
-        SECTION ("Duty cycle 100 - 3")
-        {
+//         SECTION ("Duty cycle 100 - 3")
+//         {
 
-                /*
-                 *        +------+       +
-                 *        |      |       |
-                 *        |      |       |
-                 *        |      |       |
-                 *        |      |       |
-                 * -------+      +-------+
-                 * 0    10ms   20ms     30ms
-                 */
-                getConfig ().setDutyTresholdPercent (100); // NOLINT
-                sim.signal ({10000, 20000, 30000});        // NOLINT
-                REQUIRE (events.size () == 1);
-                REQUIRE (events.front ().type == DetectorEventType::trigger);
-                REQUIRE (events.front ().timePoint == 10 * 1000);
-        }
+//                 /*
+//                  *        +------+       +
+//                  *        |      |       |
+//                  *        |      |       |
+//                  *        |      |       |
+//                  *        |      |       |
+//                  * -------+      +-------+
+//                  * 0    10ms   20ms     30ms
+//                  */
+//                 getConfig ().setDutyTresholdPercent (100); // NOLINT
+//                 sim.signal ({10000, 20000, 30000});        // NOLINT
+//                 REQUIRE (events.size () == 1);
+//                 REQUIRE (events.front ().type == DetectorEventType::trigger);
+//                 REQUIRE (events.front ().timePoint == 10 * 1000);
+//         }
 
-        SECTION ("Duty cycle 100 - spike")
-        {
+//         SECTION ("Duty cycle 100 - spike")
+//         {
 
-                /*
-                 *        +--+---+       +
-                 *        |  |   |       |
-                 *        |  |   |       |
-                 *        |  |   |       |
-                 *        |  |   |       |
-                 * -------+  +   +-------+
-                 * 0    10ms   20ms     30ms
-                 */
-                getConfig ().setDutyTresholdPercent (100);        // NOLINT
-                sim.signal ({10000, 15000, 15100, 20000, 30000}); // NOLINT
-                REQUIRE (events.empty ());
-        }
+//                 /*
+//                  *        +--+---+       +
+//                  *        |  |   |       |
+//                  *        |  |   |       |
+//                  *        |  |   |       |
+//                  *        |  |   |       |
+//                  * -------+  +   +-------+
+//                  * 0    10ms   20ms     30ms
+//                  */
+//                 getConfig ().setDutyTresholdPercent (100);        // NOLINT
+//                 sim.signal ({10000, 15000, 15100, 20000, 30000}); // NOLINT
+//                 REQUIRE (events.empty ());
+//         }
 
-        SECTION ("Duty cycle 100 - pos. spike")
-        {
+//         SECTION ("Duty cycle 100 - pos. spike")
+//         {
 
-                /*
-                 *        +------+   +   +
-                 *        |      |   |   |
-                 *        |      |   |   |
-                 *        |      |   |   |
-                 *        |      |   |   |
-                 * -------+      +---+---+
-                 * 0    10ms   20ms     30ms
-                 */
-                getConfig ().setDutyTresholdPercent (100);        // NOLINT
-                sim.signal ({10000, 20000, 25000, 25100, 30000}); // NOLINT
-                REQUIRE (events.empty ());
-        }
+//                 /*
+//                  *        +------+   +   +
+//                  *        |      |   |   |
+//                  *        |      |   |   |
+//                  *        |      |   |   |
+//                  *        |      |   |   |
+//                  * -------+      +---+---+
+//                  * 0    10ms   20ms     30ms
+//                  */
+//                 getConfig ().setDutyTresholdPercent (100);        // NOLINT
+//                 sim.signal ({10000, 20000, 25000, 25100, 30000}); // NOLINT
+//                 REQUIRE (events.empty ());
+//         }
 
-        SECTION ("Duty cycle 100 - 2 pos. spikes")
-        {
+//         SECTION ("Duty cycle 100 - 2 pos. spikes")
+//         {
 
-                /*
-                 *        +------+   +     +       +
-                 *        |      |   |     |       |
-                 *        |      |   |     |       |
-                 *        |      |   |     |       |
-                 *        |      |   |     |       |
-                 * -------+      +---+-----+-------+
-                 * 0    10ms   20ms        31ms    50ms
-                 */
-                getConfig ().setDutyTresholdPercent (100);                      // NOLINT
-                sim.signal ({10000, 20000, 25000, 25100, 31000, 31050, 50000}); // NOLINT
-                REQUIRE (events.empty ());
-        }
+//                 /*
+//                  *        +------+   +     +       +
+//                  *        |      |   |     |       |
+//                  *        |      |   |     |       |
+//                  *        |      |   |     |       |
+//                  *        |      |   |     |       |
+//                  * -------+      +---+-----+-------+
+//                  * 0    10ms   20ms        31ms    50ms
+//                  */
+//                 getConfig ().setDutyTresholdPercent (100);                      // NOLINT
+//                 sim.signal ({10000, 20000, 25000, 25100, 31000, 31050, 50000}); // NOLINT
+//                 REQUIRE (events.empty ());
+//         }
 
-        SECTION ("Duty cycle 100 - 2,2 pos. spike")
-        {
+//         SECTION ("Duty cycle 100 - 2,2 pos. spike")
+//         {
 
-                /*
-                 *        +------+   +         +
-                 *        |      |   |         |
-                 *        |      |   |         |
-                 *        |      |   |         |
-                 *        |      |   |         |
-                 * -------+      +---+----++---+----+
-                 * 0    10ms   20ms            35ms
-                 *                      30,31ms     50ms
-                 */
-                getConfig ().setDutyTresholdPercent (100);                      // NOLINT
-                sim.signal ({10000, 20000, 25000, 25100, 35100, 35200}, 50000); // NOLINT
-                REQUIRE (events.empty ());
-        }
-}
+//                 /*
+//                  *        +------+   +         +
+//                  *        |      |   |         |
+//                  *        |      |   |         |
+//                  *        |      |   |         |
+//                  *        |      |   |         |
+//                  * -------+      +---+----++---+----+
+//                  * 0    10ms   20ms            35ms
+//                  *                      30,31ms     50ms
+//                  */
+//                 getConfig ().setDutyTresholdPercent (100);                      // NOLINT
+//                 sim.signal ({10000, 20000, 25000, 25100, 35100, 35200}, 50000); // NOLINT
+//                 REQUIRE (events.empty ());
+//         }
+// }
 
-TEST_CASE ("Duty cycle less", "[detector]")
-{
-        TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
-        edgeFilter.setCallback (&tc);
-        SignalSimulator sim{edgeFilter};
-        events.clear ();
+// TEST_CASE ("Duty cycle less", "[detector]")
+// {
+//         TestDetectorCallback tc;
+//         EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+//         edgeFilter.setCallback (&tc);
+//         SignalSimulator sim{edgeFilter};
+//         events.clear ();
 
-        SECTION ("Duty cycle 95")
-        {
+//         SECTION ("Duty cycle 95")
+//         {
 
-                /*
-                 *        +------+   ++         +
-                 *        |      |   ||         |
-                 *        |      |   ||         |
-                 *        |      |   ||         |
-                 *        |      |   ||         |
-                 * -------+      +---++----++---+----+
-                 * 0    10ms   20ms            35ms
-                 *                      30,31ms     50ms
-                 */
-                getConfig ().setDutyTresholdPercent (95);                                     // NOLINT
-                sim.signal ({10000, 20000, 25000, 25100, 25200, 25300, 36000, 36000}, 50000); // NOLINT
-                REQUIRE (events.empty ());
-        }
+//                 /*
+//                  *        +------+   ++         +
+//                  *        |      |   ||         |
+//                  *        |      |   ||         |
+//                  *        |      |   ||         |
+//                  *        |      |   ||         |
+//                  * -------+      +---++----++---+----+
+//                  * 0    10ms   20ms            35ms
+//                  *                      30,31ms     50ms
+//                  */
+//                 getConfig ().setDutyTresholdPercent (95);                                     // NOLINT
+//                 sim.signal ({10000, 20000, 25000, 25100, 25200, 25300, 36000, 36000}, 50000); // NOLINT
+//                 REQUIRE (events.empty ());
+//         }
 
-        SECTION ("Duty cycle 95, rising end")
-        {
+//         SECTION ("Duty cycle 95, rising end")
+//         {
 
-                /*
-                 *        +------+   ++         +    +
-                 *        |      |   ||         |    |
-                 *        |      |   ||         |    |
-                 *        |      |   ||         |    |
-                 *        |      |   ||         |    |
-                 * -------+      +---++----++---+----+
-                 * 0    10ms   20ms            35ms
-                 *                      30,31ms     50ms
-                 */
-                getConfig ().setDutyTresholdPercent (95);                                     // NOLINT
-                sim.signal ({10000, 20000, 25000, 25100, 25200, 25300, 36000, 36000, 50000}); // NOLINT
-                REQUIRE (events.empty ());
-        }
-}
+//                 /*
+//                  *        +------+   ++         +    +
+//                  *        |      |   ||         |    |
+//                  *        |      |   ||         |    |
+//                  *        |      |   ||         |    |
+//                  *        |      |   ||         |    |
+//                  * -------+      +---++----++---+----+
+//                  * 0    10ms   20ms            35ms
+//                  *                      30,31ms     50ms
+//                  */
+//                 getConfig ().setDutyTresholdPercent (95);                                     // NOLINT
+//                 sim.signal ({10000, 20000, 25000, 25100, 25200, 25300, 36000, 36000, 50000}); // NOLINT
+//                 REQUIRE (events.empty ());
+//         }
+// }
 
 TEST_CASE ("No beam", "[detector]")
 {

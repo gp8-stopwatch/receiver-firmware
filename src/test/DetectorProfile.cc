@@ -29,7 +29,7 @@ int main ()
         edgeFilter.setCallback (&tc);
 
         // Noise
-        for (Result1us i = 0; i < 10000; ++i) {
+        for (uint64_t i = 0; i < 10000; ++i) {
                 edgeFilter.onEdge ({i * 200, EdgePolarity::rising});
                 edgeFilter.onEdge ({i * 200 + 100, EdgePolarity::falling});
                 edgeFilter.run (i * 200 + 100);

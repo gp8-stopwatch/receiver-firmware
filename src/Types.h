@@ -40,6 +40,7 @@ public:
         constexpr ResultT operator/ (ResultT const &b) const { return ResultT{t / b.t}; }
         constexpr ResultT operator* (ResultT const &b) const { return ResultT{t * b.t}; }
 
+        constexpr bool operator== (ResultT const &b) const { return t == b.t; }
         constexpr bool operator< (ResultT const &b) const { return t < b.t; }
         constexpr bool operator<= (ResultT const &b) const { return t <= b.t; }
         constexpr bool operator> (ResultT const &b) const { return t > b.t; }

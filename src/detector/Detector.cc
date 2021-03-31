@@ -58,8 +58,7 @@ void EdgeFilter::onEdge (Edge const &e)
                 // TODO there should be some bit in some register that would tell me that I've missed this ISR. This would be safer and cleaner
                 // to use. Reset queue so it's still full, but pulses are 0 width. This will automatically increase noiseCounter by 2
                 queue.push (e);
-                queue.push (
-                        {e.fullTimePoint, e.timePoint, (e.polarity == EdgePolarity::rising) ? (EdgePolarity::falling) : (EdgePolarity::rising)});
+                queue.push ({e.fullTimePoint, (e.polarity == EdgePolarity::rising) ? (EdgePolarity::falling) : (EdgePolarity::rising)});
 
                 /*
                  * TODO test and decide what to do here. To some extent the device can recover.
