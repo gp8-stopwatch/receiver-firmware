@@ -24,12 +24,51 @@
 #endif
 
 using String = etl::string<16>;
-using Result1us = uint64_t;   /// 1µs units. Maybe someday I'll use std::chrono
-using Result1usLS = uint32_t; /// 1µs units. Least signifficant part of Result1us
-using Result10us = uint32_t;  /// 10µs units.
+// using Result1us = uint64_t;   /// 1µs units. Maybe someday I'll use std::chrono
+// using Result1usLS = uint32_t; /// 1µs units. Least signifficant part of Result1us
+using Result10us = uint32_t; /// 10µs units.
 
-constexpr Result10us result1To10 (Result1us r) { return r / 10 + ((r % 10 < 5) ? (0) : (1)); }
-constexpr Result1us msToResult1us (uint32_t r) { return r * 1000; }
+/**
+ * std::chrono would be much better, but the binary size and code speed
+ * would have to be tested.
+ */
+template <typename T> class ResultT {
+public:
+        constexpr ResultT (T i = 0) : t{i} {}
+        constexpr ResultT operator- (ResultT const &b) const { return ResultT{t - b.t}; }
+        constexpr ResultT operator+ (ResultT const &b) const { return ResultT{t + b.t}; }
+        constexpr ResultT operator/ (ResultT const &b) const { return ResultT{t / b.t}; }
+        constexpr ResultT operator* (ResultT const &b) const { return ResultT{t * b.t}; }
+
+        constexpr bool operator< (ResultT const &b) const { return t < b.t; }
+        constexpr bool operator<= (ResultT const &b) const { return t <= b.t; }
+        constexpr bool operator> (ResultT const &b) const { return t > b.t; }
+        constexpr bool operator>= (ResultT const &b) const { return t >= b.t; }
+
+        constexpr ResultT &operator<<= (int i)
+        {
+                t <<= i;
+                return *this;
+        }
+
+        constexpr ResultT &operator|= (ResultT const &b)
+        {
+                t |= b.t;
+                return *this;
+        }
+
+        constexpr explicit operator T () const { return t; }
+
+private:
+        T t;
+};
+
+using Result1us = ResultT<uint64_t>;
+using Result1usLS = ResultT<uint32_t>;
+
+constexpr Result10us result1To10 (Result1us r) { return uint64_t (r) / 10 + ((uint64_t (r) % 10 < 5) ? (0) : (1)); }
+constexpr Result1us msToResult1us (uint32_t r) { return {r * 1000}; }
+constexpr Result1usLS resultLS (Result1us r) { return {static_cast<uint32_t> (static_cast<uint64_t> (r) & 0x0000'0000'ffff'ffffULL)}; }
 
 /**
  * How to display a result.

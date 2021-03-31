@@ -25,7 +25,8 @@ extern "C" void EXTI2_3_IRQHandler ()
 {
         if (__HAL_GPIO_EXTI_GET_IT (GPIO_PIN_3) != RESET) {
                 __HAL_GPIO_EXTI_CLEAR_IT (GPIO_PIN_3);
-                getExtDetector ().onEdge ({getStopWatch ().getTimeFromIsr (), EdgePolarity (getExtTriggerInput ().get ())});
+                Result1us fr = getStopWatch ().getTimeFromIsr ();
+                getExtDetector ().onEdge ({fr, resultLS (fr), EdgePolarity (getExtTriggerInput ().get ())});
         }
 }
 
@@ -35,6 +36,7 @@ extern "C" void EXTI0_1_IRQHandler ()
 {
         if (__HAL_GPIO_EXTI_GET_IT (GPIO_PIN_1) != RESET) {
                 __HAL_GPIO_EXTI_CLEAR_IT (GPIO_PIN_1);
-                getIrDetector ().onEdge ({getStopWatch ().getTimeFromIsr (), EdgePolarity (getIrTriggerInput ().get ())});
+                Result1us fr = getStopWatch ().getTimeFromIsr ();
+                getIrDetector ().onEdge ({fr, resultLS (fr), EdgePolarity (getIrTriggerInput ().get ())});
         }
 }

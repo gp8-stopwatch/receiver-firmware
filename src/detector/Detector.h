@@ -32,7 +32,9 @@ enum class EdgePolarity { falling = 0, rising = 1 };
  * Signal edge with polarity and time of occurence.
  */
 struct Edge {
-        Result1us timePoint{};
+        // Result1us timePoint{}; // 64 bits
+        Result1us fullTimePoint{}; // 64 bits
+        Result1usLS timePoint{};   // 32 bits, less significant portion of fullTimePoint. Up to 70 minutes can be stored here.
         EdgePolarity polarity{};
 };
 
@@ -68,8 +70,14 @@ public:
                 _empty = false;
         }
 
-        Result1us getDurationA () const { return (e1.timePoint - e0.timePoint) + (e3.timePoint - e2.timePoint) + (e5.timePoint - e4.timePoint); }
-        Result1us getDurationB () const { return (e2.timePoint - e1.timePoint) + (e4.timePoint - e3.timePoint) + (e6.timePoint - e5.timePoint); }
+        Result1usLS getDurationA () const
+        {
+                return (e1.timePoint - e0.timePoint) + (e3.timePoint - e2.timePoint) + (e5.timePoint - e4.timePoint);
+        }
+        Result1usLS getDurationB () const
+        {
+                return (e2.timePoint - e1.timePoint) + (e4.timePoint - e3.timePoint) + (e6.timePoint - e5.timePoint);
+        }
 
 private:
         bool _empty{true};
@@ -113,14 +121,14 @@ public:
                 recalculateConstants ();
 
                 if (pwmState == PwmState::low) {
-                        queue.push ({0, EdgePolarity::rising});
-                        queue.push ({0, EdgePolarity::falling});
+                        queue.push ({0, 0, EdgePolarity::rising});
+                        queue.push ({0, 0, EdgePolarity::falling});
                 }
                 else {
                         // Possibly remove this, and assume that initial state is always low. Then initial checks in onEdge would assure that
                         // edges are in correct order?
-                        queue.push ({0, EdgePolarity::falling});
-                        queue.push ({0, EdgePolarity::rising});
+                        queue.push ({0, 0, EdgePolarity::falling});
+                        queue.push ({0, 0, EdgePolarity::rising});
                         // beamState = BeamState::absent;
                 }
         }
@@ -159,7 +167,7 @@ public:
          * This value depends mostly (or solely) on the IR receiver used and its bandwith
          * (at least this is my understanding).
          */
-        static constexpr uint32_t MIN_NOISE_SPIKE_1US = 100;
+        static constexpr Result1usLS MIN_NOISE_SPIKE_1US = 100;
 
         // TODO turn off this EXTI as well. EDIT : button would not work. The button pin should be changed to 0-1 then.
         bool isActive () const { return active; }
@@ -177,7 +185,7 @@ private:
         }
 
         bool active{};
-        Result1us minTriggerEvent1Us{};
+        Result1usLS minTriggerEvent1Us{};
 
         /*--------------------------------------------------------------------------*/
         /* Trigger calculations                                                     */
