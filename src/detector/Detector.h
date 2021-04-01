@@ -50,6 +50,18 @@ struct Edge {
  */
 class EdgeQueue3 {
 public:
+        EdgeQueue3 (EdgePolarity firstPolarity)
+        {
+                if (firstPolarity == EdgePolarity::rising) { // Low edge at the start
+                        push ({0, EdgePolarity::rising});
+                        push ({0, EdgePolarity::falling});
+                }
+                else {
+                        push ({0, EdgePolarity::falling});
+                        push ({0, EdgePolarity::rising});
+                }
+        }
+
         bool empty () const { return _empty; }
         Edge &back () { return e2; }
         Edge &back1 () { return e1; }
@@ -90,6 +102,26 @@ private:
  */
 class EdgeQueue7 {
 public:
+        EdgeQueue7 (EdgePolarity firstPolarity)
+        {
+                if (firstPolarity == EdgePolarity::rising) {
+                        push ({0, EdgePolarity::rising});
+                        push ({0, EdgePolarity::falling});
+                        push ({0, EdgePolarity::rising});
+                        push ({0, EdgePolarity::falling});
+                        push ({0, EdgePolarity::rising});
+                        push ({0, EdgePolarity::falling});
+                }
+                else {
+                        push ({0, EdgePolarity::falling});
+                        push ({0, EdgePolarity::rising});
+                        push ({0, EdgePolarity::falling});
+                        push ({0, EdgePolarity::rising});
+                        push ({0, EdgePolarity::falling});
+                        push ({0, EdgePolarity::rising});
+                }
+        }
+
         bool empty () const { return _empty; }
         Edge &back () { return e6; }
         Edge &back1 () { return e5; }
@@ -163,30 +195,13 @@ public:
 #ifndef UNIT_TEST
         EdgeFilter (PwmState initialState, StopWatch &st) : stopWatch{st}, pwmState { initialState }
 #else
-        EdgeFilter (PwmState initialState) : pwmState { initialState }
+        EdgeFilter (PwmState initialState) : queue{(initialState == PwmState::low) ? (EdgePolarity::rising) : (EdgePolarity::falling)}, pwmState
+        {
+                initialState
+        }
 #endif
         {
                 recalculateConstants ();
-
-                if (pwmState == PwmState::low) {
-                        queue.push ({0, EdgePolarity::rising});
-                        queue.push ({0, EdgePolarity::falling});
-                        queue.push ({0, EdgePolarity::rising});
-                        queue.push ({0, EdgePolarity::falling});
-                        queue.push ({0, EdgePolarity::rising});
-                        queue.push ({0, EdgePolarity::falling});
-                }
-                else {
-                        // Possibly remove this, and assume that initial state is always low. Then initial checks in onEdge would assure that
-                        // edges are in correct order?
-                        queue.push ({0, EdgePolarity::falling});
-                        queue.push ({0, EdgePolarity::rising});
-                        queue.push ({0, EdgePolarity::falling});
-                        queue.push ({0, EdgePolarity::rising});
-                        queue.push ({0, EdgePolarity::falling});
-                        queue.push ({0, EdgePolarity::rising});
-                        // beamState = BeamState::absent;
-                }
         }
 
         /// IRQ context
@@ -240,6 +255,9 @@ private:
                 pwmState = PwmState::middle;
         }
 
+        /// Final check if we have proper trigger event
+        void checkForEventCondition (Edge const &e);
+
         bool active{};
         Result1usLS minTriggerEvent1Us{};
 
@@ -248,6 +266,7 @@ private:
         /*--------------------------------------------------------------------------*/
 
         EdgeQueue queue;
+        EdgeQueue queueL2;
         IEdgeDetectorCallback *callback{};
 
         PwmState pwmState;
