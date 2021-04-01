@@ -34,7 +34,6 @@ template <typename T> T def (T t, T defaultValue)
 void Config::restoreDefaults ()
 {
         setBlindTime (def (blindTime, DEFAULT_BLIND_TIME_MS));
-        setDutyTresholdPercent (def (dutyTresholdPercent, DEFAULT_DUTY_TRESHOLD_PERCENT));
         setMinTriggerEventMs (def (minTriggerEventMs, DEFAULT_MIN_TRIGGER_EVENT_MS));
         setNoiseLevelHigh (def (noiseLevelHigh, DEFAULT_NOISE_LEVEL_HIGH));
         setNoiseLevelLow (def (noiseLevelLow, DEFAULT_NOISE_LEVEL_LOW));
@@ -58,12 +57,6 @@ template <typename T> T trim (T t)
 /****************************************************************************/
 // 0-65534 (0xffff-1)
 void Config::setBlindTime (uint16_t b) { blindTime = trim (b); }
-
-void Config::setDutyTresholdPercent (uint8_t i)
-{
-        dutyTresholdPercent = std::min<uint8_t> (i, 100);
-        dutyTresholdPercent = std::max<uint8_t> (i, 50);
-}
 
 void Config::setMinTriggerEventMs (uint16_t i)
 {

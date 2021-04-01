@@ -123,7 +123,6 @@ enum ParticipantsNumber { one = 1, two = 0 };
 enum StopMode { stop = 1, restart = 0 }; // Loop
 
 static constexpr uint16_t DEFAULT_BLIND_TIME_MS = 5000;
-static constexpr uint8_t DEFAULT_DUTY_TRESHOLD_PERCENT = 50;
 static constexpr uint16_t DEFAULT_MIN_TRIGGER_EVENT_MS = 10;
 static constexpr int NO_IR_DETECTED_MS = 5000;
 static constexpr int LOOP_DISPLAY_TIMEOUT = DEFAULT_BLIND_TIME_MS - 1000;
@@ -133,7 +132,8 @@ static constexpr uint8_t MAX_NOISE_LEVEL = 15;
 static constexpr uint16_t DEFAULT_FPS = 30;
 static constexpr uint16_t MIN_FPS = 20;
 static constexpr uint16_t MAX_FPS = 10000;
-static constexpr int DUTY_CYCLE_DIV = 8; // PWM high state when duty cycle greater than 1/DUTY_CYCLE_DIV
+static constexpr int DUTY_CYCLE_LOW_DIV = 8;  // Transition to PWM low state when duty cycle lower than 1/DUTY_CYCLE_LOW_DIV (12.5%)
+static constexpr int DUTY_CYCLE_HIGH_DIV = 4; // Transition to PWM high state when duty cycle greater than 1/DUTY_CYCLE_HIGH_DIV (25%)
 
 #ifndef UNIT_TEST
 const etl::function_fv<__disable_irq> lock{};

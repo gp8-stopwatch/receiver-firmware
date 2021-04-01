@@ -912,7 +912,6 @@ TEST_CASE ("No beam", "[detector]")
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();
-        getConfig ().setDutyTresholdPercent (50); // NOLINT
 
         SECTION ("First")
         {
@@ -1021,7 +1020,6 @@ TEST_CASE ("No beam", "[detector]")
                 EdgeFilter edgeFilter{EdgeFilter::PwmState::high};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
-                getConfig ().setDutyTresholdPercent (50);
 
                 edgeFilter.run (10000);
                 REQUIRE (events.empty ());
@@ -1123,7 +1121,6 @@ TEST_CASE ("No beam at the start", "[detector]")
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();
-        getConfig ().setDutyTresholdPercent (50); // NOLINT
 
         SECTION ("Simple")
         {

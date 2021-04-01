@@ -118,7 +118,7 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
 
         // Calculate duty cycle of present slice of the signal
         Result1usLS sliceDuration = queue.back ().getTimePoint () - queue.front ().getTimePoint ();
-        Result1usLS cycleTresholdForLow = sliceDuration / DUTY_CYCLE_DIV;
+        Result1usLS cycleTresholdForLow = sliceDuration / DUTY_CYCLE_LOW_DIV;
         Result1usLS cycleTresholdForHigh = sliceDuration / 4;
         Result1usLS hiDuration = queue.getDurationA (); // We assume for now, that queue.getE0() is rising
         Result1usLS lowDuration = queue.getDurationB ();
@@ -150,9 +150,6 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
         else if (pwmState != PwmState::middle) { // Previous conditions for level durations weren't satisfied
                 pwmState = PwmState::middle;
                 middleStateStart = firstFalling->getFullTimePoint ();
-                // stateChangePin (false);
-                // stateChangePin (true);
-                // stateChangePin (false);
         }
 
         /*--------------------------------------------------------------------------*/
@@ -230,7 +227,7 @@ void EdgeFilter::run (Result1us now)
                 if (firstPolarity == EdgePolarity::rising) {
                         if (currentState != PwmState::high) {
                                 __disable_irq ();
-                                pwmState = PwmState::high;
+                                currentState = pwmState = PwmState::high;
                                 highStateStart = lastSignalChange;
                                 __enable_irq ();
                                 stateChangePin (true);
@@ -239,7 +236,7 @@ void EdgeFilter::run (Result1us now)
                 else {
                         if (currentState != PwmState::low) {
                                 __disable_irq ();
-                                pwmState = PwmState::low;
+                                currentState = pwmState = PwmState::low;
                                 lowStateStart = lastSignalChange;
                                 __enable_irq ();
                                 stateChangePin (false);

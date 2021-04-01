@@ -33,7 +33,6 @@ public:
                 irSensorOn = true;
                 buzzerOn = true;
 
-                dutyTresholdPercent = DEFAULT_DUTY_TRESHOLD_PERCENT;
                 blindTime = DEFAULT_BLIND_TIME_MS;
                 minTriggerEventMs = DEFAULT_MIN_TRIGGER_EVENT_MS;
                 noiseLevelHigh = DEFAULT_NOISE_LEVEL_HIGH;
@@ -72,9 +71,6 @@ public:
         uint16_t getBlindTime () const { return blindTime; }
         void setBlindTime (uint16_t b);
 
-        uint8_t getDutyTresholdPercent () const { return dutyTresholdPercent; }
-        void setDutyTresholdPercent (uint8_t i);
-
         uint16_t getMinTreggerEventMs () const { return minTriggerEventMs; }
         void setMinTriggerEventMs (uint16_t i);
 
@@ -98,7 +94,7 @@ private:
         bool irSensorOn : 1;
         bool buzzerOn : 1;
 
-        uint8_t dutyTresholdPercent;
+        uint8_t reserved;
 
         uint16_t blindTime;
         uint16_t minTriggerEventMs;
