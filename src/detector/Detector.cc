@@ -189,6 +189,9 @@ void EdgeFilter::run (Result1us now)
 
         __disable_irq ();
         auto back = queue.back ();
+        auto firstPolarity = queue.getFirstPolarity ();
+        auto currentState = pwmState;
+
 #ifndef UNIT_TEST
         auto now = stopWatch.getTimeFromIsr ();
 #endif
@@ -215,8 +218,8 @@ void EdgeFilter::run (Result1us now)
         bool lastSignalChangeLongAgo = resultLS (now - lastSignalChange) >= minTriggerEvent1Us;
 
         if (lastSignalChangeLongAgo) {
-                if (queue.getFirstPolarity () == EdgePolarity::rising) {
-                        if (pwmState != PwmState::high) {
+                if (firstPolarity == EdgePolarity::rising) {
+                        if (currentState != PwmState::high) {
                                 __disable_irq ();
                                 pwmState = PwmState::high;
                                 highStateStart = lastSignalChange;
@@ -225,7 +228,7 @@ void EdgeFilter::run (Result1us now)
                         }
                 }
                 else {
-                        if (pwmState != PwmState::low) {
+                        if (currentState != PwmState::low) {
                                 __disable_irq ();
                                 pwmState = PwmState::low;
                                 lowStateStart = lastSignalChange;
@@ -236,7 +239,6 @@ void EdgeFilter::run (Result1us now)
         }
 
         __disable_irq ();
-        auto currentState = pwmState;
         auto currentHighStateStart = highStateStart;
         auto currentLowStateStart = lowStateStart;
         // auto currentMiddleStateStart = middleStateStart;
