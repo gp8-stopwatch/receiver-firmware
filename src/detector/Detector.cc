@@ -79,17 +79,11 @@ void EdgeFilter::onEdge (Edge const &e)
         /* State transitions depending on last level length.                        */
         /*--------------------------------------------------------------------------*/
 
-        // bool stateChanged{};
         auto &last = queue.back ();
         auto &last1 = queue.back1 ();
-        // bool longHighEdge{};
-        // bool longLowEdge{};
 
         if (last.polarity == EdgePolarity::rising) {
-                // longLowEdge = ;
-
                 if ((last.timePoint - last1.timePoint) >= minTriggerEvent1Us) { // Long low edge
-                        // stateChanged = true;
                         if (pwmState != PwmState::low) {
                                 pwmState = PwmState::low;
                                 lowStateStart = last1.fullTimePoint;
@@ -99,15 +93,11 @@ void EdgeFilter::onEdge (Edge const &e)
                         checkForEventCondition (e);
                         return;
                 }
-                // else { // False means that a level was shorter than the trigger event.
+
                 ++noiseCounter;
-                // }
         }
         else {
-                // longHighEdge = ;
-
                 if ((last.timePoint - last1.timePoint) >= minTriggerEvent1Us) { // Long high edge
-                        // stateChanged = true;
                         if (pwmState != PwmState::high) {
                                 pwmState = PwmState::high;
                                 highStateStart = last1.fullTimePoint;
@@ -117,19 +107,16 @@ void EdgeFilter::onEdge (Edge const &e)
                         checkForEventCondition (e);
                         return;
                 }
-                // else { // False means that a level was shorter than the trigger event.
+
                 ++noiseCounter;
-                // }
         }
 
         /*--------------------------------------------------------------------------*/
         /* PWM State transitions depending on dutyCycle and recent level length.    */
         /*--------------------------------------------------------------------------*/
 
-        // if (!stateChanged) { // Only if the state haven't been changed in the previous step.
-
         // Calculate duty cycle of present slice of the signal
-        Result1usLS cycleTresholdCalculated = (queue.back ().timePoint - queue.front ().timePoint) / 4;
+        Result1usLS cycleTresholdCalculated = (queue.back ().timePoint - queue.front ().timePoint) / DUTY_CYCLE_DIV;
         Result1usLS hiDuration = queue.getDurationA (); // We assume for now, that queue.getE0() is rising
         Result1usLS lowDuration = queue.getDurationB ();
 
@@ -144,7 +131,6 @@ void EdgeFilter::onEdge (Edge const &e)
         }
 
         if (hiDuration > cycleTresholdCalculated) { // PWM of the slice is > 50%
-
                 if (pwmState != PwmState::high) {
                         pwmState = PwmState::high;
                         highStateStart = firstRising->fullTimePoint;
@@ -152,38 +138,21 @@ void EdgeFilter::onEdge (Edge const &e)
                 }
         }
         else if (lowDuration >= cycleTresholdCalculated) { // PWM of the slice is <= 50%
-
                 if (pwmState != PwmState::low) {
                         pwmState = PwmState::low;
                         lowStateStart = firstFalling->fullTimePoint;
                         stateChangePin (false);
                 }
         }
-        // }
 
         /*--------------------------------------------------------------------------*/
         /* Check trigger event conditions.                                          */
         /*--------------------------------------------------------------------------*/
 
         checkForEventCondition (e);
-
-        // if (highStateStart < lowStateStart /* &&    // Correct order of states : first middleState, then High, and at the end low
-        //     middleStateStart < highStateStart */) { // No middle state between high and low
-        //         bool longHighState = resultLS (lowStateStart - highStateStart) >= minTriggerEvent1Us;
-        //         bool longLowState = resultLS (e.fullTimePoint - lowStateStart) >= minTriggerEvent1Us;
-
-        //         if (longHighState && longLowState && isBeamClean ()) {
-        //                 callback->report (DetectorEventType::trigger, highStateStart);
-        //                 triggerOutputPin ();
-
-        //                 if (getConfig ().getBlindTime () > 0) {
-        //                         blindState = BlindState::blind;
-        //                         blindStateStart = e.fullTimePoint;
-        //                 }
-        //                 reset (); // To prevent reporting twice
-        //         }
-        // }
 }
+
+/****************************************************************************/
 
 void EdgeFilter::checkForEventCondition (Edge const &e)
 {

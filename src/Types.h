@@ -133,6 +133,7 @@ static constexpr uint8_t MAX_NOISE_LEVEL = 15;
 static constexpr uint16_t DEFAULT_FPS = 30;
 static constexpr uint16_t MIN_FPS = 20;
 static constexpr uint16_t MAX_FPS = 10000;
+static constexpr int DUTY_CYCLE_DIV = 8; // PWM high state when duty cycle greater than 1/DUTY_CYCLE_DIV
 
 #ifndef UNIT_TEST
 const etl::function_fv<__disable_irq> lock{};

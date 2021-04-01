@@ -193,7 +193,11 @@ public:
         enum class PwmState { low = 0, high = 1, middle };
 
 #ifndef UNIT_TEST
-        EdgeFilter (PwmState initialState, StopWatch &st) : stopWatch{st}, pwmState { initialState }
+        EdgeFilter (PwmState initialState, StopWatch &st)
+            : stopWatch{st}, queue{(initialState == PwmState::low) ? (EdgePolarity::rising) : (EdgePolarity::falling)}, pwmState
+        {
+                initialState
+        }
 #else
         EdgeFilter (PwmState initialState) : queue{(initialState == PwmState::low) ? (EdgePolarity::rising) : (EdgePolarity::falling)}, pwmState
         {
@@ -266,7 +270,6 @@ private:
         /*--------------------------------------------------------------------------*/
 
         EdgeQueue queue;
-        EdgeQueue queueL2;
         IEdgeDetectorCallback *callback{};
 
         PwmState pwmState;
