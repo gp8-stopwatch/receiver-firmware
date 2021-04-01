@@ -34,12 +34,6 @@ enum class EdgePolarity { falling = 0, rising = 1 };
 class Edge {
 public:
         Edge () = default;
-        // Edge (Result1us const &ft /* , EdgePolarity pol */) : fullTimePoint{ft}, timePoint{resultLS (ft)} /* , polarity{pol} */ {}
-        // Result1us timePoint{}; // 64 bits
-        // Result1us fullTimePoint{}; // 64 bits
-        // Result1usLS timePoint{};   // 32 bits, less significant portion of fullTimePoint. Up to 70 minutes can be stored here.
-        // EdgePolarity polarity{};
-
         Edge (Result1us const &ft) : msp{uint32_t (uint64_t (ft) >> 32)}, lsp{uint32_t (uint64_t (ft) & 0x000'0000'ffff'ffffULL)} {}
 
         Result1us getFullTimePoint () const { return (uint64_t (msp) << 32) | uint64_t (lsp); }
@@ -51,29 +45,12 @@ private:
 };
 
 /**
- * A slice of a rectangular signal, 3 edges. Sometimes called simply the "slice"
- */
-// using EdgeQueue = etl::circular_buffer<Edge, 3>;
-
-/**
  * A slice of a rectangular signal.
  */
-class EdgeQueue3 {
+class EdgeQueue {
 public:
-        EdgeQueue3 (EdgePolarity firstPolarity) : firstPolarity{!bool (firstPolarity)}
-        {
-                _empty = false;
-                // if (firstPolarity == EdgePolarity::rising) { // Low edge at the start
-                //         push ({0, EdgePolarity::rising});
-                //         push ({0, EdgePolarity::falling});
-                // }
-                // else {
-                //         push ({0, EdgePolarity::falling});
-                //         push ({0, EdgePolarity::rising});
-                // }
-        }
+        EdgeQueue (EdgePolarity firstPolarity) : firstPolarity{!bool (firstPolarity)} {}
 
-        bool empty () const { return _empty; }
         Edge &back () { return e2; }
         Edge &back1 () { return e1; }
         Edge &back2 () { return e0; }
@@ -89,102 +66,20 @@ public:
                 e0 = e1;
                 e1 = e2;
                 e2 = e;
-                _empty = false;
                 firstPolarity = !firstPolarity;
         }
 
-        Result1usLS getDurationA () const
-        {
-                return (e1.getTimePoint () - e0.getTimePoint ()) /* + (e3.timePoint - e2.timePoint) + (e5.timePoint - e4.timePoint) */;
-        }
-        Result1usLS getDurationB () const
-        {
-                return (e2.getTimePoint () - e1.getTimePoint ()) /* + (e4.timePoint - e3.timePoint) + (e6.timePoint - e5.timePoint) */;
-        }
+        Result1usLS getDurationA () const { return e1.getTimePoint () - e0.getTimePoint (); }
+        Result1usLS getDurationB () const { return e2.getTimePoint () - e1.getTimePoint (); }
 
         EdgePolarity getFirstPolarity () const { return EdgePolarity{firstPolarity}; }
 
 private:
-        bool _empty{true};
         Edge e0;
         Edge e1;
         Edge e2;
         bool firstPolarity{};
 };
-
-/**
- * A slice of a rectangular signal.
- */
-#if 0
-class EdgeQueue7 {
-public:
-        EdgeQueue7 (EdgePolarity firstPolarity)
-        {
-                if (firstPolarity == EdgePolarity::rising) {
-                        push ({0, EdgePolarity::rising});
-                        push ({0, EdgePolarity::falling});
-                        push ({0, EdgePolarity::rising});
-                        push ({0, EdgePolarity::falling});
-                        push ({0, EdgePolarity::rising});
-                        push ({0, EdgePolarity::falling});
-                }
-                else {
-                        push ({0, EdgePolarity::falling});
-                        push ({0, EdgePolarity::rising});
-                        push ({0, EdgePolarity::falling});
-                        push ({0, EdgePolarity::rising});
-                        push ({0, EdgePolarity::falling});
-                        push ({0, EdgePolarity::rising});
-                }
-        }
-
-        bool empty () const { return _empty; }
-        Edge &back () { return e6; }
-        Edge &back1 () { return e5; }
-        Edge &back2 () { return e4; }
-
-        Edge &front () { return e0; }
-        Edge &front1 () { return e1; }
-
-        Edge &getE0 () { return e0; }
-        Edge &getE1 () { return e1; }
-        // Edge &getE2 () { return e2; }
-        // Edge &getE3 () { return e3; }
-        // Edge &getE4 () { return e4; }
-
-        void push (Edge const &e)
-        {
-                e0 = e1;
-                e1 = e2;
-                e2 = e3;
-                e3 = e4;
-                e4 = e5;
-                e5 = e6;
-                e6 = e;
-                _empty = false;
-        }
-
-        Result1usLS getDurationA () const
-        {
-                return (e1.timePoint - e0.timePoint) + (e3.timePoint - e2.timePoint) + (e5.timePoint - e4.timePoint);
-        }
-        Result1usLS getDurationB () const
-        {
-                return (e2.timePoint - e1.timePoint) + (e4.timePoint - e3.timePoint) + (e6.timePoint - e5.timePoint);
-        }
-
-private:
-        bool _empty{true};
-        Edge e0;
-        Edge e1;
-        Edge e2;
-        Edge e3;
-        Edge e4;
-        Edge e5;
-        Edge e6;
-};
-#endif
-using EdgeQueue = EdgeQueue3;
 
 // Warning! Due to optimization reasons, the values below has to be in sync with enum Event
 enum class DetectorEventType { trigger = 0, noise = 1, noNoise = 2, noBeam = 3, beamRestored = 4 };

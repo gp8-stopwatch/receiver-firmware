@@ -54,7 +54,7 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
          * [x] There was a opposite situation - there was no ir detected even though IS was not obstructed. Yellow trace was hi even though blue
          * was low. EDIT due to wrong blindState management
          */
-        if (!queue.empty () && queue.getFirstPolarity () == pol) {
+        if (/* !queue.empty () && */ queue.getFirstPolarity () == pol) {
                 // TODO there should be some bit in some register that would tell me that I've missed this ISR. This would be safer and cleaner
                 // to use. Reset queue so it's still full, but pulses are 0 width. This will automatically increase noiseCounter by 2
                 queue.push (e);
@@ -183,13 +183,12 @@ void EdgeFilter::run ()
 void EdgeFilter::run (Result1us now)
 #endif
 {
-        if (!active || queue.empty ()) {
+        if (!active) {
                 return;
         }
 
         __disable_irq ();
         auto back = queue.back ();
-        // auto lastButOne = queue.getE1 ();
 #ifndef UNIT_TEST
         auto now = stopWatch.getTimeFromIsr ();
 #endif
