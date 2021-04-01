@@ -61,7 +61,7 @@ void SignalSimulator::signal (std::vector<uint32_t> const &edges, uint32_t runUn
                 currentTimeUs = t;
 
                 // Now the edge itself
-                edgeFilter.onEdge ({/* msToResult1us */ (currentTimeUs), currentPolarity});
+                edgeFilter.onEdge ({/* msToResult1us */ (currentTimeUs)}, currentPolarity);
 
                 // Flip the state.
                 currentPolarity = (currentPolarity == EdgePolarity::rising) ? (EdgePolarity::falling) : (EdgePolarity::rising);
@@ -717,8 +717,8 @@ TEST_CASE ("Noise level", "[detector]")
                         uint32_t timePoint = i * uint32_t (noiseSpikeLen * 2); // Every 20ms
                         // sim.signal ({timePoint, timePoint + noiseSpikeLen});                                                  // NOLINT
 
-                        edgeFilter.onEdge ({timePoint, EdgePolarity::rising});
-                        edgeFilter.onEdge ({timePoint + uint32_t (noiseSpikeLen), EdgePolarity::falling});
+                        edgeFilter.onEdge ({timePoint}, EdgePolarity::rising);
+                        edgeFilter.onEdge ({timePoint + uint32_t (noiseSpikeLen)}, EdgePolarity::falling);
                         edgeFilter.run (timePoint + uint32_t (noiseSpikeLen));
                 }
 
@@ -1026,33 +1026,33 @@ TEST_CASE ("No beam", "[detector]")
                 edgeFilter.run (10000);
                 REQUIRE (events.empty ());
 
-                edgeFilter.onEdge ({11 * 1000, EdgePolarity::falling});
-                edgeFilter.onEdge ({11 * 1000 + 100, EdgePolarity::rising});
+                edgeFilter.onEdge ({11 * 1000}, EdgePolarity::falling);
+                edgeFilter.onEdge ({11 * 1000 + 100}, EdgePolarity::rising);
 
-                edgeFilter.onEdge ({12 * 1000, EdgePolarity::falling});
-                edgeFilter.onEdge ({12 * 1000 + 100, EdgePolarity::rising});
+                edgeFilter.onEdge ({12 * 1000}, EdgePolarity::falling);
+                edgeFilter.onEdge ({12 * 1000 + 100}, EdgePolarity::rising);
 
-                edgeFilter.onEdge ({13 * 1000, EdgePolarity::falling});
-                edgeFilter.onEdge ({13 * 1000 + 100, EdgePolarity::rising});
+                edgeFilter.onEdge ({13 * 1000}, EdgePolarity::falling);
+                edgeFilter.onEdge ({13 * 1000 + 100}, EdgePolarity::rising);
 
                 edgeFilter.run (1010000);
                 REQUIRE (events.size () == 1);
                 REQUIRE (events.front ().type == DetectorEventType::noBeam);
 
-                edgeFilter.onEdge ({1500000, EdgePolarity::falling});
+                edgeFilter.onEdge ({1500000}, EdgePolarity::falling);
                 REQUIRE (events.size () == 1);
 
-                edgeFilter.onEdge ({1500000 + 11 * 1000, EdgePolarity::rising});
+                edgeFilter.onEdge ({1500000 + 11 * 1000}, EdgePolarity::rising);
                 REQUIRE (events.size () == 1);
-                edgeFilter.onEdge ({1500000 + 11 * 1000 + 100, EdgePolarity::falling});
-                REQUIRE (events.size () == 1);
-
-                edgeFilter.onEdge ({1500000 + 12 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({1500000 + 12 * 1000 + 100, EdgePolarity::falling});
+                edgeFilter.onEdge ({1500000 + 11 * 1000 + 100}, EdgePolarity::falling);
                 REQUIRE (events.size () == 1);
 
-                edgeFilter.onEdge ({1500000 + 13 * 1000, EdgePolarity::rising});
-                edgeFilter.onEdge ({1500000 + 13 * 1000 + 100, EdgePolarity::falling});
+                edgeFilter.onEdge ({1500000 + 12 * 1000}, EdgePolarity::rising);
+                edgeFilter.onEdge ({1500000 + 12 * 1000 + 100}, EdgePolarity::falling);
+                REQUIRE (events.size () == 1);
+
+                edgeFilter.onEdge ({1500000 + 13 * 1000}, EdgePolarity::rising);
+                edgeFilter.onEdge ({1500000 + 13 * 1000 + 100}, EdgePolarity::falling);
                 REQUIRE (events.size () == 1);
 
                 edgeFilter.run (3000000);

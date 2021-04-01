@@ -31,13 +31,23 @@ enum class EdgePolarity { falling = 0, rising = 1 };
 /**
  * Signal edge with polarity and time of occurence.
  */
-struct Edge {
+class Edge {
+public:
         Edge () = default;
-        Edge (Result1us const &ft, EdgePolarity pol) : fullTimePoint{ft}, timePoint{resultLS (ft)}, polarity{pol} {}
+        // Edge (Result1us const &ft /* , EdgePolarity pol */) : fullTimePoint{ft}, timePoint{resultLS (ft)} /* , polarity{pol} */ {}
         // Result1us timePoint{}; // 64 bits
-        Result1us fullTimePoint{}; // 64 bits
-        Result1usLS timePoint{};   // 32 bits, less significant portion of fullTimePoint. Up to 70 minutes can be stored here.
-        EdgePolarity polarity{};
+        // Result1us fullTimePoint{}; // 64 bits
+        // Result1usLS timePoint{};   // 32 bits, less significant portion of fullTimePoint. Up to 70 minutes can be stored here.
+        // EdgePolarity polarity{};
+
+        Edge (Result1us const &ft) : msp{uint32_t (uint64_t (ft) >> 32)}, lsp{uint32_t (uint64_t (ft) & 0x000'0000'ffff'ffffULL)} {}
+
+        Result1us getFullTimePoint () const { return (uint64_t (msp) << 32) | uint64_t (lsp); }
+        Result1usLS getTimePoint () const { return lsp; }
+
+private:
+        uint32_t msp{};
+        uint32_t lsp{};
 };
 
 /**
@@ -50,16 +60,17 @@ struct Edge {
  */
 class EdgeQueue3 {
 public:
-        EdgeQueue3 (EdgePolarity firstPolarity)
+        EdgeQueue3 (EdgePolarity firstPolarity) : firstPolarity{!bool (firstPolarity)}
         {
-                if (firstPolarity == EdgePolarity::rising) { // Low edge at the start
-                        push ({0, EdgePolarity::rising});
-                        push ({0, EdgePolarity::falling});
-                }
-                else {
-                        push ({0, EdgePolarity::falling});
-                        push ({0, EdgePolarity::rising});
-                }
+                _empty = false;
+                // if (firstPolarity == EdgePolarity::rising) { // Low edge at the start
+                //         push ({0, EdgePolarity::rising});
+                //         push ({0, EdgePolarity::falling});
+                // }
+                // else {
+                //         push ({0, EdgePolarity::falling});
+                //         push ({0, EdgePolarity::rising});
+                // }
         }
 
         bool empty () const { return _empty; }
@@ -79,27 +90,32 @@ public:
                 e1 = e2;
                 e2 = e;
                 _empty = false;
+                firstPolarity = !firstPolarity;
         }
 
         Result1usLS getDurationA () const
         {
-                return (e1.timePoint - e0.timePoint) /* + (e3.timePoint - e2.timePoint) + (e5.timePoint - e4.timePoint) */;
+                return (e1.getTimePoint () - e0.getTimePoint ()) /* + (e3.timePoint - e2.timePoint) + (e5.timePoint - e4.timePoint) */;
         }
         Result1usLS getDurationB () const
         {
-                return (e2.timePoint - e1.timePoint) /* + (e4.timePoint - e3.timePoint) + (e6.timePoint - e5.timePoint) */;
+                return (e2.getTimePoint () - e1.getTimePoint ()) /* + (e4.timePoint - e3.timePoint) + (e6.timePoint - e5.timePoint) */;
         }
+
+        EdgePolarity getFirstPolarity () const { return EdgePolarity{firstPolarity}; }
 
 private:
         bool _empty{true};
         Edge e0;
         Edge e1;
         Edge e2;
+        bool firstPolarity{};
 };
 
 /**
  * A slice of a rectangular signal.
  */
+#if 0
 class EdgeQueue7 {
 public:
         EdgeQueue7 (EdgePolarity firstPolarity)
@@ -167,7 +183,7 @@ private:
         Edge e5;
         Edge e6;
 };
-
+#endif
 using EdgeQueue = EdgeQueue3;
 
 // Warning! Due to optimization reasons, the values below has to be in sync with enum Event
@@ -209,7 +225,7 @@ public:
         }
 
         /// IRQ context
-        void onEdge (Edge const &e);
+        void onEdge (Edge const &e, EdgePolarity pol);
 
         /// "main" context. As frequently as possible.
 #ifndef UNIT_TEST
