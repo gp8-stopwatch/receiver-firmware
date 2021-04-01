@@ -46,13 +46,57 @@ struct Edge {
 // using EdgeQueue = etl::circular_buffer<Edge, 3>;
 
 /**
- * A slice of a rectangular signal, 3 edges. Sometimes called simply the "slice"
+ * A slice of a rectangular signal.
  */
-class EdgeQueue {
+class EdgeQueue3 {
+public:
+        bool empty () const { return _empty; }
+        Edge &back () { return e2; }
+        Edge &back1 () { return e1; }
+        Edge &back2 () { return e0; }
+
+        Edge &front () { return e0; }
+        Edge &front1 () { return e1; }
+
+        Edge &getE0 () { return e0; }
+        Edge &getE1 () { return e1; }
+
+        void push (Edge const &e)
+        {
+                e0 = e1;
+                e1 = e2;
+                e2 = e;
+                _empty = false;
+        }
+
+        Result1usLS getDurationA () const
+        {
+                return (e1.timePoint - e0.timePoint) /* + (e3.timePoint - e2.timePoint) + (e5.timePoint - e4.timePoint) */;
+        }
+        Result1usLS getDurationB () const
+        {
+                return (e2.timePoint - e1.timePoint) /* + (e4.timePoint - e3.timePoint) + (e6.timePoint - e5.timePoint) */;
+        }
+
+private:
+        bool _empty{true};
+        Edge e0;
+        Edge e1;
+        Edge e2;
+};
+
+/**
+ * A slice of a rectangular signal.
+ */
+class EdgeQueue7 {
 public:
         bool empty () const { return _empty; }
         Edge &back () { return e6; }
+        Edge &back1 () { return e5; }
+        Edge &back2 () { return e4; }
+
         Edge &front () { return e0; }
+        Edge &front1 () { return e1; }
 
         Edge &getE0 () { return e0; }
         Edge &getE1 () { return e1; }
@@ -91,6 +135,8 @@ private:
         Edge e5;
         Edge e6;
 };
+
+using EdgeQueue = EdgeQueue3;
 
 // Warning! Due to optimization reasons, the values below has to be in sync with enum Event
 enum class DetectorEventType { trigger = 0, noise = 1, noNoise = 2, noBeam = 3, beamRestored = 4 };

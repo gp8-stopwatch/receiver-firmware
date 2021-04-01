@@ -304,9 +304,9 @@ TEST_CASE ("Low PWM in the middle", "[detector]")
         sim.signal ({10000, 15000, 15200, 15300, 15400, 25000, 35000}); // NOLINT
 
         // Current implementation cannot handle this scenario, and implementiung it would be hard. Current one should be tested for now.
-        // REQUIRE (events.size () == 1);
-        // REQUIRE (events.front ().type == DetectorEventType::trigger);
-        // REQUIRE (events.front ().timePoint == 10 * 1000);
+        REQUIRE (events.size () == 1);
+        REQUIRE (events.front ().type == DetectorEventType::trigger);
+        REQUIRE (events.front ().timePoint == 10 * 1000);
 }
 
 TEST_CASE ("Slightly more", "[detector]")
@@ -1138,6 +1138,10 @@ TEST_CASE ("No beam at the start", "[detector]")
                  */
                 sim.signal ({20000}, 30000, EdgePolarity::falling); // NOLINT
                 REQUIRE (events.empty ());
+
+                // REQUIRE (events.size () == 1);
+                // REQUIRE (events.front ().type == DetectorEventType::trigger);
+                // REQUIRE (events.front ().timePoint == 0);
         }
 
         SECTION ("Noise")

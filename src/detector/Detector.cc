@@ -76,38 +76,42 @@ void EdgeFilter::onEdge (Edge const &e)
         }
 
         /*--------------------------------------------------------------------------*/
+        /* State transitions depending on last level length.                        */
+        /*--------------------------------------------------------------------------*/
 
-        // Calculate duty cycle of present slice of the signal
-        // TODO can exceed 32 bits. Consider removing * getConfig ().getDutyTresholdPercent ()
-        // Result1usLS cycleTresholdCalculated = (queue.back ().timePoint - queue.front ().timePoint)
-        //         * getConfig ().getDutyTresholdPercent (); // slice length times treshold. See equation in the docs.
-        Result1usLS cycleTresholdCalculated = (queue.back ().timePoint - queue.front ().timePoint) / 2;
-        Result1usLS hiDuration = queue.getDurationA (); // We assume for now, that queue.getE0() is rising
-        Result1usLS lowDuration = queue.getDurationB ();
-
-        // Find out which edge in the queue is rising, which falling.
-        auto *firstRising = &queue.getE0 (); // Pointers are smaller than Edge object
-        auto *firstFalling = &queue.getE1 ();
-
+        bool stateChanged{};
+        auto &last = queue.back ();
+        auto &last1 = queue.back1 ();
         bool longHighEdge{};
         bool longLowEdge{};
 
-        // 50% chance that above are correct. If our assumption wasn't right, we swap.
-        if (firstRising->polarity != EdgePolarity::rising) {
-                std::swap (firstRising, firstFalling);
-                std::swap (hiDuration, lowDuration);
-                // Take only recent level. If last level was high, check if its duration was long enough.
-                longHighEdge = hiDuration >= minTriggerEvent1Us;
+        if (last.polarity == EdgePolarity::rising) {
+                longLowEdge = (last.timePoint - last1.timePoint) >= minTriggerEvent1Us;
 
-                if (!longHighEdge) { // False means that a level was shorter than the trigger event.
+                if (longLowEdge) {
+                        stateChanged = true;
+                        if (pwmState != PwmState::low) {
+                                pwmState = PwmState::low;
+                                lowStateStart = last1.fullTimePoint;
+                                stateChangePin (false);
+                        }
+                }
+                else { // False means that a level was shorter than the trigger event.
                         ++noiseCounter;
                 }
         }
         else {
-                // Take only recent level. If last level was low, check if its duration was long enough.
-                longLowEdge = lowDuration >= minTriggerEvent1Us;
+                longHighEdge = (last.timePoint - last1.timePoint) >= minTriggerEvent1Us;
 
-                if (!longLowEdge) { // False means that a level was shorter than the trigger event.
+                if (longHighEdge) {
+                        stateChanged = true;
+                        if (pwmState != PwmState::high) {
+                                pwmState = PwmState::high;
+                                highStateStart = last1.fullTimePoint;
+                                stateChangePin (true);
+                        }
+                }
+                else { // False means that a level was shorter than the trigger event.
                         ++noiseCounter;
                 }
         }
@@ -116,28 +120,57 @@ void EdgeFilter::onEdge (Edge const &e)
         /* PWM State transitions depending on dutyCycle and recent level length.    */
         /*--------------------------------------------------------------------------*/
 
-        if ((hiDuration /* * 100 */ > cycleTresholdCalculated) || // PWM of the slice is high
-            longHighEdge)                                         // Or the high level was long itself
-        {
-                if (pwmState != PwmState::high) {
-                        pwmState = PwmState::high;
-                        highStateStart = firstRising->fullTimePoint;
-                        stateChangePin (true);
+        if (!stateChanged) { // Only if the state haven't been changed in the previous step.
+
+                // Calculate duty cycle of present slice of the signal
+                // TODO can exceed 32 bits. Consider removing * getConfig ().getDutyTresholdPercent ()
+                // Result1usLS cycleTresholdCalculated = (queue.back ().timePoint - queue.front ().timePoint)
+                //         * getConfig ().getDutyTresholdPercent (); // slice length times treshold. See equation in the docs.
+                Result1usLS cycleTresholdCalculated = (queue.back ().timePoint - queue.front ().timePoint) / 4;
+                Result1usLS hiDuration = queue.getDurationA (); // We assume for now, that queue.getE0() is rising
+                Result1usLS lowDuration = queue.getDurationB ();
+
+                // Find out which edge in the queue is rising, which falling.
+                auto *firstRising = &queue.front ();   // Pointers are smaller than Edge object
+                auto *firstFalling = &queue.front1 (); // 1 after front
+
+                // 50% chance that above are correct. If our assumption wasn't right, we swap.
+                if (firstRising->polarity != EdgePolarity::rising) {
+                        std::swap (firstRising, firstFalling);
+                        std::swap (hiDuration, lowDuration);
+                        // // Take only recent level. If last level was high, check if its duration was long enough.
+                        // longHighEdge = hiDuration >= minTriggerEvent1Us;
+
+                        // if (!longHighEdge) { // False means that a level was shorter than the trigger event.
+                        //         ++noiseCounter;
+                        // }
+                }
+                // else {
+                //         // Take only recent level. If last level was low, check if its duration was long enough.
+                //         longLowEdge = lowDuration >= minTriggerEvent1Us;
+
+                //         if (!longLowEdge) { // False means that a level was shorter than the trigger event.
+                //                 ++noiseCounter;
+                //         }
+                // }
+
+                if (hiDuration > cycleTresholdCalculated) { // PWM of the slice is > 50%
+
+                        if (pwmState != PwmState::high) {
+                                pwmState = PwmState::high;
+                                highStateStart = firstRising->fullTimePoint;
+                                stateChangePin (true);
+                        }
+                }
+                else if (lowDuration >= cycleTresholdCalculated) { // PWM of the slice is <= 50%
+
+                        if (pwmState != PwmState::low) {
+                                pwmState = PwmState::low;
+                                lowStateStart = firstFalling->fullTimePoint;
+                                stateChangePin (false);
+                        }
                 }
         }
-        else if ((lowDuration /* * 100 */ >= cycleTresholdCalculated) || // PWM of the slice is low
-                 longLowEdge) {                                          // Or the low level was long enogh itself
-                if (pwmState != PwmState::low) {
-                        pwmState = PwmState::low;
-                        lowStateStart = firstFalling->fullTimePoint;
-                        stateChangePin (false);
-                }
-        }
-        // else if (pwmState != PwmState::middle) { // Previous conditions for level durations weren't satisfied
-        //         pwmState = PwmState::middle;
-        //         middleStateStart = firstFalling->fullTimePoint;
-        //         stateChangePin (false);
-        // }
 
         /*--------------------------------------------------------------------------*/
         /* Check trigger event conditions.                                          */
