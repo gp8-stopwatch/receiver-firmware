@@ -35,8 +35,8 @@ void Config::restoreDefaults ()
 {
         setBlindTime (def (blindTime, DEFAULT_BLIND_TIME_MS));
         setMinTriggerEventMs (def (minTriggerEventMs, DEFAULT_MIN_TRIGGER_EVENT_MS));
-        setNoiseLevelHigh (def (noiseLevelHigh, DEFAULT_NOISE_LEVEL_HIGH));
-        setNoiseLevelLow (def (noiseLevelLow, DEFAULT_NOISE_LEVEL_LOW));
+        // setNoiseLevelHigh (def (noiseLevelHigh, DEFAULT_NOISE_LEVEL_HIGH));
+        // setNoiseLevelLow (def (noiseLevelLow, DEFAULT_NOISE_LEVEL_LOW));
         setFps (def (fps, DEFAULT_FPS));
 }
 
@@ -64,8 +64,8 @@ void Config::setMinTriggerEventMs (uint16_t i)
         minTriggerEventMs = std::max<uint16_t> (i, 1);
 }
 
-void Config::setNoiseLevelHigh (uint8_t i) { noiseLevelHigh = std::min<uint8_t> (i, MAX_NOISE_LEVEL); }
-void Config::setNoiseLevelLow (uint8_t i) { noiseLevelLow = std::min<uint8_t> (i, MAX_NOISE_LEVEL); }
+// void Config::setNoiseLevelHigh (uint8_t i) { noiseLevelHigh = std::min<uint8_t> (i, MAX_NOISE_LEVEL); }
+// void Config::setNoiseLevelLow (uint8_t i) { noiseLevelLow = std::min<uint8_t> (i, MAX_NOISE_LEVEL); }
 
 /****************************************************************************/
 

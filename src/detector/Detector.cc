@@ -10,6 +10,7 @@
 
 #ifndef UNIT_TEST
 #include "Gpio.h"
+#include "UsbHelpers.h"
 Gpio consoleRx{GPIOA, GPIO_PIN_10, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
 #define stateChangePin(x) consoleRx.set (x)
 
@@ -95,7 +96,7 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
                         return;
                 }
 
-                ++noiseCounter;
+                // ++noiseCounter;
         }
         else {
                 if ((last.getTimePoint () - last1.getTimePoint ()) >= minTriggerEvent1Us) { // Long high edge
@@ -109,7 +110,7 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
                         return;
                 }
 
-                ++noiseCounter;
+                // ++noiseCounter;
         }
 
         /*--------------------------------------------------------------------------*/
@@ -119,7 +120,7 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
         // Calculate duty cycle of present slice of the signal
         Result1usLS sliceDuration = queue.back ().getTimePoint () - queue.front ().getTimePoint ();
         Result1usLS cycleTresholdForLow = sliceDuration / DUTY_CYCLE_LOW_DIV;
-        Result1usLS cycleTresholdForHigh = sliceDuration / 4;
+        Result1usLS cycleTresholdForHigh = sliceDuration / DUTY_CYCLE_HIGH_DIV;
         Result1usLS hiDuration = queue.getDurationA (); // We assume for now, that queue.getE0() is rising
         Result1usLS lowDuration = queue.getDurationB ();
 
@@ -138,19 +139,26 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
                         pwmState = PwmState::high;
                         highStateStart = firstRising->getFullTimePoint ();
                         stateChangePin (true);
+                        /*
+                         * Here, the state change was caused by something shorter than the minTriggerEvent1Us,
+                         * so we treat this as a noise.
+                         */
+                        ++noiseCounter;
                 }
         }
-        else if (lowDuration >= cycleTresholdForLow) { // PWM of the slice is low
+        else if (lowDuration >= cycleTresholdForLow) { // PWM of the slice is low (low duration was for long time)
                 if (pwmState != PwmState::low) {
                         pwmState = PwmState::low;
                         lowStateStart = firstFalling->getFullTimePoint ();
                         stateChangePin (false);
+                        ++noiseCounter;
                 }
         }
-        else if (pwmState != PwmState::middle) { // Previous conditions for level durations weren't satisfied
-                pwmState = PwmState::middle;
-                middleStateStart = firstFalling->getFullTimePoint ();
-        }
+        // else if (pwmState != PwmState::middle) { // Previous conditions for level durations weren't satisfied
+        //         pwmState = PwmState::middle;
+        //         middleStateStart = firstFalling->getFullTimePoint ();
+        //         ++noiseCounter; // Noise counter analyzes the filtered signal
+        // }
 
         /*--------------------------------------------------------------------------*/
         /* Check trigger event conditions.                                          */
@@ -163,20 +171,25 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
 
 void EdgeFilter::checkForEventCondition (Edge const &e)
 {
-        if (highStateStart < lowStateStart &&    // Correct order of states : first middleState, then High, and at the end low
-            middleStateStart < highStateStart) { // No middle state between high and low
+        if (highStateStart < lowStateStart /* &&    // Correct order of states : first middleState, then High, and at the end low
+            middleStateStart < highStateStart */) { // No middle state between high and low
                 bool longHighState = resultLS (lowStateStart - highStateStart) >= minTriggerEvent1Us;
                 bool longLowState = resultLS (e.getFullTimePoint () - lowStateStart) >= minTriggerEvent1Us;
 
-                if (longHighState && longLowState && isBeamClean ()) {
-                        callback->report (DetectorEventType::trigger, highStateStart);
-                        triggerOutputPin ();
+                if (longHighState && longLowState) {
+                        if (isBeamClean ()) {
+                                callback->report (DetectorEventType::trigger, highStateStart);
+                                triggerOutputPin ();
 
-                        if (getConfig ().getBlindTime () > 0) {
-                                blindState = BlindState::blind;
-                                blindStateStart = e.getFullTimePoint ();
+                                if (getConfig ().getBlindTime () > 0) {
+                                        blindState = BlindState::blind;
+                                        blindStateStart = e.getFullTimePoint ();
+                                }
+                                reset (); // To prevent reporting twice
                         }
-                        reset (); // To prevent reporting twice
+                }
+                else {
+                        // ++noiseCounter; // Noise counter analyzes the filtered signal
                 }
         }
 }
@@ -265,8 +278,7 @@ void EdgeFilter::run (Result1us now)
                         // This is typical case, where there is some noise present, and we normalize it from 1 to 15.
                         // TODO this will have to be adjusted in direct sunlight in July or August.
                         // TODO or find the 100W lightbulb I've lost. If it manages to achieve level 15, then it's OK.
-                        noiseLevel = std::min<uint8_t> ((MAX_NOISE_LEVEL - 1) * currentNoiseCounter * static_cast<uint32_t> (MIN_NOISE_SPIKE_1US)
-                                                                / static_cast<uint32_t> (resultLS (msToResult1us (NOISE_CALCULATION_PERIOD_MS))),
+                        noiseLevel = std::min<uint8_t> ((MAX_NOISE_LEVEL - 1) * currentNoiseCounter / MAX_NOISE_EVENTS_NUMBER_PER_PERIOD,
                                                         (MAX_NOISE_LEVEL - 1))
                                 + 1;
                 }
@@ -275,7 +287,11 @@ void EdgeFilter::run (Result1us now)
                         noiseLevel = 0;
                 }
 
-                if (noiseState == NoiseState::noNoise && noiseLevel >= getConfig ().getNoiseLevelHigh ()) {
+                // print (noiseLevel);
+                // print (currentNoiseCounter);
+                // usbWrite ("\r\n");
+
+                if (noiseState == NoiseState::noNoise && noiseLevel >= DEFAULT_NOISE_LEVEL_HIGH) {
                         noiseState = NoiseState::noise;
                         // TODO When noise counter is high, turn of the EXTI, so the rest of the code has a chance to run. Then enable it
                         // after 1s TODO button will stop working during this period.
@@ -286,7 +302,7 @@ void EdgeFilter::run (Result1us now)
                         return;
                 }
 
-                /* else */ if (noiseState == NoiseState::noise && noiseLevel <= getConfig ().getNoiseLevelLow ()) {
+                /* else */ if (noiseState == NoiseState::noise && noiseLevel <= DEFAULT_NOISE_LEVEL_LOW) {
                         noiseState = NoiseState::noNoise;
                         __disable_irq ();
                         callback->report (DetectorEventType::noNoise, now);
@@ -302,37 +318,37 @@ void EdgeFilter::run (Result1us now)
 
         auto noBeamTimeoutMs = std::max (NO_BEAM_CALCULATION_PERIOD_MS, getConfig ().getMinTreggerEventMs ());
 
-        if (now - lastBeamStateCalculation >= msToResult1us (noBeamTimeoutMs) && noiseState != NoiseState::noise) {
-                // This is the real period during we gathered the data uised to determine if there is noBeam situation.
-                auto actualNoBeamCalculationPeriod = now - lastBeamStateCalculation;
-                lastBeamStateCalculation = now;
+        // if (now - lastBeamStateCalculation >= msToResult1us (noBeamTimeoutMs) && noiseState != NoiseState::noise) {
+        //         // This is the real period during we gathered the data uised to determine if there is noBeam situation.
+        //         auto actualNoBeamCalculationPeriod = now - lastBeamStateCalculation;
+        //         lastBeamStateCalculation = now;
 
-                if (beamState == BeamState::present && // State correct - beam was present before.
-                    currentState == PwmState::high &&  // Pwm state is high (still is) for very long
-                                                       /*
-                                                        * For so long, that high time to noBeam calculation time (def 1s) is higher
-                                                        * (or eq) than dutyCycle (50 by def.)
-                                                        */
-                    /* 100 * */ (now - currentHighStateStart)
-                            >= /* getConfig ().getDutyTresholdPercent () * */ actualNoBeamCalculationPeriod / 2) {
+        //         if (beamState == BeamState::present && // State correct - beam was present before.
+        //             currentState == PwmState::high &&  // Pwm state is high (still is) for very long
+        //                                                /*
+        //                                                 * For that long, that high time to noBeam calculation time (def 1s) is higher
+        //                                                 * (or eq) than dutyCycle (50 by def.)
+        //                                                 */
+        //             /* 100 * */ (now - currentHighStateStart)
+        //                     >= /* getConfig ().getDutyTresholdPercent () * */ actualNoBeamCalculationPeriod / 2) {
 
-                        beamState = BeamState::absent;
-                        __disable_irq ();
-                        callback->report (DetectorEventType::noBeam, now);
-                        reset ();
-                        __enable_irq ();
-                        return;
-                }
-                /* else */ if (beamState == BeamState::absent && currentState == PwmState::low) {
+        //                 beamState = BeamState::absent;
+        //                 __disable_irq ();
+        //                 callback->report (DetectorEventType::noBeam, now);
+        //                 reset ();
+        //                 __enable_irq ();
+        //                 return;
+        //         }
+        //         /* else */ if (beamState == BeamState::absent && currentState == PwmState::low) {
 
-                        beamState = BeamState::present;
-                        __disable_irq ();
-                        callback->report (DetectorEventType::beamRestored, now);
-                        reset ();
-                        __enable_irq ();
-                        return;
-                }
-        }
+        //                 beamState = BeamState::present;
+        //                 __disable_irq ();
+        //                 callback->report (DetectorEventType::beamRestored, now);
+        //                 reset ();
+        //                 __enable_irq ();
+        //                 return;
+        //         }
+        // }
 
         /*--------------------------------------------------------------------------*/
         /* Trigger detection during steady state.                                   */
@@ -345,8 +361,8 @@ void EdgeFilter::run (Result1us now)
                 bool longLowState{};
 
                 if (currentState == PwmState::low &&                // Correct current state
-                    currentHighStateStart < currentLowStateStart && // And correct order of previous pwmStates
-                    currentMiddleStateStart < currentHighStateStart) {
+                    currentHighStateStart < currentLowStateStart /* && // And correct order of previous pwmStates
+                    currentMiddleStateStart < currentHighStateStart */) {
 
                         longHighState = resultLS (currentLowStateStart - currentHighStateStart) >= minTriggerEvent1Us;
                         longLowState = resultLS (now - currentLowStateStart) >= minTriggerEvent1Us;
@@ -364,6 +380,8 @@ void EdgeFilter::run (Result1us now)
                         reset ();
                         __enable_irq ();
                 }
+
+                __NOP ();
         }
 }
 

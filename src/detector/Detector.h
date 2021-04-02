@@ -153,7 +153,9 @@ public:
          * This value depends mostly (or solely) on the IR receiver used and its bandwith
          * (at least this is my understanding).
          */
-        static constexpr Result1usLS MIN_NOISE_SPIKE_1US = 100;
+        static constexpr int MIN_NOISE_SPIKE_1US = 100;
+        static constexpr uint32_t NOISE_CALCULATION_PERIOD_US = static_cast<uint32_t> (resultLS (msToResult1us (NOISE_CALCULATION_PERIOD_MS)));
+        static constexpr uint32_t MAX_NOISE_EVENTS_NUMBER_PER_PERIOD = 150; // Empoirical for trigger 10 ms
 
         // TODO turn off this EXTI as well. EDIT : button would not work. The button pin should be changed to 0-1 then.
         bool isActive () const { return active; }

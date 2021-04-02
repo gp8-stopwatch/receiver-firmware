@@ -74,11 +74,11 @@ public:
         uint16_t getMinTreggerEventMs () const { return minTriggerEventMs; }
         void setMinTriggerEventMs (uint16_t i);
 
-        uint8_t getNoiseLevelHigh () const { return noiseLevelHigh; }
-        void setNoiseLevelHigh (uint8_t i);
+        // uint8_t getNoiseLevelHigh () const { return noiseLevelHigh; }
+        // void setNoiseLevelHigh (uint8_t i);
 
-        uint8_t getNoiseLevelLow () const { return noiseLevelLow; }
-        void setNoiseLevelLow (uint8_t i);
+        // uint8_t getNoiseLevelLow () const { return noiseLevelLow; }
+        // void setNoiseLevelLow (uint8_t i);
 
         uint16_t getFps () const { return fps; }
         void setFps (uint16_t i);
@@ -94,13 +94,13 @@ private:
         bool irSensorOn : 1;
         bool buzzerOn : 1;
 
-        uint8_t reserved;
+        uint8_t reserved0;
 
         uint16_t blindTime;
         uint16_t minTriggerEventMs;
         uint16_t fps;
-        uint8_t noiseLevelHigh; // This number or more to report noise condition
-        uint8_t noiseLevelLow;  // Less than this number to restore normal operation
+        uint8_t reserved1;
+        uint8_t reserved2;
 };
 
 extern bool &changed ();
