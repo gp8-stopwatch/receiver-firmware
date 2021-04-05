@@ -135,11 +135,12 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
                 if (pwmState != PwmState::high) {
                         auto stateChangeTimePoint = firstRising->getFullTimePoint ();
 
-                        if (resultLS (stateChangeTimePoint - lowStateStart) > minTriggerEvent1Us / 20) {
-                                pwmState = PwmState::high;
-                                highStateStart = stateChangeTimePoint;
-                                stateChangePin (true);
-                        }
+                        // if (resultLS (stateChangeTimePoint - lowStateStart) > minTriggerEvent1Us / 20) {
+                        pwmState = PwmState::high;
+                        highStateStart = stateChangeTimePoint;
+                        stateChangePin (true);
+                        // }
+
                         /*
                          * Here, the state change was caused by something shorter than the minTriggerEvent1Us,
                          * so we treat this as a noise.
@@ -150,13 +151,13 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
         // else if (lowDuration >= cycleTresholdForLow) { // PWM of the slice is low (low duration was for long time)
         else if (hiDuration <= cycleTresholdForLow) { // PWM of the slice is low (low duration was for long time)
                 if (pwmState != PwmState::low) {
-                        auto stateChangeTimePoint = firstRising->getFullTimePoint ();
+                        auto stateChangeTimePoint = firstFalling->getFullTimePoint ();
 
-                        if (resultLS (stateChangeTimePoint - highStateStart) > minTriggerEvent1Us / 20) {
-                                pwmState = PwmState::low;
-                                lowStateStart = stateChangeTimePoint;
-                                stateChangePin (false);
-                        }
+                        // if (resultLS (stateChangeTimePoint - highStateStart) > minTriggerEvent1Us / 20) {
+                        pwmState = PwmState::low;
+                        lowStateStart = stateChangeTimePoint;
+                        stateChangePin (false);
+                        // }
 
                         ++noiseCounter;
                 }
@@ -204,6 +205,8 @@ void EdgeFilter::run ()
 void EdgeFilter::run (Result1us now)
 #endif
 {
+        // return;
+
         if (!active) {
                 return;
         }
@@ -211,7 +214,7 @@ void EdgeFilter::run (Result1us now)
         __disable_irq ();
         auto back = queue.back ();
         // auto back1 = queue.back1 ();
-        auto lastDuration = queue.getLastDuration ();
+        // auto lastDuration = queue.getLastDuration ();
         auto firstPolarity = queue.getFirstPolarity ();
         auto currentState = pwmState;
 
@@ -247,7 +250,7 @@ void EdgeFilter::run (Result1us now)
         // if (resultLS (stateChangeTimePoint - highStateStart) >
         // minTriggerEvent1Us / 20) {
 
-        if ((lastSignalChangeDuration > lastDuration) || lastSignalChangeLongAgo) {
+        if (/* (lastSignalChangeDuration > lastDuration) || */ lastSignalChangeLongAgo) {
                 if (firstPolarity == EdgePolarity::rising) {
                         if (currentState != PwmState::high) {
                                 __disable_irq ();
@@ -277,51 +280,51 @@ void EdgeFilter::run (Result1us now)
         /*--------------------------------------------------------------------------*/
         /* Noise detection + hysteresis                                             */
         /*--------------------------------------------------------------------------*/
-        if (now - lastNoiseCalculation >= msToResult1us (NOISE_CALCULATION_PERIOD_MS) && beamState != BeamState::absent) {
-                lastNoiseCalculation = now;
+        // if (now - lastNoiseCalculation >= msToResult1us (NOISE_CALCULATION_PERIOD_MS) && beamState != BeamState::absent) {
+        //         lastNoiseCalculation = now;
 
-                __disable_irq ();
-                auto currentNoiseCounter = noiseCounter;
-                noiseCounter = 0;
-                __enable_irq ();
+        //         __disable_irq ();
+        //         auto currentNoiseCounter = noiseCounter;
+        //         noiseCounter = 0;
+        //         __enable_irq ();
 
-                if (currentNoiseCounter > 0) {
-                        // This is typical case, where there is some noise present, and we normalize it from 1 to 15.
-                        // TODO this will have to be adjusted in direct sunlight in July or August.
-                        // TODO or find the 100W lightbulb I've lost. If it manages to achieve level 15, then it's OK.
-                        noiseLevel = std::min<uint8_t> ((MAX_NOISE_LEVEL - 1) * currentNoiseCounter / MAX_NOISE_EVENTS_NUMBER_PER_PERIOD,
-                                                        (MAX_NOISE_LEVEL - 1))
-                                + 1;
-                }
-                else {
-                        // 0 is a special case where there is absolutely no noise. Levels 1-15 are proportional.
-                        noiseLevel = 0;
-                }
+        //         if (currentNoiseCounter > 0) {
+        //                 // This is typical case, where there is some noise present, and we normalize it from 1 to 15.
+        //                 // TODO this will have to be adjusted in direct sunlight in July or August.
+        //                 // TODO or find the 100W lightbulb I've lost. If it manages to achieve level 15, then it's OK.
+        //                 noiseLevel = std::min<uint8_t> ((MAX_NOISE_LEVEL - 1) * currentNoiseCounter / MAX_NOISE_EVENTS_NUMBER_PER_PERIOD,
+        //                                                 (MAX_NOISE_LEVEL - 1))
+        //                         + 1;
+        //         }
+        //         else {
+        //                 // 0 is a special case where there is absolutely no noise. Levels 1-15 are proportional.
+        //                 noiseLevel = 0;
+        //         }
 
-                // print (noiseLevel);
-                // print (currentNoiseCounter);
-                // usbWrite ("\r\n");
+        //         // print (noiseLevel);
+        //         // print (currentNoiseCounter);
+        //         // usbWrite ("\r\n");
 
-                if (noiseState == NoiseState::noNoise && noiseLevel >= DEFAULT_NOISE_LEVEL_HIGH) {
-                        noiseState = NoiseState::noise;
-                        // TODO When noise counter is high, turn of the EXTI, so the rest of the code has a chance to run. Then enable it
-                        // after 1s TODO button will stop working during this period.
-                        __disable_irq ();
-                        callback->report (DetectorEventType::noise, now);
-                        reset ();
-                        __enable_irq ();
-                        return;
-                }
+        //         if (noiseState == NoiseState::noNoise && noiseLevel >= DEFAULT_NOISE_LEVEL_HIGH) {
+        //                 noiseState = NoiseState::noise;
+        //                 // TODO When noise counter is high, turn of the EXTI, so the rest of the code has a chance to run. Then enable it
+        //                 // after 1s TODO button will stop working during this period.
+        //                 __disable_irq ();
+        //                 callback->report (DetectorEventType::noise, now);
+        //                 reset ();
+        //                 __enable_irq ();
+        //                 return;
+        //         }
 
-                /* else */ if (noiseState == NoiseState::noise && noiseLevel <= DEFAULT_NOISE_LEVEL_LOW) {
-                        noiseState = NoiseState::noNoise;
-                        __disable_irq ();
-                        callback->report (DetectorEventType::noNoise, now);
-                        reset ();
-                        __enable_irq ();
-                        return;
-                }
-        }
+        //         /* else */ if (noiseState == NoiseState::noise && noiseLevel <= DEFAULT_NOISE_LEVEL_LOW) {
+        //                 noiseState = NoiseState::noNoise;
+        //                 __disable_irq ();
+        //                 callback->report (DetectorEventType::noNoise, now);
+        //                 reset ();
+        //                 __enable_irq ();
+        //                 return;
+        //         }
+        // }
 
         /*--------------------------------------------------------------------------*/
         /* No beam detection + hysteresis                                           */

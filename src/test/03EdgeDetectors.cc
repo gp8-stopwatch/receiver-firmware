@@ -1288,3 +1288,51 @@ TEST_CASE ("Limited sampling", "[detector]")
 
         SECTION ("Problem 2") {}
 }
+
+TEST_CASE ("Stedady state when spikes", "[detector]")
+{
+        TestDetectorCallback tc;
+        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        edgeFilter.setCallback (&tc);
+        SignalSimulator sim{edgeFilter};
+        events.clear ();
+        getConfig ().setMinTriggerEventMs (10);
+
+        /*
+         *        ++ +------+
+         *        || |      |
+         *        || |      |
+         *        || |      |
+         *        || |      |
+         * -------++-+      +------+
+         * 0    20ms              60ms
+         */
+        SECTION ("Problem1")
+        {
+                sim.signal ({20000, 20050, 20100, 20600}, 60000, EdgePolarity::rising); // NOLINT
+                REQUIRE (events.empty ());
+
+                // REQUIRE (events.size () == 1);
+                // REQUIRE (events.front ().type == DetectorEventType::trigger);
+                // REQUIRE (events.front ().timePoint == 0);
+        }
+
+        /*
+         *        +------+++
+         *        |      |||
+         *        |      |||
+         *        |      |||
+         *        |      |||
+         * -------+      +++------+
+         * 0    20ms              60ms
+         */
+        SECTION ("Problem1")
+        {
+                sim.signal ({20000, 20500, 20550, 20600}, 60000, EdgePolarity::rising); // NOLINT
+                REQUIRE (events.empty ());
+
+                // REQUIRE (events.size () == 1);
+                // REQUIRE (events.front ().type == DetectorEventType::trigger);
+                // REQUIRE (events.front ().timePoint == 0);
+        }
+}
