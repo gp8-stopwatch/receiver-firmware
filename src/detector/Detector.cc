@@ -95,8 +95,6 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
                         checkForEventCondition (e);
                         return;
                 }
-
-                // ++noiseCounter;
         }
         else {
                 if ((last.getTimePoint () - last1.getTimePoint ()) >= minTriggerEvent1Us) { // Long high edge
@@ -109,20 +107,19 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
                         checkForEventCondition (e);
                         return;
                 }
-
-                // ++noiseCounter;
         }
 
         /*--------------------------------------------------------------------------*/
         /* PWM State transitions depending on dutyCycle and recent level length.    */
+        /* Here we analiyze events which are shorter than `minTriggerEvent1Us`.     */
         /*--------------------------------------------------------------------------*/
 
         // Calculate duty cycle of present slice of the signal
         Result1usLS sliceDuration = queue.back ().getTimePoint () - queue.front ().getTimePoint ();
         Result1usLS cycleTresholdForLow = sliceDuration / DUTY_CYCLE_LOW_DIV;
         Result1usLS cycleTresholdForHigh = sliceDuration / DUTY_CYCLE_HIGH_DIV;
-        Result1usLS hiDuration = queue.getDurationA (); // We assume for now, that queue.getE0() is rising
-        Result1usLS lowDuration = queue.getDurationB ();
+        Result1usLS hiDuration = queue.getFirstDuration (); // We assume for now, that queue.getE0() is rising
+        Result1usLS lowDuration = queue.getLastDuration ();
 
         // Find out which edge in the queue is rising, which falling.
         auto *firstRising = &queue.front ();   // Pointers are smaller than Edge object
@@ -136,9 +133,13 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
 
         if (hiDuration > cycleTresholdForHigh) { // PWM of the slice is high
                 if (pwmState != PwmState::high) {
-                        pwmState = PwmState::high;
-                        highStateStart = firstRising->getFullTimePoint ();
-                        stateChangePin (true);
+                        auto stateChangeTimePoint = firstRising->getFullTimePoint ();
+
+                        if (resultLS (stateChangeTimePoint - lowStateStart) > minTriggerEvent1Us / 20) {
+                                pwmState = PwmState::high;
+                                highStateStart = stateChangeTimePoint;
+                                stateChangePin (true);
+                        }
                         /*
                          * Here, the state change was caused by something shorter than the minTriggerEvent1Us,
                          * so we treat this as a noise.
@@ -146,19 +147,20 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
                         ++noiseCounter;
                 }
         }
-        else if (lowDuration >= cycleTresholdForLow) { // PWM of the slice is low (low duration was for long time)
+        // else if (lowDuration >= cycleTresholdForLow) { // PWM of the slice is low (low duration was for long time)
+        else if (hiDuration <= cycleTresholdForLow) { // PWM of the slice is low (low duration was for long time)
                 if (pwmState != PwmState::low) {
-                        pwmState = PwmState::low;
-                        lowStateStart = firstFalling->getFullTimePoint ();
-                        stateChangePin (false);
+                        auto stateChangeTimePoint = firstRising->getFullTimePoint ();
+
+                        if (resultLS (stateChangeTimePoint - highStateStart) > minTriggerEvent1Us / 20) {
+                                pwmState = PwmState::low;
+                                lowStateStart = stateChangeTimePoint;
+                                stateChangePin (false);
+                        }
+
                         ++noiseCounter;
                 }
         }
-        // else if (pwmState != PwmState::middle) { // Previous conditions for level durations weren't satisfied
-        //         pwmState = PwmState::middle;
-        //         middleStateStart = firstFalling->getFullTimePoint ();
-        //         ++noiseCounter; // Noise counter analyzes the filtered signal
-        // }
 
         /*--------------------------------------------------------------------------*/
         /* Check trigger event conditions.                                          */
@@ -208,6 +210,8 @@ void EdgeFilter::run (Result1us now)
 
         __disable_irq ();
         auto back = queue.back ();
+        // auto back1 = queue.back1 ();
+        auto lastDuration = queue.getLastDuration ();
         auto firstPolarity = queue.getFirstPolarity ();
         auto currentState = pwmState;
 
@@ -233,15 +237,22 @@ void EdgeFilter::run (Result1us now)
         /* Steady state detection, pwmState correction.                             */
         /*--------------------------------------------------------------------------*/
 
-        auto lastSignalChange = back.getFullTimePoint ();
-        bool lastSignalChangeLongAgo = resultLS (now - lastSignalChange) >= minTriggerEvent1Us;
+        auto lastSignalChangeTimePoint = back.getFullTimePoint ();
+        auto lastSignalChangeDuration = resultLS (now - lastSignalChangeTimePoint);
+        bool lastSignalChangeLongAgo = lastSignalChangeDuration >= minTriggerEvent1Us;
 
-        if (lastSignalChangeLongAgo) {
+        // UWAGA
+        // Zarówno to trzeba uwzględnić, : hiDuration <= cycleTresholdForLow) { // PWM of the slice is low (low duration was for long time)
+        // jak I to: Chyba trzeba z tego zrobić funkcję.
+        // if (resultLS (stateChangeTimePoint - highStateStart) >
+        // minTriggerEvent1Us / 20) {
+
+        if ((lastSignalChangeDuration > lastDuration) || lastSignalChangeLongAgo) {
                 if (firstPolarity == EdgePolarity::rising) {
                         if (currentState != PwmState::high) {
                                 __disable_irq ();
                                 currentState = pwmState = PwmState::high;
-                                highStateStart = lastSignalChange;
+                                highStateStart = lastSignalChangeTimePoint;
                                 __enable_irq ();
                                 stateChangePin (true);
                         }
@@ -250,7 +261,7 @@ void EdgeFilter::run (Result1us now)
                         if (currentState != PwmState::low) {
                                 __disable_irq ();
                                 currentState = pwmState = PwmState::low;
-                                lowStateStart = lastSignalChange;
+                                lowStateStart = lastSignalChangeTimePoint;
                                 __enable_irq ();
                                 stateChangePin (false);
                         }
@@ -380,8 +391,6 @@ void EdgeFilter::run (Result1us now)
                         reset ();
                         __enable_irq ();
                 }
-
-                __NOP ();
         }
 }
 

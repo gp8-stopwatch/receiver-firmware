@@ -1213,3 +1213,78 @@ TEST_CASE ("Blind period", "[detector]")
                 REQUIRE (events.back ().timePoint == 30000);
         }
 }
+
+TEST_CASE ("Observed problems", "[detector]")
+{
+        TestDetectorCallback tc;
+        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        edgeFilter.setCallback (&tc);
+        SignalSimulator sim{edgeFilter};
+        events.clear ();
+        getConfig ().setMinTriggerEventMs (10);
+
+        SECTION ("Problem1")
+        {
+                sim.signal ({360000, 360493, 571493, 572092}, 600000, EdgePolarity::rising); // NOLINT
+                REQUIRE (events.empty ());
+
+                // REQUIRE (events.size () == 1);
+                // REQUIRE (events.front ().type == DetectorEventType::trigger);
+                // REQUIRE (events.front ().timePoint == 0);
+        }
+
+        SECTION ("Problem 2") {}
+}
+
+TEST_CASE ("Limited sampling", "[detector]")
+{
+        TestDetectorCallback tc;
+        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        edgeFilter.setCallback (&tc);
+        SignalSimulator sim{edgeFilter};
+        events.clear ();
+        getConfig ().setMinTriggerEventMs (10);
+
+        SECTION ("Too fast signal, no state change")
+        {
+                /*
+                 *        +-----+  ++
+                 *        |     |  ||
+                 *        |     |  ||
+                 *        |     |  ||
+                 *        |     |  ||
+                 * -------+     +--++------
+                 * 0    10ms   20ms    30ms   40     50
+                 */
+                sim.signal ({10000}, 25000, EdgePolarity::rising); // NOLINT
+                REQUIRE (events.empty ());
+                REQUIRE (edgeFilter.pwmState == EdgeFilter::PwmState::high);
+
+                // This normally would result in low PWM and thus low PWM state
+                edgeFilter.onEdge ({30000}, EdgePolarity::falling);
+                REQUIRE (edgeFilter.pwmState == EdgeFilter::PwmState::high);
+                edgeFilter.onEdge ({30400}, EdgePolarity::rising);
+                REQUIRE (edgeFilter.pwmState == EdgeFilter::PwmState::high);
+                edgeFilter.onEdge ({30450}, EdgePolarity::falling);
+                // Normally there would be PwmState::low, but the change in the signal ocuured to quickly
+                REQUIRE (edgeFilter.pwmState == EdgeFilter::PwmState::high);
+
+                // edgeFilter.onEdge ({30400}, EdgePolarity::rising);
+
+                // edgeFilter.onEdge ({12 * 1000}, EdgePolarity::falling);
+                // edgeFilter.onEdge ({12 * 1000 + 100}, EdgePolarity::rising);
+
+                // edgeFilter.onEdge ({13 * 1000}, EdgePolarity::falling);
+                // edgeFilter.onEdge ({13 * 1000 + 100}, EdgePolarity::rising);
+
+                // edgeFilter.run (1010000);
+                // REQUIRE (events.size () == 1);
+                // REQUIRE (events.front ().type == DetectorEventType::noBeam);
+
+                // // min trigger 10ms means minimum level has to be more than 500µs
+                // sim.signal ({10000, 360493, 571493, 572092}, 600000, EdgePolarity::rising); // NOLINT
+                // REQUIRE (events.empty ());
+        }
+
+        SECTION ("Problem 2") {}
+}

@@ -35,8 +35,8 @@ public:
 
                 blindTime = DEFAULT_BLIND_TIME_MS;
                 minTriggerEventMs = DEFAULT_MIN_TRIGGER_EVENT_MS;
-                noiseLevelHigh = DEFAULT_NOISE_LEVEL_HIGH;
-                noiseLevelLow = DEFAULT_NOISE_LEVEL_LOW;
+                // noiseLevelHigh = DEFAULT_NOISE_LEVEL_HIGH;
+                // noiseLevelLow = DEFAULT_NOISE_LEVEL_LOW;
                 fps = DEFAULT_FPS;
         }
 #endif

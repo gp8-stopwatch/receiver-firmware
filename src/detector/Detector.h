@@ -69,8 +69,8 @@ public:
                 firstPolarity = !firstPolarity;
         }
 
-        Result1usLS getDurationA () const { return e1.getTimePoint () - e0.getTimePoint (); }
-        Result1usLS getDurationB () const { return e2.getTimePoint () - e1.getTimePoint (); }
+        Result1usLS getFirstDuration () const { return e1.getTimePoint () - e0.getTimePoint (); }
+        Result1usLS getLastDuration () const { return e2.getTimePoint () - e1.getTimePoint (); }
 
         EdgePolarity getFirstPolarity () const { return EdgePolarity{firstPolarity}; }
 
@@ -161,15 +161,15 @@ public:
         bool isActive () const { return active; }
         bool isBeamClean () const { return beamState == BeamState::present && noiseState == NoiseState::noNoise; }
 
-private:
 #ifndef UNIT_TEST
+private:
         StopWatch &stopWatch;
 #endif
 
         void reset ()
         {
                 highStateStart = middleStateStart = lowStateStart;
-                pwmState = PwmState::middle;
+                pwmState = PwmState::middle; // TODO ?
         }
 
         /// Final check if we have proper trigger event
