@@ -6,8 +6,8 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
+#include "Micro.h"
 #include "Container.h"
-#include "Regular.h"
 
 /****************************************************************************/
 
@@ -15,7 +15,7 @@ extern "C" void EXTI4_15_IRQHandler ()
 {
         if (__HAL_GPIO_EXTI_GET_IT (GPIO_PIN_5) != RESET) {
                 __HAL_GPIO_EXTI_CLEAR_IT (GPIO_PIN_5);
-                getIrDetector ().onEdge ({getStopWatch ().getTimeFromIsr (), EdgePolarity (getIrTriggerInput ().get ())});
+                getIrDetector ().onEdge ({getStopWatch ().getTimeFromIsr ()}, EdgePolarity (getIrTriggerInput ().get ()));
         }
         // else if (__HAL_GPIO_EXTI_GET_IT (GPIO_PIN_15) != RESET) {
         //         __HAL_GPIO_EXTI_CLEAR_IT (GPIO_PIN_15);
@@ -29,6 +29,6 @@ extern "C" void EXTI0_1_IRQHandler ()
 {
         if (__HAL_GPIO_EXTI_GET_IT (GPIO_PIN_0) != RESET) {
                 __HAL_GPIO_EXTI_CLEAR_IT (GPIO_PIN_0);
-                getExtDetector ().onEdge ({getStopWatch ().getTime (), EdgePolarity (getExtTriggerInput ().get ())});
+                getExtDetector ().onEdge ({getStopWatch ().getTime ()}, EdgePolarity (getExtTriggerInput ().get ()));
         }
 }

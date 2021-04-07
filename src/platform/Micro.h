@@ -22,7 +22,7 @@
 #define IR_PINS GPIO_PIN_5
 #define IR_IRQn EXTI4_15_IRQn
 
-// Test trigger
+// Ext trigger
 #define EXT_TRIGGER_INPUT_PORT GPIOA
 #define EXT_TRIGGER_INPUT_PINS GPIO_PIN_0
 #define EXT_TRIGGER_INPUT_IRQn EXTI0_1_IRQn
@@ -36,3 +36,5 @@
 // #define BUTTON_PORT GPIOB
 // #define BUTTON_PINS GPIO_PIN_15
 // #define BUTTON_IRQn EXTI4_15_IRQn
+
+constexpr bool DEFAULT_SENSOR_ON = true;

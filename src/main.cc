@@ -267,3 +267,7 @@ extern "C" void usbWrite (const char * /* str */) {}
 
 extern "C" void __gxx_personality_v0 () {}
 // extern "C" void _init () {}
+
+// extern "C" void _exit (int) {}
+// extern "C" void _kill (int) {}
+// extern "C" int _getpid () { return 0; }

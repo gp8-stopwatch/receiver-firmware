@@ -83,4 +83,5 @@ struct FakeDisplay : public IDisplay {
         void setFlip (bool b) override {}
 
         void setResolution (Resolution res) override {}
+        void setFps (unsigned int) override {}
 };

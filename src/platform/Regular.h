@@ -36,3 +36,5 @@
 #define BUTTON_PORT GPIOB
 #define BUTTON_PINS GPIO_PIN_15
 #define BUTTON_IRQn EXTI4_15_IRQn
+
+constexpr bool DEFAULT_SENSOR_ON = false;

@@ -20,7 +20,6 @@ namespace cfg {
  */
 class Config {
 public:
-#ifdef UNIT_TEST
         Config ()
         {
                 resolution = Resolution::ms_10;
@@ -30,7 +29,7 @@ public:
                 autoDisplayResult = ResultDisplayStyle::none;
 
                 notFlipped = true;
-                irSensorOn = true;
+                irSensorOn = DEFAULT_SENSOR_ON;
                 buzzerOn = true;
 
                 blindTime = DEFAULT_BLIND_TIME_MS;
@@ -39,7 +38,6 @@ public:
                 // noiseLevelLow = DEFAULT_NOISE_LEVEL_LOW;
                 fps = DEFAULT_FPS;
         }
-#endif
 
         /// Use after loading from flassh. If a value has 0b1111... value, then correct default value is set instead.
         void restoreDefaults ();

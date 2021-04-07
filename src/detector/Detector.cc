@@ -274,57 +274,57 @@ void EdgeFilter::run (Result1us now)
         __disable_irq ();
         auto currentHighStateStart = highStateStart;
         auto currentLowStateStart = lowStateStart;
-        auto currentMiddleStateStart = middleStateStart;
+        // auto currentMiddleStateStart = middleStateStart;
         __enable_irq ();
 
         /*--------------------------------------------------------------------------*/
         /* Noise detection + hysteresis                                             */
         /*--------------------------------------------------------------------------*/
-        // if (now - lastNoiseCalculation >= msToResult1us (NOISE_CALCULATION_PERIOD_MS) && beamState != BeamState::absent) {
-        //         lastNoiseCalculation = now;
+        if (now - lastNoiseCalculation >= msToResult1us (NOISE_CALCULATION_PERIOD_MS) && beamState != BeamState::absent) {
+                lastNoiseCalculation = now;
 
-        //         __disable_irq ();
-        //         auto currentNoiseCounter = noiseCounter;
-        //         noiseCounter = 0;
-        //         __enable_irq ();
+                __disable_irq ();
+                auto currentNoiseCounter = noiseCounter;
+                noiseCounter = 0;
+                __enable_irq ();
 
-        //         if (currentNoiseCounter > 0) {
-        //                 // This is typical case, where there is some noise present, and we normalize it from 1 to 15.
-        //                 // TODO this will have to be adjusted in direct sunlight in July or August.
-        //                 // TODO or find the 100W lightbulb I've lost. If it manages to achieve level 15, then it's OK.
-        //                 noiseLevel = std::min<uint8_t> ((MAX_NOISE_LEVEL - 1) * currentNoiseCounter / MAX_NOISE_EVENTS_NUMBER_PER_PERIOD,
-        //                                                 (MAX_NOISE_LEVEL - 1))
-        //                         + 1;
-        //         }
-        //         else {
-        //                 // 0 is a special case where there is absolutely no noise. Levels 1-15 are proportional.
-        //                 noiseLevel = 0;
-        //         }
+                if (currentNoiseCounter > 0) {
+                        // This is typical case, where there is some noise present, and we normalize it from 1 to 15.
+                        // TODO this will have to be adjusted in direct sunlight in July or August.
+                        // TODO or find the 100W lightbulb I've lost. If it manages to achieve level 15, then it's OK.
+                        noiseLevel = std::min<uint8_t> ((MAX_NOISE_LEVEL - 1) * currentNoiseCounter / MAX_NOISE_EVENTS_NUMBER_PER_PERIOD,
+                                                        (MAX_NOISE_LEVEL - 1))
+                                + 1;
+                }
+                else {
+                        // 0 is a special case where there is absolutely no noise. Levels 1-15 are proportional.
+                        noiseLevel = 0;
+                }
 
-        //         // print (noiseLevel);
-        //         // print (currentNoiseCounter);
-        //         // usbWrite ("\r\n");
+                // print (noiseLevel);
+                // print (currentNoiseCounter);
+                // usbWrite ("\r\n");
 
-        //         if (noiseState == NoiseState::noNoise && noiseLevel >= DEFAULT_NOISE_LEVEL_HIGH) {
-        //                 noiseState = NoiseState::noise;
-        //                 // TODO When noise counter is high, turn of the EXTI, so the rest of the code has a chance to run. Then enable it
-        //                 // after 1s TODO button will stop working during this period.
-        //                 __disable_irq ();
-        //                 callback->report (DetectorEventType::noise, now);
-        //                 reset ();
-        //                 __enable_irq ();
-        //                 return;
-        //         }
+                if (noiseState == NoiseState::noNoise && noiseLevel >= DEFAULT_NOISE_LEVEL_HIGH) {
+                        noiseState = NoiseState::noise;
+                        // TODO When noise counter is high, turn of the EXTI, so the rest of the code has a chance to run. Then enable it
+                        // after 1s TODO button will stop working during this period.
+                        __disable_irq ();
+                        callback->report (DetectorEventType::noise, now);
+                        reset ();
+                        __enable_irq ();
+                        return;
+                }
 
-        //         /* else */ if (noiseState == NoiseState::noise && noiseLevel <= DEFAULT_NOISE_LEVEL_LOW) {
-        //                 noiseState = NoiseState::noNoise;
-        //                 __disable_irq ();
-        //                 callback->report (DetectorEventType::noNoise, now);
-        //                 reset ();
-        //                 __enable_irq ();
-        //                 return;
-        //         }
-        // }
+                /* else */ if (noiseState == NoiseState::noise && noiseLevel <= DEFAULT_NOISE_LEVEL_LOW) {
+                        noiseState = NoiseState::noNoise;
+                        __disable_irq ();
+                        callback->report (DetectorEventType::noNoise, now);
+                        reset (/* now */);
+                        __enable_irq ();
+                        return;
+                }
+        }
 
         /*--------------------------------------------------------------------------*/
         /* No beam detection + hysteresis                                           */

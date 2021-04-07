@@ -290,8 +290,8 @@ void init ()
         /*| Config                                                                  |*/
         /*+-------------------------------------------------------------------------+*/
 
-        getConfig ();
 #ifdef WITH_FLASH
+        getConfig ();
         getConfigFlashEepromStorage ().init (); // TODO use RAII
         // getConfigFlashEepromStorage ().clear ();
         readConfigFromFlash ();
@@ -326,14 +326,16 @@ void init ()
         /*| RTC                                                                     |*/
         /*+-------------------------------------------------------------------------+*/
 
+#ifdef WITH_RTC
         getRtc ();
+#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| History saved in the flash                                              |*/
         /*+-------------------------------------------------------------------------+*/
 
-        getHistory ();
 #ifdef WITH_FLASH
+        getHistory ();
         static FlashEepromStorage<2048, 4> hiScoreStorage (4, 1, size_t (&_hiscore_storage_address));
         hiScoreStorage.init ();
         getHistory ().setHiScoreStorage (&hiScoreStorage);
@@ -347,7 +349,9 @@ void init ()
         /*| Backlight, beeper                                                       |*/
         /*+-------------------------------------------------------------------------+*/
 
+#ifdef WITH_SOUND
         getBuzzer ();
+#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| StopWatch, machine and IR                                               |*/
@@ -382,7 +386,6 @@ void init ()
         static FastStateMachineProtocolCallback callback{getFastStateMachine ()};
         getProtocol ().setCallback (&callback);
 #endif
-        // getFastStateMachine ().setIr (&getBeam ());
         getFastStateMachine ().setIr (&getIrDetector ());
         getFastStateMachine ().setDisplay (&getDisplay ());
 
@@ -417,13 +420,17 @@ void init ()
         /*| Battery, light sensor, others                                            |*/
         /*+-------------------------------------------------------------------------+*/
 
+#ifdef WITH_POWER_MANAGER
         getPowerManager ();
+#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| Menu                                                                    |*/
         /*+-------------------------------------------------------------------------+*/
 
+#ifdef WITH_MENU
         getMenu ();
+#endif
 
         /*+-------------------------------------------------------------------------+*/
         /*| USB                                                                     |*/

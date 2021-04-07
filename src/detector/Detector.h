@@ -168,7 +168,7 @@ private:
 
         void reset ()
         {
-                highStateStart = middleStateStart = lowStateStart;
+                highStateStart = /* middleStateStart =  */ lowStateStart;
                 pwmState = PwmState::middle; // TODO ?
         }
 
@@ -188,7 +188,7 @@ private:
         PwmState pwmState;
         Result1us highStateStart{};
         Result1us lowStateStart{};
-        Result1us middleStateStart{};
+        // Result1us middleStateStart{};
 
         /*--------------------------------------------------------------------------*/
         /* Noise calculations                                                       */
