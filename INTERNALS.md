@@ -12,3 +12,8 @@ Is managed by the `BlindManager` class. Its `start` method starts the so called 
 * Tha main receiver has a global `BlindManager` which state is controlled by:
   * `FastStateMachine` chekcs if not blind and starts the blind period upon receiveing `Event::Type::irTrigger` or `Event::Type::externalTrigger`.
   * `IrTriggerDetector` (formely known as the `EdgeDetector`) checks if not blind in both `onEdge` and run `methods` to prevent spurious state changes in the object. Without this safety check, there could have been false triggers reported to the `FastStateMachine` after the blind period expired.
+
+# CAN Bus
+50kbps, only for communications. No time related stuff.
+
+

@@ -35,7 +35,7 @@ void FastStateMachine::run (Event event)
         }
 
         // Global except for the PAUSED state
-        if (state != PAUSED) {
+        if (state != State::PAUSED) {
                 if (ir->isActive () && !ir->isBeamClean ()) {
                         state = State::WAIT_FOR_BEAM;
                 }
@@ -51,7 +51,7 @@ void FastStateMachine::run (Event event)
                                 return;
                         }
                 }
-                // Event possible only if WITH_CHECK_SENSOR_STATUS is set
+                // Event possible only if IS_CAN_MASTER is set
                 // else if (eType == Event::Type::noBeam || eType == Event::Type::noise) {
                 //         state = State::WAIT_FOR_BEAM;
                 // }
@@ -65,9 +65,9 @@ void FastStateMachine::run (Event event)
 
         // Entry actions and transitions distinct for every state.
         switch (state) {
-        case WAIT_FOR_BEAM: {
+        case State::WAIT_FOR_BEAM: {
                 /*
-#ifdef WITH_CHECK_SENSOR_STATUS
+#ifdef IS_CAN_MASTER
                 // The entry action
                 auto remoteBeamState = isRemoteBeamStateOk ();
 
@@ -100,7 +100,7 @@ void FastStateMachine::run (Event event)
                         }
 #endif
                 }
-#ifdef WITH_CHECK_SENSOR_STATUS
+#ifdef IS_CAN_MASTER
                 else if (remoteBeamState == RemoteBeamState::someNotOk) {
                         display->setText ("nobeam");
                 }
@@ -111,12 +111,12 @@ void FastStateMachine::run (Event event)
 */
                 // The transition
                 if ((ir->isActive () && ir->isBeamClean ()) /* || remoteBeamState == RemoteBeamState::allOk */) {
-                        state = READY;
+                        state = State::READY;
                 }
 
         } break;
 
-        case NOISE:
+        case State::NOISE:
                 display->setText ("noise ");
 
                 // TODO
@@ -128,28 +128,28 @@ void FastStateMachine::run (Event event)
                 // #endif
 
                 if (event.getType () == Event::Type::noNoise) {
-                        state = WAIT_FOR_BEAM;
+                        state = State::WAIT_FOR_BEAM;
                 }
 
                 break;
 
-        case NO_BEAM:
+        case State::NO_BEAM:
                 display->setText ("noi.r.  ");
 
                 if (event.getType () == Event::Type::beamRestored) {
-                        state = WAIT_FOR_BEAM;
+                        state = State::WAIT_FOR_BEAM;
                 }
 
 #ifdef WITH_CAN
                 if (protocol != nullptr && !isExternalTrigger (event) && !noIrRequestSent) {
-                        protocol->sendNoIr ();
+                        protocol->sendNoBeam ();
                         noIrRequestSent = true;
                 }
 #endif
 
                 break;
 
-        case READY: {
+        case State::READY: {
                 noIrRequestSent = false;
                 ready_entryAction ();
 
@@ -158,22 +158,22 @@ void FastStateMachine::run (Event event)
                  * This is to avoid showing the first result which is not there.
                  */
                 if (isTrigger (event)) {
-                        state = RUNNING;
+                        state = State::RUNNING;
                         running_entryAction (event);
                 }
 
         } break;
 
-        case RUNNING:
+        case State::RUNNING:
                 // Refresh the screen (shows the time is running). In an event of the stop_entryAction this will be re-set again.
                 display->setTime (result1To10 (stopWatch->getTime () - lastTime), getConfig ().getResolution ());
 
                 if (isTrigger (event)) {
                         if (getConfig ().getStopMode () == StopMode::stop) {
-                                state = STOP;
+                                state = State::STOP;
                         }
                         else {
-                                state = LOOP_RUNNING;
+                                state = State::LOOP_RUNNING;
                         }
 
                         loopStop_entryAction (event);
@@ -181,15 +181,15 @@ void FastStateMachine::run (Event event)
 
                 break;
 
-        case STOP:
+        case State::STOP:
                 if (isTrigger (event)) {
-                        state = RUNNING;
+                        state = State::RUNNING;
                         running_entryAction (event);
                 }
 
                 break;
 
-        case LOOP_RUNNING:
+        case State::LOOP_RUNNING:
                 if (loopDisplayTimeout.isExpired ()) {
                         display->setTime (result1To10 (stopWatch->getTime () - lastTime),
                                           getConfig ().getResolution ()); // Refresh the screen (shows the time is running)
@@ -280,7 +280,7 @@ void FastStateMachine::loopStop_entryAction (Event event)
 #endif
 
 #ifdef WITH_SOUND
-        buzzer->beep (70, 50, (state == LOOP_RUNNING) ? (2) : (3));
+        buzzer->beep (70, 50, (state == State::LOOP_RUNNING) ? (2) : (3));
 #endif
 
 #ifdef WITH_HISTORY

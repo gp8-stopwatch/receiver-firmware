@@ -9,6 +9,7 @@
 #pragma once
 #include "Can.h"
 #include "ICanCallback.h"
+#include "Timer.h"
 #include "Types.h"
 #include <cstdint>
 #include <etl/vector.h>
@@ -17,7 +18,14 @@
 
 /*****************************************************************************/
 
-enum class Message : uint8_t { /* START, STOP, */ /* LOOP */ NO_IR, INFO_REQ, INFO_RESP, NOISE };
+enum class Message : uint8_t {
+        NO_BEAM,        // slave -> master
+        NOISE,          // slave -> master
+        INFO_REQ,       // master -> slave, and then:
+        INFO_RESP,      // slave -> master
+        CONFIG_REQUEST, // slave -> master, and then:
+        CONFIG_RESP     // master -> slave
+};
 
 /*****************************************************************************/
 
@@ -29,7 +37,7 @@ struct IProtocolCallback {
         IProtocolCallback &operator= (IProtocolCallback &&) = default;
         virtual ~IProtocolCallback () = default;
 
-        virtual void onMessage (Message msg /* , Result1us time */) = 0;
+        virtual void onMessage (Message msg) = 0;
 };
 
 /*****************************************************************************/
@@ -52,11 +60,24 @@ class CanProtocol : public ICanCallback {
 public:
         CanProtocol (Can &can, uint32_t u, DeviceType dt) : can (can), uid (u & 0x1FFFFFFF), deviceType{dt} {}
 
-        // void sendTrigger (Message msg, Result time);
-        void sendNoIr () { can.send (CanFrame{uid, true, 1, uint8_t (Message::NO_IR)}, CAN_SEND_TIMEOUT); }
+        /*--------------------------------------------------------------------------*/
+        /* Requestes                                                                */
+        /*--------------------------------------------------------------------------*/
 
+        void sendNoBeam () { can.send (CanFrame{uid, true, 1, uint8_t (Message::NO_BEAM)}, CAN_SEND_TIMEOUT); }
         void sendInfoRequest ();
+        void sendConfigRequest () { can.send (CanFrame{uid, true, 1, uint8_t (Message::CONFIG_REQUEST)}, CAN_SEND_TIMEOUT); }
+        void sendConfigResp ();
+
+        /*--------------------------------------------------------------------------*/
+        /* Responses asynchronously                                                 */
+        /*--------------------------------------------------------------------------*/
+
         void setCallback (IProtocolCallback *cb) { callback = cb; }
+
+        /*--------------------------------------------------------------------------*/
+        /* Responses synchronously                                                  */
+        /*--------------------------------------------------------------------------*/
 
         InfoRespDataCollection &getInfoRespDataCollection () { return lastInfoResponseData; }
         InfoRespDataCollection const &getInfoRespDataCollection () const { return lastInfoResponseData; }
@@ -75,4 +96,5 @@ private:
         DeviceType deviceType;
         // IInfraRedBeam *beam{};
         InfoRespDataCollection lastInfoResponseData;
+        Timer configResponseTimer{};
 };

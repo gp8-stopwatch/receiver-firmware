@@ -36,7 +36,7 @@ int main ()
         int refreshRate = 9; // Something different than 10 so the screen is a little bit out of sync. This way the last digit changes.
 
         // Refresh stopwatch state to reflect the config.
-        auto refreshSettings = [&] {
+        auto refreshSettings = [&] (bool firstRun = false) {
                 getDisplay ().setFlip (getConfig ().isFlip ());
                 getDisplay ().setFps (getConfig ().getFps ());
 
@@ -48,12 +48,35 @@ int main ()
 #ifdef WITH_SOUND
                 getBuzzer ().setActive (getConfig ().isBuzzerOn ());
 #endif
+#ifdef IS_CAN_MASTER
+                /*
+                 * This is a little bit convoluted. Just after the startup, when this lambda is run
+                 * for the first time, it would be reasonable to send the configuration to all the
+                 * peripherals, but we do not do it. We rather postpone it until a REQUEST is received.
+                 *
+                 * This is to enable a "hot-swap" mechanism where peripherals connected AFTER the main
+                 * device was turned on would have chance to as for the most recent settins.
+                 */
+                if (!firstRun) {
+                        getProtocol ().sendConfigResp ();
+                }
+#endif
                 getDisplay ().setResolution (getConfig ().getResolution ());
+                // Keep at the end
                 getIrDetector ().recalculateConstants ();
         };
 
-        refreshSettings ();
+        refreshSettings (true);
         getMenu ().onEvent (menu::Event::timePassed); // Initial state.
+
+#ifndef IS_CAN_MASTER
+        /*
+         * All peripherals send the request, and the CAN master has a timer which prevents multiple responses
+         * (this is especially important at the power on, when all peripherals will request the config at the
+         * same time).
+         */
+        getProtocol ().sendConfigRequest ();
+#endif
 
         while (true) {
 #ifdef WITH_SOUND

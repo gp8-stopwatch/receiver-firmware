@@ -63,8 +63,8 @@ using EventQueue = etl::queue<Event, 8, etl::memory_model::MEMORY_MODEL_SMALL>;
  */
 class FastStateMachine {
 public:
-        enum State { WAIT_FOR_BEAM, READY, RUNNING, STOP, LOOP_RUNNING, PAUSED, NOISE, NO_BEAM };
-        enum RemoteBeamState { wait, allOk, someNotOk, noResponse };
+        enum class State { WAIT_FOR_BEAM, READY, RUNNING, STOP, LOOP_RUNNING, PAUSED, NOISE, NO_BEAM };
+        enum class RemoteBeamState { wait, allOk, someNotOk, noResponse };
 
         void run (Event event);
         bool isCounting () const { return state == State::RUNNING || state == State::LOOP_RUNNING; }
@@ -97,7 +97,7 @@ private:
 
         /*--------------------------------------------------------------------------*/
 
-        State state{WAIT_FOR_BEAM};
+        State state{State::WAIT_FOR_BEAM};
         EdgeFilter *ir{};
         StopWatch *stopWatch{};
         Timer loopDisplayTimeout;
@@ -124,22 +124,12 @@ public:
         {
 
                 switch (msg) {
-                        // case Message::START:
-                        //         fastStateMachine.run ({Event::Type::canBusStart, time});
-                        //         break;
-
-                        // case Message::STOP:
-                        //         fastStateMachine.run ({Event::Type::canBusStop, time});
-                        //         break;
-
-                        // case Message::LOOP:
-                        //         fastStateMachine.run ({Event::Type::canBusLoop, time});
-                        //         break;
-
-#ifdef WITH_CHECK_SENSOR_STATUS
-                case Message::NO_IR:
+#ifdef IS_CAN_MASTER
+                case Message::NO_BEAM:
                         fastStateMachine.run ({Event::Type::noBeam /* , time */});
                         break;
+
+                        // TODO Noise!
 #endif
 
                 default:
