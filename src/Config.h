@@ -109,3 +109,5 @@ static_assert (sizeof (Config) == 12);
 #endif
 
 } // namespace cfg
+
+extern cfg::Config &getConfig ();

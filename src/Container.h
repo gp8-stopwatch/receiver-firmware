@@ -52,7 +52,6 @@ extern void init ();
 } // namespace container
 
 extern IDisplay &getDisplay ();
-extern cfg::Config &getConfig ();
 extern void readConfigFromFlash ();
 
 #ifdef WITH_FLASH

@@ -23,9 +23,9 @@ INCLUDE_DIRECTORIES ("${LIB_MICRO_ROOT}/src")
 # Regular receiver with all the features
 set(WITH_SOUND ON CACHE BOOL "Compile buzzer support")
 set(WITH_DISPLAY ON CACHE BOOL "Compile 7 segment LED display support")
-set(WITH_MENU OFF CACHE BOOL "Menu support. Disabling it considerably reduces binary size in debug mode.")
+set(WITH_MENU ON CACHE BOOL "Menu support. Disabling it considerably reduces binary size in debug mode.")
 set(WITH_COMMON_ANODE OFF CACHE BOOL "ON means common anode 7 segments, OFF means common cathode")
-set(WITH_USB OFF CACHE BOOL "USB serial smulation support")
+set(WITH_USB ON CACHE BOOL "USB serial smulation support")
 set(WITH_FLASH ON CACHE BOOL "Store settings and results to flash")
 set(WITH_HISTORY ON CACHE BOOL "Store settings and results to flash")
 set(WITH_CAN ON CACHE BOOL "Complie CAN bus support")
@@ -35,6 +35,7 @@ set(WITH_RTC ON CACHE BOOL "Complie RTC support")
 set(WITH_POWER_MANAGER ON CACHE BOOL "Complie power sensing support") 
 set(WITH_CHECK_SENSOR_STATUS ON CACHE BOOL "If on, the device checks for external sensors and queries their state")
 set(WITH_BUTTON ON CACHE BOOL "Compile button support")
+set(WITH_BLIND_MANAGER ON CACHE BOOL "")
 set(PLATFORM_REGULAR ON CACHE BOOL "")
 
 # Micro receiver
@@ -52,6 +53,7 @@ set(PLATFORM_REGULAR ON CACHE BOOL "")
 # set(WITH_POWER_MANAGER OFF CACHE BOOL "Complie power sensing support")
 # set(WITH_CHECK_SENSOR_STATUS OFF CACHE BOOL "If on, the device checks for external sensors and queries their state")
 # set(WITH_BUTTON OFF CACHE BOOL "Compile button support")
+# set(WITH_BLIND_MANAGER OFF CACHE BOOL "")
 # set(PLATFORM_MICRO ON CACHE BOOL "")
 
 # Huge display without built in receiver
@@ -125,6 +127,10 @@ ENDIF ()
 
 IF (WITH_BUTTON)
     ADD_DEFINITIONS (-DWITH_BUTTON=1)
+ENDIF ()
+
+IF (WITH_BLIND_MANAGER)
+    ADD_DEFINITIONS (-DWITH_BLIND_MANAGER=1)
 ENDIF ()
 
 ## platforms

@@ -10,6 +10,7 @@
 #include "CanProtocol.h"
 #include "Timer.h"
 #include "Types.h"
+#include "detector/BlindManager.h"
 #include "detector/IrTriggerDetector.h"
 #include <etl/queue.h>
 #include <optional>
@@ -74,13 +75,13 @@ public:
         void setBuzzer (Buzzer *b) { this->buzzer = b; }
         void setHistory (History *h) { this->history = h; }
         void setCanProtocol (CanProtocol *cp) { protocol = cp; }
+        void setBlindManager (BlindManager *b) { blindManager = b; }
 
 private:
         void ready_entryAction ();
         void running_entryAction (Event event /* , bool canEvent */);
         void stop_entryAction (Event event /* , bool canEvent */);
         void loopStop_entryAction (Event event /* , bool canEvent */);
-        // void pause_entryAction ();
 
         // void checkCanBusEvents (Event event);
         // bool isInternalTrigger (Event event) const;
@@ -97,7 +98,6 @@ private:
         /*--------------------------------------------------------------------------*/
 
         State state{WAIT_FOR_BEAM};
-        // IInfraRedBeam *ir{};
         EdgeFilter *ir{};
         StopWatch *stopWatch{};
         Timer loopDisplayTimeout;
@@ -107,6 +107,7 @@ private:
         CanProtocol *protocol{};
         Result1us lastTime{};
         Result1us beforeLastTime{};
+        BlindManager *blindManager{};
 
         mutable Timer reqRespTimer;
         mutable bool infoRequestSent{};

@@ -7,6 +7,7 @@
  ****************************************************************************/
 
 #pragma once
+#include "BlindManager.h"
 #include "Config.h"
 #include "Detector.h"
 #include "Types.h"
@@ -80,6 +81,8 @@ public:
         bool isActive () const { return active; }
         bool isBeamClean () const { return beamState == BeamState::present && noiseState == NoiseState::noNoise; }
 
+        void setBlindManager (BlindManager *b) { blindManager = b; }
+
 #ifndef UNIT_TEST
 private:
         StopWatch &stopWatch;
@@ -128,9 +131,10 @@ private:
         /*--------------------------------------------------------------------------*/
         /* Blind period calculations                                                */
         /*--------------------------------------------------------------------------*/
-        enum class BlindState { notBlind, blind };
-        BlindState blindState{};
-        Result1us blindStateStart{};
+        // enum class BlindState { notBlind, blind };
+        // BlindState blindState{};
+        // Result1us blindStateStart{};
+        BlindManager *blindManager{};
 
         /*--------------------------------------------------------------------------*/
         /* External trigger management.                                             */

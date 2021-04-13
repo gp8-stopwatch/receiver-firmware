@@ -8,6 +8,7 @@
 
 #include "Container.h"
 #include "Gpio.h"
+#include "detector/BlindManager.h"
 
 namespace {
 // Hack to be able to pass the cli object pointer to the C-like function.
@@ -85,16 +86,6 @@ Gpio &getExtTriggerInput ()
 
 /****************************************************************************/
 
-// InfraRedBeamExti &getBeam ()
-// {
-//         static Gpio extTriggerOutput (EXT_TRIGGER_OUTPUT_PORT, EXT_TRIGGER_OUTPUT_PINS, GPIO_MODE_OUTPUT_PP);
-//         static Gpio extTriggerOutEnable (EXT_TRIGGER_OUT_ENABLE_PORT, EXT_TRIGGER_OUT_ENABLE_PINS, GPIO_MODE_OUTPUT_PP);
-//         static InfraRedBeamExti beam{getIrTriggerInput (), extTriggerOutput, extTriggerOutEnable};
-//         return beam;
-// }
-
-/****************************************************************************/
-
 #ifdef WITH_CAN
 Can &getCan ()
 {
@@ -159,10 +150,17 @@ StopWatch &getStopWatch ()
 
 /****************************************************************************/
 
+BlindManager &getBlindManager ()
+{
+        static BlindManager b;
+        return b;
+}
+
 FastStateMachine &getFastStateMachine ()
 {
         static FastStateMachine fStateMachine{};
         fStateMachine.setStopWatch (&getStopWatch ());
+        fStateMachine.setBlindManager (&getBlindManager ());
         return fStateMachine;
 }
 
@@ -191,14 +189,15 @@ EdgeFilter &getIrDetector ()
 {
         static EdgeFilter edgeFilter{PwmState (getIrTriggerInput ().get ()), getStopWatch ()};
         edgeFilter.setCallback (&getDetectorCallback ());
+        edgeFilter.setBlindManager (&getBlindManager ());
         return edgeFilter;
 }
 
 ExtTriggerDetector &getExtDetector ()
 {
-        static ExtTriggerDetector edgeFilter{PwmState (getExtTriggerInput ().get ()), getStopWatch ()};
-        edgeFilter.setCallback (&getDetectorCallback ());
-        return edgeFilter;
+        static ExtTriggerDetector detector{PwmState (getExtTriggerInput ().get ()), getStopWatch ()};
+        detector.setCallback (&getDetectorCallback ());
+        return detector;
 }
 
 /****************************************************************************/

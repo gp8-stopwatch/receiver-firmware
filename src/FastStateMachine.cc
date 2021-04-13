@@ -42,8 +42,14 @@ void FastStateMachine::run (Event event)
 
                 if (eType == Event::Type::irTrigger ||       // Internal IR (or laser) sensor
                     eType == Event::Type::externalTrigger) { // External GPIO trigger
-                        beforeLastTime = lastTime;
-                        lastTime = event.getTime ();
+                        if (blindManager->isSeeing ()) {
+                                beforeLastTime = lastTime;
+                                lastTime = event.getTime ();
+                                blindManager->start ();
+                        }
+                        else {
+                                return;
+                        }
                 }
                 // Event possible only if WITH_CHECK_SENSOR_STATUS is set
                 // else if (eType == Event::Type::noBeam || eType == Event::Type::noise) {

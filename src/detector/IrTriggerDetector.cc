@@ -34,6 +34,12 @@ Gpio extTriggerOutEnable (EXT_TRIGGER_OUT_ENABLE_PORT, EXT_TRIGGER_OUT_ENABLE_PI
 
 void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
 {
+#ifdef WITH_BLIND_MANAGER
+        if (blindManager->isBlind ()) {
+                return;
+        }
+#endif
+
         /*
          * This can happen when noise frequency is very high, and the µC can't keep up,
          * and its misses an EXTI event. This way we can end up with two consecutive edges
@@ -76,9 +82,9 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
 
         queue.push (e);
 
-        if (!active || blindState == BlindState::blind) {
-                return;
-        }
+        // if (!active || blindState == BlindState::blind) {
+        //         return;
+        // }
 
         /*--------------------------------------------------------------------------*/
         /* State transitions depending on last level length.                        */
@@ -189,10 +195,10 @@ void EdgeFilter::checkForEventCondition (Edge const &e)
                                 callback->report (DetectorEventType::trigger, highStateStart);
                                 triggerOutputPin ();
 
-                                if (getConfig ().getBlindTime () > 0) {
-                                        blindState = BlindState::blind;
-                                        blindStateStart = e.getFullTimePoint ();
-                                }
+                                // if (getConfig ().getBlindTime () > 0) {
+                                //         blindState = BlindState::blind;
+                                //         blindStateStart = e.getFullTimePoint ();
+                                // }
                                 reset (); // To prevent reporting twice
                         }
                 }
@@ -216,6 +222,12 @@ void EdgeFilter::run (Result1us now)
                 return;
         }
 
+#ifdef WITH_BLIND_MANAGER
+        if (blindManager->isBlind ()) {
+                return;
+        }
+#endif
+
         __disable_irq ();
         auto back = queue.back ();
         // auto back1 = queue.back1 ();
@@ -234,14 +246,14 @@ void EdgeFilter::run (Result1us now)
         /* Blind state.                                                             */
         /*--------------------------------------------------------------------------*/
 
-        if (blindState == BlindState::blind) {
-                if (now - blindStateStart >= msToResult1us (getConfig ().getBlindTime ())) {
-                        blindState = BlindState::notBlind;
-                }
-                else {
-                        return;
-                }
-        }
+        // if (blindState == BlindState::blind) {
+        //         if (now - blindStateStart >= msToResult1us (getConfig ().getBlindTime ())) {
+        //                 blindState = BlindState::notBlind;
+        //         }
+        //         else {
+        //                 return;
+        //         }
+        // }
 
         /*--------------------------------------------------------------------------*/
         /* Steady state detection, pwmState correction.                             */
@@ -395,10 +407,10 @@ void EdgeFilter::run (Result1us now)
                         callback->report (DetectorEventType::trigger, currentHighStateStart);
                         triggerOutputPin ();
 
-                        if (getConfig ().getBlindTime () > 0) {
-                                blindState = BlindState::blind;
-                                blindStateStart = now;
-                        }
+                        // if (getConfig ().getBlindTime () > 0) {
+                        //         blindState = BlindState::blind;
+                        //         blindStateStart = now;
+                        // }
                         reset ();
                         __enable_irq ();
                 }
