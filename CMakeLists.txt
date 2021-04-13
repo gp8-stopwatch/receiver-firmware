@@ -23,9 +23,9 @@ INCLUDE_DIRECTORIES ("${LIB_MICRO_ROOT}/src")
 # Regular receiver with all the features
 set(WITH_SOUND ON CACHE BOOL "Compile buzzer support")
 set(WITH_DISPLAY ON CACHE BOOL "Compile 7 segment LED display support")
-set(WITH_MENU ON CACHE BOOL "Menu support. Disabling it considerably reduces binary size in debug mode.")
+set(WITH_MENU OFF CACHE BOOL "Menu support. Disabling it considerably reduces binary size in debug mode.")
 set(WITH_COMMON_ANODE OFF CACHE BOOL "ON means common anode 7 segments, OFF means common cathode")
-set(WITH_USB ON CACHE BOOL "USB serial smulation support")
+set(WITH_USB OFF CACHE BOOL "USB serial smulation support")
 set(WITH_FLASH ON CACHE BOOL "Store settings and results to flash")
 set(WITH_HISTORY ON CACHE BOOL "Store settings and results to flash")
 set(WITH_CAN ON CACHE BOOL "Complie CAN bus support")
@@ -147,7 +147,8 @@ IF (DEFINED DEVICE)
         "src/main.cc"
         "src/Button.cc"
         "src/FastStateMachine.cc"
-        "src/detector/Detector.cc"
+        "src/detector/IrTriggerDetector.cc"
+        "src/detector/ExtTriggerDetector.cc"
         "src/StopWatch.cc"
         "src/Config.cc"
         "src/Container.cc"

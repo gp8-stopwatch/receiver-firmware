@@ -181,22 +181,23 @@ struct DetectorCallback : public IEdgeDetectorCallback {
         static inline Event::Type detectorEventToFSMEvent (DetectorEventType evt) { return Event::Type (evt); }
 };
 
+auto &getDetectorCallback ()
+{
+        static DetectorCallback tc;
+        return tc;
+}
+
 EdgeFilter &getIrDetector ()
 {
-        // static EdgeDetector triggerDetector{};
-        static DetectorCallback tc;
-        static EdgeFilter edgeFilter{/* &triggerDetector, */ EdgeFilter::PwmState (getIrTriggerInput ().get ()), getStopWatch ()};
-        edgeFilter.setCallback (&tc);
+        static EdgeFilter edgeFilter{PwmState (getIrTriggerInput ().get ()), getStopWatch ()};
+        edgeFilter.setCallback (&getDetectorCallback ());
         return edgeFilter;
 }
 
-EdgeFilter &getExtDetector ()
+ExtTriggerDetector &getExtDetector ()
 {
-        // static EdgeDetector triggerDetector{};
-        static DetectorCallback tc;
-        // TODO different detector.
-        static EdgeFilter edgeFilter{/* &triggerDetector,  */ EdgeFilter::PwmState (getExtTriggerInput ().get ()), getStopWatch ()};
-        edgeFilter.setCallback (&tc);
+        static ExtTriggerDetector edgeFilter{PwmState (getExtTriggerInput ().get ()), getStopWatch ()};
+        edgeFilter.setCallback (&getDetectorCallback ());
         return edgeFilter;
 }
 

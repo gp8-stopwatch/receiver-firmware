@@ -50,7 +50,6 @@ int main ()
 #endif
                 getDisplay ().setResolution (getConfig ().getResolution ());
                 getIrDetector ().recalculateConstants ();
-                getExtDetector ().recalculateConstants ();
         };
 
         refreshSettings ();
@@ -75,6 +74,7 @@ int main ()
 
                 // getBeam ().run ();
                 getIrDetector ().run ();
+                getExtDetector ().run ();
 
 #ifdef WITH_USB
                 usbcli::run ();

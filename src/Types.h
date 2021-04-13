@@ -134,6 +134,8 @@ static constexpr uint16_t MIN_FPS = 20;
 static constexpr uint16_t MAX_FPS = 10000;
 static constexpr int DUTY_CYCLE_LOW_DIV = 8;  // Transition to PWM low state when duty cycle lower than 1/DUTY_CYCLE_LOW_DIV (12.5%)
 static constexpr int DUTY_CYCLE_HIGH_DIV = 4; // Transition to PWM high state when duty cycle greater than 1/DUTY_CYCLE_HIGH_DIV (25%)
+static constexpr Result1usLS EXT_TRIGGER_DURATION_US = 10000;
+static constexpr Result1usLS EXT_TRIGGER_DURATION_RX_US = EXT_TRIGGER_DURATION_US / 2;
 
 #ifndef UNIT_TEST
 const etl::function_fv<__disable_irq> lock{};

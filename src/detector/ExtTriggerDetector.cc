@@ -6,74 +6,38 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
-#include "Detector.h"
+#include "ExtTriggerDetector.h"
 
 #ifndef UNIT_TEST
-#include "Gpio.h"
-#include "UsbHelpers.h"
-Gpio consoleRx{GPIOA, GPIO_PIN_10, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
-#define stateChangePin(x) consoleRx.set (x)
+// #include "Gpio.h"
+// #include "UsbHelpers.h"
+// Gpio consoleRx{GPIOA, GPIO_PIN_10, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
+// #define stateChangePin(x) consoleRx.set (x)
 
-Gpio consoleTx{GPIOA, GPIO_PIN_9, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
-#define triggerOutputPin() HAL_GPIO_TogglePin (GPIOA, GPIO_PIN_9)
+// Gpio consoleTx{GPIOA, GPIO_PIN_9, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL};
+// #define triggerOutputPin() HAL_GPIO_TogglePin (GPIOA, GPIO_PIN_9)
 
-// #define stateChangePin(x)
-// #define triggerOutputPin(x)
+#define stateChangePin(x)
+#define triggerOutputPin(x)
 #include "Container.h"
 #else
 #define __disable_irq(x) x // NOLINT this is for unit testing
-#define __enable_irq(x) x // NOLINT
+#define __enable_irq(x) x  // NOLINT
 #define stateChangePin(x)
 #define triggerOutputPin(x)
 #endif
 
-/*****************************************************************************/
+/****************************************************************************/
 
-void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
+void ExtTriggerDetector::onEdge (Edge const &e, EdgePolarity pol)
 {
-        /*
-         * This can happen when noise frequency is very high, and the µC can't keep up,
-         * and its misses an EXTI event. This way we can end up with two consecutive edges
-         * with the same polarity.
-         * When compiled with -O0 the fastest it can keep up with is :
-         * - 3.33kHz with 1/3 duty (300µs period 100µs spikes)
-         * - 6.66kHz (150µs period) with duty changing between ~30-70%. Rate of this change is 200Hz. This pattern is stored on my s.gen.
-         * When compiled with -O3 the fastest is 10kHz with 50% duty cycle, so IRQ called every 50µs
-         * - 7.7 / 40%
-         *
-         * Release:
-         * 14.3kHz / 40% / 200Hz (42µs + 28µs)
-         * 16.6kHz
-         *
-         * [x] Pokazuje no i.r. (często/co drugi raz).
-         * [x] Zaimplementować blind time przed kolejnymi testami.
-         * TODO EDIT : chyba jednak nie jest to błąd. Przy dużych zakłóceniach widoczne błędne działanie algorytmu. Screeny w katalogu doc. z
-         * dnia 24/02/2021
-         * TODO Testy powinny symulowac dwór. Czysty sygnał zakłócamy żarówką 100W. Testy z odbiciami są prostsze (nie trzeba żarówki) ale to nie
-         * ten use-case.
-         * [x] No beam detection stops working after 2 triggers (start + stop) EDIT due to wrong blindState management
-         * [x] There was a opposite situation - there was no ir detected even though IS was not obstructed. Yellow trace was hi even though blue
-         * was low. EDIT due to wrong blindState management
-         */
         if (/* !queue.empty () && */ queue.getFirstPolarity () == pol) {
-                // TODO there should be some bit in some register that would tell me that I've missed this ISR. This would be safer and cleaner
-                // to use. Reset queue so it's still full, but pulses are 0 width. This will automatically increase noiseCounter by 2
-                queue.push (e);
-                queue.push (e);
-                // queue.push ({e.getFullTimePoint(), (e.polarity == EdgePolarity::rising) ? (EdgePolarity::falling) : (EdgePolarity::rising)});
-
-                /*
-                 * TODO test and decide what to do here. To some extent the device can recover.
-                 * Although the screen starts to flicker un such cases.
-                 */
-
-                // while (true) {
-                // }
+                return;
         }
 
         queue.push (e);
 
-        if (!active || blindState == BlindState::blind) {
+        if (blindState == BlindState::blind) {
                 return;
         }
 
@@ -85,7 +49,7 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
         auto &last1 = queue.back1 ();
 
         if (queue.getFirstPolarity () == EdgePolarity::rising) {
-                if ((last.getTimePoint () - last1.getTimePoint ()) >= minTriggerEvent1Us) { // Long low edge
+                if ((last.getTimePoint () - last1.getTimePoint ()) >= EXT_TRIGGER_DURATION_RX_US) { // Long low edge
                         if (pwmState != PwmState::low) {
                                 pwmState = PwmState::low;
                                 lowStateStart = last1.getFullTimePoint ();
@@ -97,7 +61,7 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
                 }
         }
         else {
-                if ((last.getTimePoint () - last1.getTimePoint ()) >= minTriggerEvent1Us) { // Long high edge
+                if ((last.getTimePoint () - last1.getTimePoint ()) >= EXT_TRIGGER_DURATION_RX_US) { // Long high edge
                         if (pwmState != PwmState::high) {
                                 pwmState = PwmState::high;
                                 highStateStart = last1.getFullTimePoint ();
@@ -114,73 +78,74 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
         /* Here we analiyze events which are shorter than `minTriggerEvent1Us`.     */
         /*--------------------------------------------------------------------------*/
 
-        // Calculate duty cycle of present slice of the signal
-        Result1usLS sliceDuration = queue.back ().getTimePoint () - queue.front ().getTimePoint ();
-        Result1usLS cycleTresholdForLow = sliceDuration / DUTY_CYCLE_LOW_DIV;
-        Result1usLS cycleTresholdForHigh = sliceDuration / DUTY_CYCLE_HIGH_DIV;
-        Result1usLS hiDuration = queue.getFirstDuration (); // We assume for now, that queue.getE0() is rising
-        Result1usLS lowDuration = queue.getLastDuration ();
+        // // Calculate duty cycle of present slice of the signal
+        // Result1usLS sliceDuration = queue.back ().getTimePoint () - queue.front ().getTimePoint ();
+        // Result1usLS cycleTresholdForLow = sliceDuration / DUTY_CYCLE_LOW_DIV;
+        // Result1usLS cycleTresholdForHigh = sliceDuration / DUTY_CYCLE_HIGH_DIV;
+        // Result1usLS hiDuration = queue.getFirstDuration (); // We assume for now, that queue.getE0() is rising
+        // Result1usLS lowDuration = queue.getLastDuration ();
 
-        // Find out which edge in the queue is rising, which falling.
-        auto *firstRising = &queue.front ();   // Pointers are smaller than Edge object
-        auto *firstFalling = &queue.front1 (); // 1 after front
+        // // Find out which edge in the queue is rising, which falling.
+        // auto *firstRising = &queue.front ();   // Pointers are smaller than Edge object
+        // auto *firstFalling = &queue.front1 (); // 1 after front
 
-        // 50% chance that above are correct. If our assumption wasn't right, we swap.
-        if (queue.getFirstPolarity () != EdgePolarity::rising) {
-                std::swap (firstRising, firstFalling);
-                std::swap (hiDuration, lowDuration);
-        }
+        // // 50% chance that above are correct. If our assumption wasn't right, we swap.
+        // if (queue.getFirstPolarity () != EdgePolarity::rising) {
+        //         std::swap (firstRising, firstFalling);
+        //         std::swap (hiDuration, lowDuration);
+        // }
 
-        if (hiDuration > cycleTresholdForHigh) { // PWM of the slice is high
-                if (pwmState != PwmState::high) {
-                        auto stateChangeTimePoint = firstRising->getFullTimePoint ();
+        // if (hiDuration > cycleTresholdForHigh) { // PWM of the slice is high
+        //         if (pwmState != PwmState::high) {
+        //                 auto stateChangeTimePoint = firstRising->getFullTimePoint ();
 
-                        // if (resultLS (stateChangeTimePoint - lowStateStart) > minTriggerEvent1Us / 20) {
-                        pwmState = PwmState::high;
-                        highStateStart = stateChangeTimePoint;
-                        stateChangePin (true);
-                        // }
+        //                 // if (resultLS (stateChangeTimePoint - lowStateStart) > minTriggerEvent1Us / 20) {
+        //                 pwmState = PwmState::high;
+        //                 highStateStart = stateChangeTimePoint;
+        //                 stateChangePin (true);
+        //                 // }
 
-                        /*
-                         * Here, the state change was caused by something shorter than the minTriggerEvent1Us,
-                         * so we treat this as a noise.
-                         */
-                        ++noiseCounter;
-                }
-        }
-        // else if (lowDuration >= cycleTresholdForLow) { // PWM of the slice is low (low duration was for long time)
-        else if (hiDuration <= cycleTresholdForLow) { // PWM of the slice is low (low duration was for long time)
-                if (pwmState != PwmState::low) {
-                        auto stateChangeTimePoint = firstFalling->getFullTimePoint ();
+        //                 /*
+        //                  * Here, the state change was caused by something shorter than the minTriggerEvent1Us,
+        //                  * so we treat this as a noise.
+        //                  */
+        //                 ++noiseCounter;
+        //         }
+        // }
+        // // else if (lowDuration >= cycleTresholdForLow) { // PWM of the slice is low (low duration was for long time)
+        // else if (hiDuration <= cycleTresholdForLow) { // PWM of the slice is low (low duration was for long time)
+        //         if (pwmState != PwmState::low) {
+        //                 auto stateChangeTimePoint = firstFalling->getFullTimePoint ();
 
-                        // if (resultLS (stateChangeTimePoint - highStateStart) > minTriggerEvent1Us / 20) {
-                        pwmState = PwmState::low;
-                        lowStateStart = stateChangeTimePoint;
-                        stateChangePin (false);
-                        // }
+        //                 // if (resultLS (stateChangeTimePoint - highStateStart) > minTriggerEvent1Us / 20) {
+        //                 pwmState = PwmState::low;
+        //                 lowStateStart = stateChangeTimePoint;
+        //                 stateChangePin (false);
+        //                 // }
 
-                        ++noiseCounter;
-                }
-        }
+        //                 ++noiseCounter;
+        //         }
+        // }
 
-        /*--------------------------------------------------------------------------*/
-        /* Check trigger event conditions.                                          */
-        /*--------------------------------------------------------------------------*/
+        // /*--------------------------------------------------------------------------*/
+        // /* Check trigger event conditions.                                          */
+        // /*--------------------------------------------------------------------------*/
 
-        checkForEventCondition (e);
+        // checkForEventCondition (e);
 }
 
 /****************************************************************************/
 
-void EdgeFilter::checkForEventCondition (Edge const &e)
+void ExtTriggerDetector::checkForEventCondition (Edge const &e)
 {
         if (highStateStart < lowStateStart /* &&    // Correct order of states : first middleState, then High, and at the end low
             middleStateStart < highStateStart */) { // No middle state between high and low
-                bool longHighState = resultLS (lowStateStart - highStateStart) >= minTriggerEvent1Us;
-                bool longLowState = resultLS (e.getFullTimePoint () - lowStateStart) >= minTriggerEvent1Us;
+                bool longHighState = resultLS (lowStateStart - highStateStart) >= EXT_TRIGGER_DURATION_RX_US;
+                bool longLowState = resultLS (e.getFullTimePoint () - lowStateStart) >= EXT_TRIGGER_DURATION_RX_US;
 
                 if (longHighState && longLowState) {
                         if (isBeamClean ()) {
+                                // TODO in micro implementation, there's no need for the FSM and report like below.
                                 callback->report (DetectorEventType::trigger, highStateStart);
                                 triggerOutputPin ();
 
@@ -200,16 +165,11 @@ void EdgeFilter::checkForEventCondition (Edge const &e)
 /****************************************************************************/
 
 #ifndef UNIT_TEST
-void EdgeFilter::run ()
+void ExtTriggerDetector::run ()
 #else
-void EdgeFilter::run (Result1us now)
+void ExtTriggerDetector::run (Result1us now)
 #endif
 {
-        // return;
-
-        if (!active) {
-                return;
-        }
 
         __disable_irq ();
         auto back = queue.back ();
@@ -221,6 +181,7 @@ void EdgeFilter::run (Result1us now)
 #ifndef UNIT_TEST
         auto now = stopWatch.getTimeFromIsr ();
 #endif
+
         __enable_irq ();
 
         /*--------------------------------------------------------------------------*/
@@ -242,7 +203,7 @@ void EdgeFilter::run (Result1us now)
 
         auto lastSignalChangeTimePoint = back.getFullTimePoint ();
         auto lastSignalChangeDuration = resultLS (now - lastSignalChangeTimePoint);
-        bool lastSignalChangeLongAgo = lastSignalChangeDuration >= minTriggerEvent1Us;
+        bool lastSignalChangeLongAgo = lastSignalChangeDuration >= EXT_TRIGGER_DURATION_RX_US;
 
         // UWAGA
         // Zarówno to trzeba uwzględnić, : hiDuration <= cycleTresholdForLow) { // PWM of the slice is low (low duration was for long time)
@@ -378,8 +339,8 @@ void EdgeFilter::run (Result1us now)
                     currentHighStateStart < currentLowStateStart /* && // And correct order of previous pwmStates
                     currentMiddleStateStart < currentHighStateStart */) {
 
-                        longHighState = resultLS (currentLowStateStart - currentHighStateStart) >= minTriggerEvent1Us;
-                        longLowState = resultLS (now - currentLowStateStart) >= minTriggerEvent1Us;
+                        longHighState = resultLS (currentLowStateStart - currentHighStateStart) >= EXT_TRIGGER_DURATION_RX_US;
+                        longLowState = resultLS (now - currentLowStateStart) >= EXT_TRIGGER_DURATION_RX_US;
                 }
 
                 if (longHighState && longLowState && isBeamClean ()) {
@@ -395,14 +356,4 @@ void EdgeFilter::run (Result1us now)
                         __enable_irq ();
                 }
         }
-}
-
-/****************************************************************************/
-
-void EdgeFilter::recalculateConstants ()
-{
-        __disable_irq ();
-        minTriggerEvent1Us = resultLS (msToResult1us (getConfig ().getMinTreggerEventMs ()));
-        active = getConfig ().isIrSensorOn ();
-        __enable_irq ();
 }

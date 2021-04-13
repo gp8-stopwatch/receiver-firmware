@@ -25,7 +25,7 @@ struct TestDetectorCallback : public IEdgeDetectorCallback {
 int main ()
 {
         TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        EdgeFilter edgeFilter{PwmState::low};
         edgeFilter.setCallback (&tc);
 
         // Noise

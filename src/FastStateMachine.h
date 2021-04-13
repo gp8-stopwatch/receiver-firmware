@@ -10,7 +10,7 @@
 #include "CanProtocol.h"
 #include "Timer.h"
 #include "Types.h"
-#include "detector/Detector.h"
+#include "detector/IrTriggerDetector.h"
 #include <etl/queue.h>
 #include <optional>
 

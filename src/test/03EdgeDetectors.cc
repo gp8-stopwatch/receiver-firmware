@@ -86,7 +86,7 @@ void SignalSimulator::signal (std::vector<uint32_t> const &edges, uint32_t runUn
 TEST_CASE ("Edge cases", "[detector]")
 {
         TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        EdgeFilter edgeFilter{PwmState::low};
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();
@@ -248,7 +248,7 @@ TEST_CASE ("Edge cases", "[detector]")
 TEST_CASE ("Only one report", "[detector]")
 {
         TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        EdgeFilter edgeFilter{PwmState::low};
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();
@@ -296,7 +296,7 @@ TEST_CASE ("Low PWM in the middle", "[detector]")
          * 0    10ms          A         25ms     35ms
          */
         TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        EdgeFilter edgeFilter{PwmState::low};
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();
@@ -312,7 +312,7 @@ TEST_CASE ("Low PWM in the middle", "[detector]")
 TEST_CASE ("Slightly more", "[detector]")
 {
         TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        EdgeFilter edgeFilter{PwmState::low};
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();
@@ -343,7 +343,7 @@ TEST_CASE ("Slightly more", "[detector]")
 TEST_CASE ("Slightly less", "[detector]")
 {
         TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        EdgeFilter edgeFilter{PwmState::low};
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();
@@ -478,7 +478,7 @@ TEST_CASE ("Slightly less", "[detector]")
 TEST_CASE ("Advanced / slightly less", "[detector]")
 {
         TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        EdgeFilter edgeFilter{PwmState::low};
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();
@@ -522,7 +522,7 @@ TEST_CASE ("Advanced / slightly less", "[detector]")
 TEST_CASE ("Noise detection", "[detector]")
 {
         TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        EdgeFilter edgeFilter{PwmState::low};
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();
@@ -592,7 +592,7 @@ TEST_CASE ("Noise detection", "[detector]")
 TEST_CASE ("Spikes", "[detector]")
 {
         TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        EdgeFilter edgeFilter{PwmState::low};
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();
@@ -624,7 +624,7 @@ TEST_CASE ("Spikes", "[detector]")
 TEST_CASE ("Noise level", "[detector]")
 {
         TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        EdgeFilter edgeFilter{PwmState::low};
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();
@@ -731,7 +731,7 @@ TEST_CASE ("Noise level", "[detector]")
 // TEST_CASE ("Duty cycle", "[detector]")
 // {
 //         TestDetectorCallback tc;
-//         EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+//         EdgeFilter edgeFilter{PwmState::low};
 //         edgeFilter.setCallback (&tc);
 //         SignalSimulator sim{edgeFilter};
 //         events.clear ();
@@ -863,7 +863,7 @@ TEST_CASE ("Noise level", "[detector]")
 // TEST_CASE ("Duty cycle less", "[detector]")
 // {
 //         TestDetectorCallback tc;
-//         EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+//         EdgeFilter edgeFilter{PwmState::low};
 //         edgeFilter.setCallback (&tc);
 //         SignalSimulator sim{edgeFilter};
 //         events.clear ();
@@ -908,7 +908,7 @@ TEST_CASE ("Noise level", "[detector]")
 TEST_CASE ("No beam", "[detector]")
 {
         TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        EdgeFilter edgeFilter{PwmState::low};
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();
@@ -979,7 +979,7 @@ TEST_CASE ("No beam", "[detector]")
                  */
 
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::high};
+                EdgeFilter edgeFilter{PwmState::high};
                 edgeFilter.setCallback (&tc);
                 SignalSimulator sim{edgeFilter};
                 events.clear ();
@@ -1017,7 +1017,7 @@ TEST_CASE ("No beam", "[detector]")
                  *                       1,5s
                  */
                 TestDetectorCallback tc;
-                EdgeFilter edgeFilter{EdgeFilter::PwmState::high};
+                EdgeFilter edgeFilter{PwmState::high};
                 edgeFilter.setCallback (&tc);
                 events.clear ();
 
@@ -1105,7 +1105,7 @@ TEST_CASE ("No beam not", "[detector]")
          * 0       10ms  15ms          1.5s
          */
         TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        EdgeFilter edgeFilter{PwmState::low};
         edgeFilter.setCallback (&tc);
         events.clear ();
         SignalSimulator sim{edgeFilter};
@@ -1117,7 +1117,7 @@ TEST_CASE ("No beam not", "[detector]")
 TEST_CASE ("No beam at the start", "[detector]")
 {
         TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::high};
+        EdgeFilter edgeFilter{PwmState::high};
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();
@@ -1163,7 +1163,7 @@ TEST_CASE ("No beam at the start", "[detector]")
 TEST_CASE ("Blind period", "[detector]")
 {
         TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        EdgeFilter edgeFilter{PwmState::low};
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();
@@ -1217,7 +1217,7 @@ TEST_CASE ("Blind period", "[detector]")
 TEST_CASE ("Observed problems", "[detector]")
 {
         TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        EdgeFilter edgeFilter{PwmState::low};
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();
@@ -1239,7 +1239,7 @@ TEST_CASE ("Observed problems", "[detector]")
 TEST_CASE ("Limited sampling", "[detector]")
 {
         TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        EdgeFilter edgeFilter{PwmState::low};
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();
@@ -1258,16 +1258,16 @@ TEST_CASE ("Limited sampling", "[detector]")
                  */
                 sim.signal ({10000}, 25000, EdgePolarity::rising); // NOLINT
                 REQUIRE (events.empty ());
-                REQUIRE (edgeFilter.pwmState == EdgeFilter::PwmState::high);
+                REQUIRE (edgeFilter.pwmState == PwmState::high);
 
                 // This normally would result in low PWM and thus low PWM state
                 edgeFilter.onEdge ({30000}, EdgePolarity::falling);
-                REQUIRE (edgeFilter.pwmState == EdgeFilter::PwmState::high);
+                REQUIRE (edgeFilter.pwmState == PwmState::high);
                 edgeFilter.onEdge ({30400}, EdgePolarity::rising);
-                REQUIRE (edgeFilter.pwmState == EdgeFilter::PwmState::high);
+                REQUIRE (edgeFilter.pwmState == PwmState::high);
                 edgeFilter.onEdge ({30450}, EdgePolarity::falling);
                 // Normally there would be PwmState::low, but the change in the signal ocuured to quickly
-                REQUIRE (edgeFilter.pwmState == EdgeFilter::PwmState::high);
+                REQUIRE (edgeFilter.pwmState == PwmState::high);
 
                 // edgeFilter.onEdge ({30400}, EdgePolarity::rising);
 
@@ -1292,7 +1292,7 @@ TEST_CASE ("Limited sampling", "[detector]")
 TEST_CASE ("Stedady state when spikes", "[detector]")
 {
         TestDetectorCallback tc;
-        EdgeFilter edgeFilter{EdgeFilter::PwmState::low};
+        EdgeFilter edgeFilter{PwmState::low};
         edgeFilter.setCallback (&tc);
         SignalSimulator sim{edgeFilter};
         events.clear ();

@@ -29,7 +29,8 @@
 #include "Types.h"
 #include "Usart.h"
 #include "UsbCli.h"
-#include "detector/Detector.h"
+#include "detector/ExtTriggerDetector.h"
+#include "detector/IrTriggerDetector.h"
 #include <cstdbool>
 #include <cstring>
 #include <etl/string.h>
@@ -72,6 +73,6 @@ extern FastStateMachine &getFastStateMachine ();
 extern Rtc &getRtc ();
 extern CanProtocol &getProtocol ();
 extern EdgeFilter &getIrDetector ();
-extern EdgeFilter &getExtDetector ();
+extern ExtTriggerDetector &getExtDetector ();
 extern Gpio &getIrTriggerInput ();
 extern Gpio &getExtTriggerInput ();
