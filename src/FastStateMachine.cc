@@ -61,12 +61,15 @@ void FastStateMachine::run (Event event)
                 else if (eType == Event::Type::noise) {
                         state = State::NOISE;
                 }
+                else if (eType == Event::Type::cableProblem) {
+                        state = State::CABLE_PROBLEM;
+                }
         }
 
         // Entry actions and transitions distinct for every state.
         switch (state) {
         case State::WAIT_FOR_BEAM: {
-                /*
+
 #ifdef IS_CAN_MASTER
                 // The entry action
                 auto remoteBeamState = isRemoteBeamStateOk ();
@@ -75,42 +78,47 @@ void FastStateMachine::run (Event event)
                 if (remoteBeamState == RemoteBeamState::wait) {
                         break;
                 }
-#else
-                auto remoteBeamState = RemoteBeamState::noResponse;
-#endif
+                // #else
+                //                 auto remoteBeamState = RemoteBeamState::noResponse;
+                // #endif
 
-                if (event.getType () == Event::Type::noise) {
-                        display->setText ("noise ");
+                //                 if (event.getType () == Event::Type::noise) {
+                //                         display->setText ("noise ");
 
-                        // TODO
-                        // #ifdef WITH_CAN
-                        //                         if (protocol != nullptr && !canEvent && !noIrRequestSent) {
-                        //                                 protocol->sendNoIr ();
-                        //                                 noIrRequestSent = true;
-                        //                         }
-                        // #endif
-                }
-                else if (event.getType () == Event::Type::noBeam) {
-                        display->setText ("noi.r.  ");
+                //                         // TODO
+                //                         // #ifdef WITH_CAN
+                //                         //                         if (protocol != nullptr && !canEvent && !noIrRequestSent) {
+                //                         //                                 protocol->sendNoIr ();
+                //                         //                                 noIrRequestSent = true;
+                //                         //                         }
+                //                         // #endif
+                //                 }
+                //                 else if (event.getType () == Event::Type::noBeam) {
+                //                         display->setText ("noi.r.  ");
 
-#ifdef WITH_CAN
-                        if (protocol != nullptr && !isExternalTrigger (event) && !noIrRequestSent) {
-                                protocol->sendNoIr ();
-                                noIrRequestSent = true;
-                        }
-#endif
-                }
-#ifdef IS_CAN_MASTER
-                else if (remoteBeamState == RemoteBeamState::someNotOk) {
+                // #ifdef WITH_CAN
+                //                         if (protocol != nullptr && !isExternalTrigger (event) && !noIrRequestSent) {
+                //                                 protocol->sendNoBeam ();
+                //                                 noIrRequestSent = true;
+                //                         }
+                // #endif
+                //                 }
+                // #ifdef IS_CAN_MASTER
+
+                /* else  */ if (remoteBeamState == RemoteBeamState::someNotOk) {
                         display->setText ("nobeam");
                 }
                 else if (remoteBeamState == RemoteBeamState::noResponse) {
                         display->setText ("blind ");
                 }
+
+                if (remoteBeamState == RemoteBeamState::allOk /* && ext->isBeamClean () */) {
+                        state = State::READY;
+                }
 #endif
-*/
+
                 // The transition
-                if ((ir->isActive () && ir->isBeamClean ()) /* || remoteBeamState == RemoteBeamState::allOk */) {
+                if (ir->isActive () && ir->isBeamClean ()) {
                         state = State::READY;
                 }
 
@@ -128,6 +136,16 @@ void FastStateMachine::run (Event event)
                 // #endif
 
                 if (event.getType () == Event::Type::noNoise) {
+                        state = State::WAIT_FOR_BEAM;
+                }
+
+                break;
+
+        case State::CABLE_PROBLEM:
+                display->setText ("cable ");
+
+                // We do not need to send this over CAN bus, because all would see the noise anyway.
+                if (event.getType () == Event::Type::cableOk) {
                         state = State::WAIT_FOR_BEAM;
                 }
 

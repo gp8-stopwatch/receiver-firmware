@@ -36,8 +36,10 @@ public:
                 noNoise = 2,
                 noBeam = 3,
                 beamRestored = 4,
-                externalTrigger = 5, /// External trigger (M-LVDS) GPIO state changed.
-                timePassed,          /// Every 10ms / 1ms / 100µs
+                cableProblem = 5, // Noise on LVDS bus
+                cableOk = 6,
+                externalTrigger, /// External trigger (M-LVDS) GPIO state changed.
+                timePassed,      /// Every 10ms / 1ms / 100µs
                 // canBusLoop,  /// Peripheral device reported the restart of the LOOP state.
                 pause,
                 reset, // Use for resume after pause
@@ -63,13 +65,13 @@ using EventQueue = etl::queue<Event, 8, etl::memory_model::MEMORY_MODEL_SMALL>;
  */
 class FastStateMachine {
 public:
-        enum class State { WAIT_FOR_BEAM, READY, RUNNING, STOP, LOOP_RUNNING, PAUSED, NOISE, NO_BEAM };
+        enum class State { WAIT_FOR_BEAM, READY, RUNNING, STOP, LOOP_RUNNING, PAUSED, NOISE, NO_BEAM, CABLE_PROBLEM };
         enum class RemoteBeamState { wait, allOk, someNotOk, noResponse };
 
         void run (Event event);
         bool isCounting () const { return state == State::RUNNING || state == State::LOOP_RUNNING; }
 
-        void setIr (EdgeFilter *i) { this->ir = i; }
+        void setIr (IrTriggerDetector *i) { this->ir = i; }
         void setStopWatch (StopWatch *s) { this->stopWatch = s; }
         void setDisplay (IDisplay *d) { this->display = d; }
         void setBuzzer (Buzzer *b) { this->buzzer = b; }
@@ -98,7 +100,7 @@ private:
         /*--------------------------------------------------------------------------*/
 
         State state{State::WAIT_FOR_BEAM};
-        EdgeFilter *ir{};
+        IrTriggerDetector *ir{};
         StopWatch *stopWatch{};
         Timer loopDisplayTimeout;
         IDisplay *display{};

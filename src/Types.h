@@ -136,6 +136,9 @@ static constexpr int DUTY_CYCLE_LOW_DIV = 8;  // Transition to PWM low state whe
 static constexpr int DUTY_CYCLE_HIGH_DIV = 4; // Transition to PWM high state when duty cycle greater than 1/DUTY_CYCLE_HIGH_DIV (25%)
 static constexpr Result1usLS EXT_TRIGGER_DURATION_US = 10000;
 static constexpr Result1usLS EXT_TRIGGER_DURATION_RX_US = EXT_TRIGGER_DURATION_US / 2;
+/// How often to calculate if noise state has changed.
+static constexpr uint32_t NOISE_CALCULATION_PERIOD_MS = 1000;
+static constexpr uint16_t NO_BEAM_CALCULATION_PERIOD_MS = 1000;
 
 #ifndef UNIT_TEST
 const etl::function_fv<__disable_irq> lock{};

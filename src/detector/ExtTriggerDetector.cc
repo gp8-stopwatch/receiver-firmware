@@ -35,6 +35,7 @@ void ExtTriggerDetector::onEdge (Edge const &e, EdgePolarity pol)
                 return;
         }
 
+        noiseDetection (e.getFullTimePoint ());
         queue.push (e);
 
         /*--------------------------------------------------------------------------*/
@@ -55,6 +56,8 @@ void ExtTriggerDetector::onEdge (Edge const &e, EdgePolarity pol)
                         checkForEventCondition (e);
                         return;
                 }
+
+                ++noiseCounter;
         }
         else {
                 if ((last.getTimePoint () - last1.getTimePoint ()) >= EXT_TRIGGER_DURATION_RX_US) { // Long high edge
@@ -67,6 +70,8 @@ void ExtTriggerDetector::onEdge (Edge const &e, EdgePolarity pol)
                         checkForEventCondition (e);
                         return;
                 }
+
+                ++noiseCounter;
         }
 }
 
@@ -141,6 +146,13 @@ void ExtTriggerDetector::run (Result1us now)
         __enable_irq ();
 
         /*--------------------------------------------------------------------------*/
+        /* Noise detection + hysteresis                                             */
+        /*--------------------------------------------------------------------------*/
+
+        // Has to be run from both places (onEdge ISR and run) becasue it disables that ISR.
+        noiseDetection (now);
+
+        /*--------------------------------------------------------------------------*/
         /* Trigger detection during steady state.                                   */
         /*--------------------------------------------------------------------------*/
 
@@ -163,6 +175,57 @@ void ExtTriggerDetector::run (Result1us now)
                         triggerOutputPin ();
                         reset ();
                         __enable_irq ();
+                }
+        }
+}
+
+/****************************************************************************/
+
+void ExtTriggerDetector::noiseDetection (Result1us now)
+{
+        if (now - lastNoiseCalculation >= msToResult1us (NOISE_CALCULATION_PERIOD_MS)) {
+                __disable_irq ();
+                lastNoiseCalculation = now;
+                auto currentNoiseCounter = noiseCounter;
+                noiseCounter = 0;
+                __enable_irq ();
+
+                auto noiseAction = [this, &now] {
+                        EXTI->IMR &= ~EXT_TRIGGER_INPUT_PINS;
+                        __disable_irq ();
+                        callback->report (DetectorEventType::cableProblem, now);
+                        reset ();
+                        __enable_irq ();
+                };
+
+                auto testingAction = [] { EXTI->IMR |= EXT_TRIGGER_INPUT_PINS; };
+
+                auto noNoiseAction = [this, &now] {
+                        __disable_irq ();
+                        callback->report (DetectorEventType::cableOk, now);
+                        reset (/* now */);
+                        __enable_irq ();
+                };
+
+                if (noiseState == NoiseState::noNoise) {
+                        if (currentNoiseCounter > 100) {
+                                noiseState = NoiseState::noise;
+                                noiseAction ();
+                        }
+                }
+                else if (noiseState == NoiseState::testing) {
+                        if (currentNoiseCounter > 100) {
+                                noiseState = NoiseState::noise;
+                                noiseAction ();
+                        }
+                        else if (currentNoiseCounter < 10) {
+                                noiseState = NoiseState::noNoise;
+                                noNoiseAction ();
+                        }
+                }
+                else if (noiseState == NoiseState::noise) {
+                        noiseState = NoiseState::testing;
+                        testingAction ();
                 }
         }
 }

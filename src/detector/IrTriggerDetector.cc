@@ -32,7 +32,7 @@ Gpio extTriggerOutEnable (EXT_TRIGGER_OUT_ENABLE_PORT, EXT_TRIGGER_OUT_ENABLE_PI
 
 /****************************************************************************/
 
-void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
+void IrTriggerDetector::onEdge (Edge const &e, EdgePolarity pol)
 {
 #ifdef WITH_BLIND_MANAGER
         if (blindManager->isBlind ()) {
@@ -181,7 +181,7 @@ void EdgeFilter::onEdge (Edge const &e, EdgePolarity pol)
 
 /****************************************************************************/
 
-void EdgeFilter::checkForEventCondition (Edge const &e)
+void IrTriggerDetector::checkForEventCondition (Edge const &e)
 {
         if (highStateStart < lowStateStart /* &&    // Correct order of states : first middleState, then High, and at the end low
             middleStateStart < highStateStart */) { // No middle state between high and low
@@ -194,11 +194,6 @@ void EdgeFilter::checkForEventCondition (Edge const &e)
                                 // TODO in micro implementation, there's no need for the FSM and report like below.
                                 callback->report (DetectorEventType::trigger, highStateStart);
                                 triggerOutputPin ();
-
-                                // if (getConfig ().getBlindTime () > 0) {
-                                //         blindState = BlindState::blind;
-                                //         blindStateStart = e.getFullTimePoint ();
-                                // }
                                 reset (); // To prevent reporting twice
                         }
                 }
@@ -211,13 +206,11 @@ void EdgeFilter::checkForEventCondition (Edge const &e)
 /****************************************************************************/
 
 #ifndef UNIT_TEST
-void EdgeFilter::run ()
+void IrTriggerDetector::run ()
 #else
 void EdgeFilter::run (Result1us now)
 #endif
 {
-        // return;
-
         if (!active) {
                 return;
         }
@@ -241,19 +234,6 @@ void EdgeFilter::run (Result1us now)
 
         extTriggerToLowIf (resultLS (now));
         __enable_irq ();
-
-        /*--------------------------------------------------------------------------*/
-        /* Blind state.                                                             */
-        /*--------------------------------------------------------------------------*/
-
-        // if (blindState == BlindState::blind) {
-        //         if (now - blindStateStart >= msToResult1us (getConfig ().getBlindTime ())) {
-        //                 blindState = BlindState::notBlind;
-        //         }
-        //         else {
-        //                 return;
-        //         }
-        // }
 
         /*--------------------------------------------------------------------------*/
         /* Steady state detection, pwmState correction.                             */
@@ -351,37 +331,37 @@ void EdgeFilter::run (Result1us now)
 
         auto noBeamTimeoutMs = std::max (NO_BEAM_CALCULATION_PERIOD_MS, getConfig ().getMinTreggerEventMs ());
 
-        // if (now - lastBeamStateCalculation >= msToResult1us (noBeamTimeoutMs) && noiseState != NoiseState::noise) {
-        //         // This is the real period during we gathered the data uised to determine if there is noBeam situation.
-        //         auto actualNoBeamCalculationPeriod = now - lastBeamStateCalculation;
-        //         lastBeamStateCalculation = now;
+        if (now - lastBeamStateCalculation >= msToResult1us (noBeamTimeoutMs) && noiseState != NoiseState::noise) {
+                // This is the real period during we gathered the data uised to determine if there is noBeam situation.
+                auto actualNoBeamCalculationPeriod = now - lastBeamStateCalculation;
+                lastBeamStateCalculation = now;
 
-        //         if (beamState == BeamState::present && // State correct - beam was present before.
-        //             currentState == PwmState::high &&  // Pwm state is high (still is) for very long
-        //                                                /*
-        //                                                 * For that long, that high time to noBeam calculation time (def 1s) is higher
-        //                                                 * (or eq) than dutyCycle (50 by def.)
-        //                                                 */
-        //             /* 100 * */ (now - currentHighStateStart)
-        //                     >= /* getConfig ().getDutyTresholdPercent () * */ actualNoBeamCalculationPeriod / 2) {
+                if (beamState == BeamState::present && // State correct - beam was present before.
+                    currentState == PwmState::high &&  // Pwm state is high (still is) for very long
+                                                       /*
+                                                        * For that long, that high time to noBeam calculation time (def 1s) is higher
+                                                        * (or eq) than dutyCycle (50 by def.)
+                                                        */
+                    /* 100 * */ (now - currentHighStateStart)
+                            >= /* getConfig ().getDutyTresholdPercent () * */ actualNoBeamCalculationPeriod / 2) {
 
-        //                 beamState = BeamState::absent;
-        //                 __disable_irq ();
-        //                 callback->report (DetectorEventType::noBeam, now);
-        //                 reset ();
-        //                 __enable_irq ();
-        //                 return;
-        //         }
-        //         /* else */ if (beamState == BeamState::absent && currentState == PwmState::low) {
+                        beamState = BeamState::absent;
+                        __disable_irq ();
+                        callback->report (DetectorEventType::noBeam, now);
+                        reset ();
+                        __enable_irq ();
+                        return;
+                }
+                /* else */ if (beamState == BeamState::absent && currentState == PwmState::low) {
 
-        //                 beamState = BeamState::present;
-        //                 __disable_irq ();
-        //                 callback->report (DetectorEventType::beamRestored, now);
-        //                 reset ();
-        //                 __enable_irq ();
-        //                 return;
-        //         }
-        // }
+                        beamState = BeamState::present;
+                        __disable_irq ();
+                        callback->report (DetectorEventType::beamRestored, now);
+                        reset ();
+                        __enable_irq ();
+                        return;
+                }
+        }
 
         /*--------------------------------------------------------------------------*/
         /* Trigger detection during steady state.                                   */
@@ -406,11 +386,6 @@ void EdgeFilter::run (Result1us now)
                         extTriggerToHigh (resultLS (now));
                         callback->report (DetectorEventType::trigger, currentHighStateStart);
                         triggerOutputPin ();
-
-                        // if (getConfig ().getBlindTime () > 0) {
-                        //         blindState = BlindState::blind;
-                        //         blindStateStart = now;
-                        // }
                         reset ();
                         __enable_irq ();
                 }
@@ -419,7 +394,7 @@ void EdgeFilter::run (Result1us now)
 
 /****************************************************************************/
 
-void EdgeFilter::recalculateConstants ()
+void IrTriggerDetector::recalculateConstants ()
 {
         __disable_irq ();
         minTriggerEvent1Us = resultLS (msToResult1us (getConfig ().getMinTreggerEventMs ()));
@@ -429,7 +404,7 @@ void EdgeFilter::recalculateConstants ()
 
 /*****************************************************************************/
 
-void EdgeFilter::extTriggerToHigh (Result1usLS now)
+void IrTriggerDetector::extTriggerToHigh (Result1usLS now)
 {
         highTriggerStateStart = now;
         triggerState = ExtTriggerState::high;
@@ -440,7 +415,7 @@ void EdgeFilter::extTriggerToHigh (Result1usLS now)
 
 /*--------------------------------------------------------------------------*/
 
-void EdgeFilter::extTriggerToLowIf (Result1usLS now)
+void IrTriggerDetector::extTriggerToLowIf (Result1usLS now)
 {
         if (triggerState == ExtTriggerState::high && now - highTriggerStateStart > EXT_TRIGGER_DURATION_US) {
                 triggerState = ExtTriggerState::low;

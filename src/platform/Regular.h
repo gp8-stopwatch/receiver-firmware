@@ -22,7 +22,7 @@
 #define IR_PINS GPIO_PIN_1
 #define IR_IRQn EXTI0_1_IRQn
 
-// Test trigger
+// External trigger
 #define EXT_TRIGGER_INPUT_PORT GPIOB
 #define EXT_TRIGGER_INPUT_PINS GPIO_PIN_3
 #define EXT_TRIGGER_INPUT_IRQn EXTI2_3_IRQn

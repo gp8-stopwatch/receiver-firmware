@@ -11,6 +11,7 @@
 #include "ICanCallback.h"
 #include "Timer.h"
 #include "Types.h"
+#include "detector/IrTriggerDetector.h"
 #include <cstdint>
 #include <etl/vector.h>
 #include <functional>
@@ -82,7 +83,7 @@ public:
         InfoRespDataCollection &getInfoRespDataCollection () { return lastInfoResponseData; }
         InfoRespDataCollection const &getInfoRespDataCollection () const { return lastInfoResponseData; }
 
-        // void setBeam (IInfraRedBeam *b) { beam = b; }
+        void setIrTriggerDetector (IrTriggerDetector *b) { ir = b; }
 
 private:
         void onCanNewFrame (CanFrame const &frame) override;
@@ -94,7 +95,7 @@ private:
         IProtocolCallback *callback{};
         uint32_t uid;
         DeviceType deviceType;
-        // IInfraRedBeam *beam{};
+        IrTriggerDetector *ir{};
         InfoRespDataCollection lastInfoResponseData;
         Timer configResponseTimer{};
 };

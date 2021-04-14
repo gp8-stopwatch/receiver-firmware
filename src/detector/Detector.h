@@ -83,10 +83,15 @@ private:
 };
 
 // Warning! Due to optimization reasons, the values below has to be in sync with enum Event
-enum class DetectorEventType { trigger = 0, noise = 1, noNoise = 2, noBeam = 3, beamRestored = 4 };
-
-// /// State of the IR beam that can be always queried.
-// enum class DetectorStateType { ok, noise, noBeam };
+enum class DetectorEventType {
+        trigger = 0,
+        noise = 1, // Noise on the photo sensor
+        noNoise = 2,
+        noBeam = 3, // No signal from the photo sensor for long period of time
+        beamRestored = 4,
+        cableProblem = 5, // Noise on LVDS bus
+        cableOk = 6
+};
 
 /**
  *

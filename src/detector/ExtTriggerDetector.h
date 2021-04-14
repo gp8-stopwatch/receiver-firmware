@@ -49,6 +49,7 @@ public:
 #endif
 
         void setCallback (IEdgeDetectorCallback *cb) { callback = cb; }
+        bool isBeamClean () const { return noiseState == NoiseState::noNoise; }
 
 #ifndef UNIT_TEST
 private:
@@ -74,4 +75,13 @@ private:
         PwmState pwmState;
         Result1us highStateStart{};
         Result1us lowStateStart{};
+
+        /*--------------------------------------------------------------------------*/
+        /* Noise calculations                                                       */
+        /*--------------------------------------------------------------------------*/
+        enum class NoiseState { noNoise, testing, noise };
+        NoiseState noiseState{};
+        int noiseCounter{};
+        Result1us lastNoiseCalculation{};
+        void noiseDetection (Result1us now);
 };

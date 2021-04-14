@@ -71,7 +71,7 @@ extern StopWatch &getStopWatch ();
 extern FastStateMachine &getFastStateMachine ();
 extern Rtc &getRtc ();
 extern CanProtocol &getProtocol ();
-extern EdgeFilter &getIrDetector ();
+extern IrTriggerDetector &getIrDetector ();
 extern ExtTriggerDetector &getExtDetector ();
 extern Gpio &getIrTriggerInput ();
 extern Gpio &getExtTriggerInput ();

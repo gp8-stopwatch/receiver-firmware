@@ -21,10 +21,10 @@
  * noise impact on the accuracy of the measuremetns, detecting excessive noise levels,
  * detecting IR signal state.
  */
-class EdgeFilter {
+class IrTriggerDetector {
 public:
 #ifndef UNIT_TEST
-        EdgeFilter (PwmState initialState, StopWatch &st)
+        IrTriggerDetector (PwmState initialState, StopWatch &st)
             : stopWatch{st}, queue{(initialState == PwmState::low) ? (EdgePolarity::rising) : (EdgePolarity::falling)}, pwmState
         {
                 initialState
@@ -60,10 +60,6 @@ public:
          */
         uint8_t getNoiseLevel () const { return noiseLevel; }
 
-        /// How often to calculate if noise state has changed.
-        static constexpr uint32_t NOISE_CALCULATION_PERIOD_MS = 1000;
-        static constexpr uint16_t NO_BEAM_CALCULATION_PERIOD_MS = 1000;
-
         /*
          * Most severe (the shortest) noise spike we anticipate for.
          * This is not to qualify a signal change as a noise spike or not. This is
@@ -77,7 +73,7 @@ public:
         static constexpr uint32_t NOISE_CALCULATION_PERIOD_US = static_cast<uint32_t> (resultLS (msToResult1us (NOISE_CALCULATION_PERIOD_MS)));
         static constexpr uint32_t MAX_NOISE_EVENTS_NUMBER_PER_PERIOD = 150; // Empoirical for trigger 10 ms
 
-        // TODO turn off this EXTI as well. EDIT : button would not work. The button pin should be changed to 0-1 then.
+        // TODO turn off this EXTI as well.
         bool isActive () const { return active; }
         bool isBeamClean () const { return beamState == BeamState::present && noiseState == NoiseState::noNoise; }
 
@@ -110,7 +106,6 @@ private:
         PwmState pwmState;
         Result1us highStateStart{};
         Result1us lowStateStart{};
-        // Result1us middleStateStart{};
 
         /*--------------------------------------------------------------------------*/
         /* Noise calculations                                                       */
@@ -131,9 +126,6 @@ private:
         /*--------------------------------------------------------------------------*/
         /* Blind period calculations                                                */
         /*--------------------------------------------------------------------------*/
-        // enum class BlindState { notBlind, blind };
-        // BlindState blindState{};
-        // Result1us blindStateStart{};
         BlindManager *blindManager{};
 
         /*--------------------------------------------------------------------------*/

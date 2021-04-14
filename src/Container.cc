@@ -185,9 +185,9 @@ auto &getDetectorCallback ()
         return tc;
 }
 
-EdgeFilter &getIrDetector ()
+IrTriggerDetector &getIrDetector ()
 {
-        static EdgeFilter edgeFilter{PwmState (getIrTriggerInput ().get ()), getStopWatch ()};
+        static IrTriggerDetector edgeFilter{PwmState (getIrTriggerInput ().get ()), getStopWatch ()};
         edgeFilter.setCallback (&getDetectorCallback ());
         edgeFilter.setBlindManager (&getBlindManager ());
         return edgeFilter;
