@@ -302,7 +302,7 @@ void init ()
         // getDisplay ().setDigit (3, 3);
         // getDisplay ().setDigit (4, 4);
         // getDisplay ().setDigit (5, 5);
-        getDisplay ();
+        getDisplay ().setText ("gp8   ");
 
         // while (true) {
         // }
