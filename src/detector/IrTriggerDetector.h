@@ -59,6 +59,7 @@ public:
          * Noise event is everything that is shorter than current minimum trigger event ms.
          */
         uint8_t getNoiseLevel () const { return noiseLevel; }
+        NoiseState getNoiseState () const { return noiseState; }
 
         /*
          * Most severe (the shortest) noise spike we anticipate for.
@@ -76,6 +77,7 @@ public:
         // TODO turn off this EXTI as well.
         bool isActive () const { return active; }
         bool isBeamClean () const { return beamState == BeamState::present && noiseState == NoiseState::noNoise; }
+        BeamState getBeamState () const { return beamState; }
 
         void setBlindManager (BlindManager *b) { blindManager = b; }
 
@@ -110,7 +112,6 @@ private:
         /*--------------------------------------------------------------------------*/
         /* Noise calculations                                                       */
         /*--------------------------------------------------------------------------*/
-        enum class NoiseState { noNoise, noise };
         NoiseState noiseState{};
         int noiseCounter{};
         Result1us lastNoiseCalculation{};
@@ -119,7 +120,6 @@ private:
         /*--------------------------------------------------------------------------*/
         /* NoBeam calculations                                                      */
         /*--------------------------------------------------------------------------*/
-        enum class BeamState { present, absent };
         BeamState beamState{};
         Result1us lastBeamStateCalculation{};
 

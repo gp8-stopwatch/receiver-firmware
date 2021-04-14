@@ -10,6 +10,7 @@
 #define __CAN_FRAME_H__
 
 #include "Hal.h"
+#include <array>
 #include <cstdint>
 
 struct CanFrame {
@@ -30,7 +31,7 @@ struct CanFrame {
         uint32_t id;
         bool extended;
         uint8_t dlc;
-        uint8_t data[8];
+        std::array<uint8_t, 8> data{};
 };
 
 #endif

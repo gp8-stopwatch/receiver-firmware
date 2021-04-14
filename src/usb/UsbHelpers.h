@@ -18,3 +18,4 @@ void print (int i);
 void print (unsigned int i);
 void printResult (Result10us time, ResultDisplayStyle ra = ResultDisplayStyle::secondFraction);
 void printDate (RTC_DateTypeDef const &date, Time const &time);
+void printInfoResp (InfoRespData const &periph);

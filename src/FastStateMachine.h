@@ -11,6 +11,7 @@
 #include "Timer.h"
 #include "Types.h"
 #include "detector/BlindManager.h"
+#include "detector/ExtTriggerDetector.h"
 #include "detector/IrTriggerDetector.h"
 #include <etl/queue.h>
 #include <optional>
@@ -66,12 +67,13 @@ using EventQueue = etl::queue<Event, 8, etl::memory_model::MEMORY_MODEL_SMALL>;
 class FastStateMachine {
 public:
         enum class State { WAIT_FOR_BEAM, READY, RUNNING, STOP, LOOP_RUNNING, PAUSED, NOISE, NO_BEAM, CABLE_PROBLEM };
-        enum class RemoteBeamState { wait, allOk, someNotOk, noResponse };
+        enum class RemoteBeamState { wait, allOk, someHasNoise, someHasNoBeam, noResponse, allInactive };
 
         void run (Event event);
         bool isCounting () const { return state == State::RUNNING || state == State::LOOP_RUNNING; }
 
-        void setIr (IrTriggerDetector *i) { this->ir = i; }
+        void setIrTriggerDetector (IrTriggerDetector *i) { this->ir = i; }
+        void setExtTriggerDetector (ExtTriggerDetector *i) { this->ext = i; }
         void setStopWatch (StopWatch *s) { this->stopWatch = s; }
         void setDisplay (IDisplay *d) { this->display = d; }
         void setBuzzer (Buzzer *b) { this->buzzer = b; }
@@ -81,12 +83,10 @@ public:
 
 private:
         void ready_entryAction ();
-        void running_entryAction (Event event /* , bool canEvent */);
-        void stop_entryAction (Event event /* , bool canEvent */);
-        void loopStop_entryAction (Event event /* , bool canEvent */);
+        void running_entryAction (Event event);
+        void stop_entryAction (Event event);
+        void loopStop_entryAction (Event event);
 
-        // void checkCanBusEvents (Event event);
-        // bool isInternalTrigger (Event event) const;
         static bool isTrigger (Event event)
         {
                 return event.getType () == Event::Type::externalTrigger || event.getType () == Event::Type::irTrigger;
@@ -101,6 +101,7 @@ private:
 
         State state{State::WAIT_FOR_BEAM};
         IrTriggerDetector *ir{};
+        ExtTriggerDetector *ext{};
         StopWatch *stopWatch{};
         Timer loopDisplayTimeout;
         IDisplay *display{};
@@ -128,10 +129,12 @@ public:
                 switch (msg) {
 #ifdef IS_CAN_MASTER
                 case Message::NO_BEAM:
-                        fastStateMachine.run ({Event::Type::noBeam /* , time */});
+                        fastStateMachine.run ({Event::Type::noBeam});
                         break;
 
-                        // TODO Noise!
+                case Message::NOISE:
+                        fastStateMachine.run ({Event::Type::noise});
+                        break;
 #endif
 
                 default:

@@ -99,9 +99,25 @@ Can &getCan ()
 
 /****************************************************************************/
 
+InfoRespData getMyOwnInfo ()
+{
+        InfoRespData myData{};
+        myData.uid = *MICRO_CONTROLLER_UID;
+        myData.deviceType = myDeviceType;
+        auto &ir = getIrDetector ();
+        myData.active = ir.isActive ();
+        myData.beamState = ir.getBeamState ();
+        myData.noiseState = ir.getNoiseState ();
+        myData.noiseLevel = ir.getNoiseLevel ();
+        return myData;
+}
+
+/****************************************************************************/
+
 CanProtocol &getProtocol ()
 {
         static CanProtocol protocol (getCan (), *MICRO_CONTROLLER_UID, myDeviceType);
+        protocol.setIrTriggerDetector (&getIrDetector ());
         return protocol;
 }
 #endif
@@ -179,11 +195,15 @@ struct DetectorCallback : public IEdgeDetectorCallback {
         static inline Event::Type detectorEventToFSMEvent (DetectorEventType evt) { return Event::Type (evt); }
 };
 
+/****************************************************************************/
+
 auto &getDetectorCallback ()
 {
         static DetectorCallback tc;
         return tc;
 }
+
+/****************************************************************************/
 
 IrTriggerDetector &getIrDetector ()
 {
@@ -192,6 +212,8 @@ IrTriggerDetector &getIrDetector ()
         edgeFilter.setBlindManager (&getBlindManager ());
         return edgeFilter;
 }
+
+/****************************************************************************/
 
 ExtTriggerDetector &getExtDetector ()
 {
@@ -386,7 +408,9 @@ void init ()
         static FastStateMachineProtocolCallback callback{getFastStateMachine ()};
         getProtocol ().setCallback (&callback);
 #endif
-        getFastStateMachine ().setIr (&getIrDetector ());
+        getFastStateMachine ().setIrTriggerDetector (&getIrDetector ());
+        getFastStateMachine ().setExtTriggerDetector (&getExtDetector ());
+
         getFastStateMachine ().setDisplay (&getDisplay ());
 
 #ifdef WITH_SOUND

@@ -9,7 +9,7 @@
 #include "CanFrame.h"
 #include <cstring>
 
-CanFrame::CanFrame () : id (0), extended (false), dlc (0) { memset (data, 0, sizeof (data)); }
+CanFrame::CanFrame () : id (0), extended (false), dlc (0) {}
 
 CanFrame::CanFrame (uint32_t id, bool extended, uint8_t dlc, uint8_t data0, uint8_t data1, uint8_t data2, uint8_t data3, uint8_t data4,
                     uint8_t data5, uint8_t data6, uint8_t data7)
@@ -40,15 +40,17 @@ CanFrame::CanFrame (CanRxMsgTypeDef const &frame)
         }
 
         dlc = frame.DLC;
-        memset (data, 0, 8);
-        memcpy (data, frame.Data, frame.DLC);
+        // memset (data, 0, 8);
+        std::fill (data.begin (), data.end (), 0);
+        // memcpy (data, frame.Data, frame.DLC);
+        std::copy (&frame.Data[0], &frame.Data[0] + frame.DLC, data.begin ());
 }
 
 /*****************************************************************************/
 
 CanTxMsgTypeDef CanFrame::toNative () const
 {
-        CanTxMsgTypeDef native;
+        CanTxMsgTypeDef native{};
 
         if (extended) {
                 native.StdId = 0x00;
@@ -63,8 +65,10 @@ CanTxMsgTypeDef CanFrame::toNative () const
 
         native.RTR = CAN_RTR_DATA;
         native.DLC = dlc;
-        memset (native.Data, 0, 8);
-        memcpy (native.Data, data, dlc);
+        // memset (native.Data, 0, 8);
+        // memcpy (native.Data, data, dlc);
+        std::copy (data.cbegin (), data.cend (), &native.Data[0]);
+
         return native;
 }
 

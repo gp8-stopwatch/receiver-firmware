@@ -41,18 +41,6 @@ struct IProtocolCallback {
         virtual void onMessage (Message msg) = 0;
 };
 
-/*****************************************************************************/
-
-enum class BeamState : uint8_t { yes, no, blind };
-
-struct InfoRespData {
-        InfoRespData (uint32_t u, DeviceType dt, BeamState bs) : uid{u}, deviceType{dt}, beamState{bs} {}
-
-        uint32_t uid;
-        DeviceType deviceType;
-        BeamState beamState;
-};
-
 using InfoRespDataCollection = etl::vector<InfoRespData, 16>;
 
 /*****************************************************************************/
@@ -66,6 +54,7 @@ public:
         /*--------------------------------------------------------------------------*/
 
         void sendNoBeam () { can.send (CanFrame{uid, true, 1, uint8_t (Message::NO_BEAM)}, CAN_SEND_TIMEOUT); }
+        void sendNoise () { can.send (CanFrame{uid, true, 1, uint8_t (Message::NOISE)}, CAN_SEND_TIMEOUT); }
         void sendInfoRequest ();
         void sendConfigRequest () { can.send (CanFrame{uid, true, 1, uint8_t (Message::CONFIG_REQUEST)}, CAN_SEND_TIMEOUT); }
         void sendConfigResp ();

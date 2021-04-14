@@ -19,3 +19,11 @@ The rationale behind this is to maintain single global "blind timer" managed by 
 50kbps, only for communications. No time related stuff.
 
 
+Micro side (from startup)
+| sends                               | receivees         |
+| ----------------------------------- | ----------------- |
+| Message::CONFIG_REQUEST (from main) |                   |
+|                                     | Message::INFO_REQ |
+| Message::INFO_RESP (as a response)  |                   |
+|                                     | Message::INFO_REQ |
+| Message::INFO_RESP (as a response)  |                   |

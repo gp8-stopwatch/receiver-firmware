@@ -113,3 +113,49 @@ void printDate (RTC_DateTypeDef const &date, Time const &time)
         itoa ((unsigned int)(time.Seconds), buf, 2);
         usbWrite (buf);
 }
+
+/****************************************************************************/
+
+void printInfoResp (InfoRespData const &periph)
+{
+        switch (periph.deviceType) {
+        case DeviceType::receiver:
+                usbWrite ("receiver  ");
+                break;
+
+        case DeviceType::ir_sensor:
+                usbWrite ("ir_sensor ");
+                break;
+
+        default:
+                usbWrite ("unknown   ");
+                break;
+        }
+
+        print ((unsigned)periph.uid);
+        print (" ");
+
+        if (periph.active) {
+                usbWrite ("1 ");
+        }
+        else {
+                usbWrite ("0 ");
+        }
+
+        if (periph.beamState == BeamState::present) {
+                usbWrite ("1 ");
+        }
+        else {
+                usbWrite ("0 ");
+        }
+
+        if (periph.noiseState == NoiseState::noise) {
+                usbWrite ("1 ");
+        }
+        else {
+                usbWrite ("0 ");
+        }
+
+        print ((unsigned)periph.noiseLevel);
+        print ("\r\n");
+}

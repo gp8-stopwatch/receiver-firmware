@@ -259,42 +259,12 @@ auto &getCli ()
                                  HAL_Delay (RESPONSE_WAIT_TIME_MS);
                                  auto &resp = getProtocol ().getInfoRespDataCollection ();
 
-                                 usbWrite ("Connected peripherals :\r\n");
-                                 usbWrite ("type uid beam_state\r\n");
+                                 usbWrite ("All devices (this dev at the top):\r\n");
+                                 usbWrite ("type uid active beam noise noise_level\r\n");
+                                 printInfoResp (getMyOwnInfo ());
 
                                  for (auto &periph : resp) {
-                                         switch (periph.deviceType) {
-                                         case DeviceType::receiver:
-                                                 usbWrite ("receiver ");
-                                                 break;
-
-                                         case DeviceType::ir_sensor:
-                                                 usbWrite ("ir_sensor ");
-                                                 break;
-
-                                         default:
-                                                 usbWrite ("unknown ");
-                                                 break;
-                                         }
-
-                                         print ((unsigned)periph.uid);
-                                         print (" ");
-
-                                         switch (periph.beamState) {
-                                         case BeamState::yes:
-                                                 usbWrite ("yes");
-                                                 break;
-
-                                         case BeamState::no:
-                                                 usbWrite ("no");
-                                                 break;
-
-                                         case BeamState::blind:
-                                                 usbWrite ("blind");
-                                                 break;
-                                         }
-
-                                         print ("\r\n");
+                                         printInfoResp (periph);
                                  }
 
                                  print ("\r\n");

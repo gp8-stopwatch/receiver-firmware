@@ -70,6 +70,12 @@ void FastStateMachine::run (Event event)
         switch (state) {
         case State::WAIT_FOR_BEAM: {
 
+                if (!reqRespTimer.isExpired ()) {
+                        break;
+                }
+
+                reqRespTimer.start (RESPONSE_WAIT_TIME_MS);
+
 #ifdef IS_CAN_MASTER
                 // The entry action
                 auto remoteBeamState = isRemoteBeamStateOk ();
@@ -78,9 +84,9 @@ void FastStateMachine::run (Event event)
                 if (remoteBeamState == RemoteBeamState::wait) {
                         break;
                 }
-                // #else
-                //                 auto remoteBeamState = RemoteBeamState::noResponse;
-                // #endif
+#else
+                auto remoteBeamState = RemoteBeamState::noResponse;
+#endif
 
                 //                 if (event.getType () == Event::Type::noise) {
                 //                         display->setText ("noise ");
@@ -104,28 +110,62 @@ void FastStateMachine::run (Event event)
                 // #endif
                 //                 }
                 // #ifdef IS_CAN_MASTER
+                // #endif
 
-                /* else  */ if (remoteBeamState == RemoteBeamState::someNotOk) {
+                if (!ext->isBeamClean ()) {
+                        display->setText ("cable ");
+                        break;
+                        // No can frame this time, because everybody on the LVDS bus can see the noise.
+                }
+
+                if (ir->isActive ()) {
+                        if (ir->getNoiseState () == NoiseState::noise) {
+                                display->setText ("noise ");
+
+                                if (protocol != nullptr) {
+                                        protocol->sendNoise ();
+                                }
+
+                                break;
+                        }
+
+                        if (ir->getBeamState () == BeamState::absent) {
+                                display->setText ("nobeam");
+
+                                if (protocol != nullptr) {
+                                        protocol->sendNoBeam ();
+                                }
+
+                                break;
+                        }
+                }
+
+                if (remoteBeamState == RemoteBeamState::someHasNoise) {
+                        display->setText ("noise ");
+                        break;
+                }
+
+                if (remoteBeamState == RemoteBeamState::someHasNoBeam) {
                         display->setText ("nobeam");
+                        break;
                 }
-                else if (remoteBeamState == RemoteBeamState::noResponse) {
+
+                // No possbility of detecting trigger.
+                if (!ir->isActive () && (remoteBeamState == RemoteBeamState::noResponse || remoteBeamState == RemoteBeamState::allInactive)) {
                         display->setText ("blind ");
+                        break;
                 }
 
-                if (remoteBeamState == RemoteBeamState::allOk /* && ext->isBeamClean () */) {
-                        state = State::READY;
-                }
-#endif
-
-                // The transition
-                if (ir->isActive () && ir->isBeamClean ()) {
-                        state = State::READY;
-                }
-
+                // // The transition
+                // if (ir->isActive () && ir->isBeamClean () && ext->isBeamClean ()                                        // Local state is all
+                // OK.
+                //     && (remoteBeamState == RemoteBeamState::allOk || remoteBeamState == RemoteBeamState::noResponse)) { // Remote is OK
+                state = State::READY;
+                // }
         } break;
 
         case State::NOISE:
-                display->setText ("noise ");
+                // display->setText ("noise ");
 
                 // TODO
                 // #ifdef WITH_CAN
@@ -135,35 +175,35 @@ void FastStateMachine::run (Event event)
                 //                         }
                 // #endif
 
-                if (event.getType () == Event::Type::noNoise) {
-                        state = State::WAIT_FOR_BEAM;
-                }
+                // if (event.getType () == Event::Type::noNoise) {
+                state = State::WAIT_FOR_BEAM;
+                // }
 
                 break;
 
         case State::CABLE_PROBLEM:
-                display->setText ("cable ");
+                // display->setText ("cable ");
 
-                // We do not need to send this over CAN bus, because all would see the noise anyway.
-                if (event.getType () == Event::Type::cableOk) {
-                        state = State::WAIT_FOR_BEAM;
-                }
+                // We do not need to send this over CAN bus, because all would see the LVDS noise anyway.
+                // if (event.getType () == Event::Type::cableOk) {
+                state = State::WAIT_FOR_BEAM;
+                // }
 
                 break;
 
         case State::NO_BEAM:
-                display->setText ("noi.r.  ");
+                // display->setText ("noi.r.  ");
 
-                if (event.getType () == Event::Type::beamRestored) {
-                        state = State::WAIT_FOR_BEAM;
-                }
+                // if (event.getType () == Event::Type::beamRestored) {
+                state = State::WAIT_FOR_BEAM;
+                // }
 
-#ifdef WITH_CAN
-                if (protocol != nullptr && !isExternalTrigger (event) && !noIrRequestSent) {
-                        protocol->sendNoBeam ();
-                        noIrRequestSent = true;
-                }
-#endif
+                // #ifdef WITH_CAN
+                //                 if (protocol != nullptr && !isExternalTrigger (event) && !noIrRequestSent) {
+                //                         protocol->sendNoBeam ();
+                //                         noIrRequestSent = true;
+                //                 }
+                // #endif
 
                 break;
 
@@ -229,22 +269,37 @@ void FastStateMachine::run (Event event)
 
 FastStateMachine::RemoteBeamState FastStateMachine::isRemoteBeamStateOk () const
 {
-        if (!reqRespTimer.isExpired ()) {
-                return RemoteBeamState::wait;
-        }
+        // if (!reqRespTimer.isExpired ()) {
+        //         return RemoteBeamState::wait;
+        // }
 
         if (infoRequestSent) {
                 RemoteBeamState ret = RemoteBeamState::allOk;
                 auto &resp = protocol->getInfoRespDataCollection ();
+                unsigned int inactiveNum{};
 
                 for (auto &periph : resp) {
-                        if (periph.beamState == BeamState::no) {
-                                ret = RemoteBeamState::someNotOk;
+                        if (!periph.active) {
+                                ++inactiveNum;
+                                continue; // All micro are active by default. Other RX-es can be inactive, and that's also OK.
+                        }
+
+                        if (periph.beamState == BeamState::absent) {
+                                ret = RemoteBeamState::someHasNoBeam;
+                                break;
+                        }
+
+                        if (periph.noiseState == NoiseState::noise) {
+                                ret = RemoteBeamState::someHasNoise;
+                                break;
                         }
                 }
 
                 if (resp.empty ()) {
                         ret = RemoteBeamState::noResponse;
+                }
+                else if (inactiveNum == resp.size ()) { // resp.size > 0
+                        ret = RemoteBeamState::allInactive;
                 }
 
                 infoRequestSent = false;
@@ -252,7 +307,7 @@ FastStateMachine::RemoteBeamState FastStateMachine::isRemoteBeamStateOk () const
         }
 
         protocol->sendInfoRequest ();
-        reqRespTimer.start (RESPONSE_WAIT_TIME_MS);
+        // reqRespTimer.start (RESPONSE_WAIT_TIME_MS);
         infoRequestSent = true;
         return RemoteBeamState::wait;
 }
@@ -263,7 +318,7 @@ void FastStateMachine::ready_entryAction () { display->setTime (0, getConfig ().
 
 /*****************************************************************************/
 
-void FastStateMachine::running_entryAction (Event event)
+void FastStateMachine::running_entryAction (Event /* event */)
 {
         /*--------------------------------------------------------------------------*/
         /* Bookkeeping                                                              */
@@ -276,7 +331,7 @@ void FastStateMachine::running_entryAction (Event event)
 
 /*****************************************************************************/
 
-void FastStateMachine::loopStop_entryAction (Event event)
+void FastStateMachine::loopStop_entryAction (Event /* event */)
 {
         /*--------------------------------------------------------------------------*/
         /* Local time stuff                                                         */

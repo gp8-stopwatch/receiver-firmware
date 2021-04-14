@@ -75,3 +75,4 @@ extern IrTriggerDetector &getIrDetector ();
 extern ExtTriggerDetector &getExtDetector ();
 extern Gpio &getIrTriggerInput ();
 extern Gpio &getExtTriggerInput ();
+extern InfoRespData getMyOwnInfo ();

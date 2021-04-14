@@ -86,7 +86,7 @@ inline const char *VERSION = "1.1.0";
 
 constexpr int LOW_VOLTAGE_MV = 3000;
 constexpr int LOW_VOLTAGE_CRITICAL_MV = 2900;
-constexpr int RESPONSE_WAIT_TIME_MS = 200;
+constexpr int RESPONSE_WAIT_TIME_MS = 1000;
 constexpr int CAN_SEND_TIMEOUT = 50;
 
 /**
@@ -121,6 +121,22 @@ enum Resolution { us_10 = 0, us_100 = 1, ms_1 = 2, ms_10 = 3 };
 enum Brightness { level0 = 0, level1 = 1, level2 = 2, level3 = 3, level4 = 4, levelAuto = 0b111 };
 enum ParticipantsNumber { one = 1, two = 0 };
 enum StopMode { stop = 1, restart = 0 }; // Loop
+
+enum class NoiseState { noNoise, noise };
+enum class BeamState { present, absent };
+
+/*****************************************************************************/
+
+struct InfoRespData {
+        uint32_t uid{};
+        DeviceType deviceType{};
+        bool active{};
+        BeamState beamState{};
+        NoiseState noiseState{};
+        uint8_t noiseLevel{};
+};
+
+/*****************************************************************************/
 
 static constexpr uint16_t DEFAULT_BLIND_TIME_MS = 5000;
 static constexpr uint16_t DEFAULT_MIN_TRIGGER_EVENT_MS = 10;
