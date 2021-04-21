@@ -63,12 +63,6 @@ public:
         void setFps (unsigned int fps) override;
 
 private:
-#ifdef COMMON_ANODE
-        static constexpr bool CA = true;
-#else
-        static constexpr bool CA = false;
-#endif
-
         // friend void DMA1_Channel2_3_IRQHandler ();
 
         void init (uint16_t fps);
@@ -94,10 +88,10 @@ private:
         int factorIndex{};
         uint32_t prescaler = 1;
 
-        static constexpr uint32_t ALL_SEGMENTS = 0b0000'0001'1110'1111'0000'0000'0000'0000;
-        static constexpr uint32_t NO_SEGMENTS = 0b0000'0000'0000'0000'0000'0001'1110'1111;
         static constexpr uint16_t DOT_MASK = 0b0000'0001'0000'0000;
         static constexpr size_t SPACE_CHAR_INDEX = 36;
+        static constexpr uint32_t ALL_SEGMENTS = 0b0000'0001'1110'1111'0000'0000'0000'0000;
+        static constexpr uint32_t NO_SEGMENTS = 0b0000'0000'0000'0000'0000'0001'1110'1111;
 
         std::array<uint32_t, DISPLAY_NUM> displayBuffer{};
 
@@ -108,6 +102,7 @@ private:
         static constexpr auto ENABLE4_PIN_NUM = 2;
         static constexpr auto ENABLE5_PIN_NUM = 5;
 
+#ifdef COMMON_CATHODE
         static constexpr uint32_t ENABLE0_ON = (1 << ENABLE0_PIN_NUM);
         static constexpr uint32_t ENABLE1_ON = (1 << ENABLE1_PIN_NUM);
         static constexpr uint32_t ENABLE2_ON = (1 << ENABLE2_PIN_NUM);
@@ -118,10 +113,22 @@ private:
         static constexpr uint32_t ALL_ENABLE_OFF = (1 << (ENABLE5_PIN_NUM + 16)) | (1 << (ENABLE0_PIN_NUM + 16)) | (1 << (ENABLE1_PIN_NUM + 16))
                 | (1 << (ENABLE2_PIN_NUM + 16)) | (1 << (ENABLE3_PIN_NUM + 16)) | (1 << (ENABLE4_PIN_NUM + 16));
 
-        std::array<uint32_t, DISPLAY_NUM * 2> enableBuffer{
+#else
+        static constexpr uint32_t ENABLE0_ON = (1 << (ENABLE0_PIN_NUM + 16));
+        static constexpr uint32_t ENABLE1_ON = (1 << (ENABLE1_PIN_NUM + 16));
+        static constexpr uint32_t ENABLE2_ON = (1 << (ENABLE2_PIN_NUM + 16));
+        static constexpr uint32_t ENABLE3_ON = (1 << (ENABLE3_PIN_NUM + 16));
+        static constexpr uint32_t ENABLE4_ON = (1 << (ENABLE4_PIN_NUM + 16));
+        static constexpr uint32_t ENABLE5_ON = (1 << (ENABLE5_PIN_NUM + 16));
+
+        static constexpr uint32_t ALL_ENABLE_OFF = (1 << (ENABLE5_PIN_NUM)) | (1 << (ENABLE0_PIN_NUM)) | (1 << (ENABLE1_PIN_NUM))
+                | (1 << (ENABLE2_PIN_NUM)) | (1 << (ENABLE3_PIN_NUM)) | (1 << (ENABLE4_PIN_NUM));
+
+#endif
+
+        static constexpr std::array<uint32_t, DISPLAY_NUM * 2> enableBuffer{
                 ENABLE0_ON, ALL_ENABLE_OFF, ENABLE1_ON, ALL_ENABLE_OFF, ENABLE2_ON, ALL_ENABLE_OFF,
                 ENABLE3_ON, ALL_ENABLE_OFF, ENABLE4_ON, ALL_ENABLE_OFF, ENABLE5_ON, ALL_ENABLE_OFF,
-
         };
 
         /// Corresponds to DSEG7 font as found on https://www.keshikan.net/fonts-e.html
@@ -165,6 +172,6 @@ private:
                 0b0000'0001'0100'0001, // Y
                 0b0000'0001'1010'0100, // Z
 
-                NO_SEGMENTS // Space 36
+                0b0000'0001'1110'1111 // Space 36
         };
 };

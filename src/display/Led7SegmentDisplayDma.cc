@@ -290,17 +290,30 @@ void Led7SegmentDisplayDma::setDigit (uint8_t position, uint8_t digit)
         }
         else {
                 uint16_t fnt = (flip) ? (flipFont (FONTS.at (digit))) : (FONTS.at (digit));
-                displayBuffer.at (fPosition) = ALL_SEGMENTS | fnt;
+#ifdef COMMON_CATHODE
+                displayBuffer.at (fPosition) = ALL_SEGMENTS | fnt; // Czarne chińskie
+#else
+                displayBuffer.at (fPosition) = ALL_SEGMENTS | ~fnt; // Szare KinkBright
+#endif
         }
 
         auto fDots = (flip) ? (dots << 1) : (dots);
 
+#ifdef COMMON_CATHODE
         if (fDots & (1 << position)) {
                 displayBuffer.at (fPosition) &= ~DOT_MASK;
         }
         else {
                 displayBuffer.at (fPosition) |= DOT_MASK;
         }
+#else
+        if (fDots & (1 << position)) {
+                displayBuffer.at (fPosition) |= DOT_MASK;
+        }
+        else {
+                displayBuffer.at (fPosition) &= ~DOT_MASK;
+        }
+#endif
 }
 
 /****************************************************************************/
