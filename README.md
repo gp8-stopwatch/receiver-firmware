@@ -56,3 +56,21 @@ valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes ./profile
 FAQ
 * Noise error : check terminator switches. Check if cables are connected on both sides.
 
+# Kolejność motażu
+## Receiver
+1. SMD
+1. µC
+2. USB, LDO low Q, TCXO
+3. LED RG. Kołnież nie może wystawać poza PCB i jak najniżej
+4. kolejne THT
+5. Wyświetlacze (uwaga na orientację, uwaga na CA-CC)
+6. Ewentualnie przetestować 1 wyświetlacz
+7. Battery holder:
+   1. Pobielić pady i styki
+   2. Hot glue
+   3. Zlutować
+8. IR
+
+## Micro
+1. SMD
+2. THT

@@ -146,10 +146,6 @@ Buzzer &getBuzzer ()
         static Gpio buzzerPin (GPIOB, GPIO_PIN_14);
         static Buzzer buzzer (buzzerPin);
 
-        if (getConfig ().isBuzzerOn ()) {
-                buzzer.beep (20, 0, 1);
-        }
-
 #else
         static Buzzer buzzer;
 #endif
@@ -372,7 +368,9 @@ void init ()
         /*+-------------------------------------------------------------------------+*/
 
 #ifdef WITH_SOUND
-        getBuzzer ();
+        if (getConfig ().isBuzzerOn ()) {
+                getBuzzer ().beep (20, 0, 1);
+        }
 #endif
 
         /*+-------------------------------------------------------------------------+*/

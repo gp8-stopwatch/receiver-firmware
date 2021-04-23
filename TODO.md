@@ -130,7 +130,7 @@
 * [x] USB - can't output more than 2048B at once. In case of overflow the rest of text is clipped.
 * [ ] When history is short (16B per page) results are working somewhat oddly:
 * [x] after 10 mins there's something wrong going on with the time display. No leading 1 or something. Reported by Pyxis.
-* [ ] When the terminator is flipped to OFF and nothing is connected, CAN initialization fails, and the program hangs (in Error_Handler).
+* [x] When the terminator is flipped to OFF and nothing is connected, CAN initialization fails, and the program hangs (in Error_Handler).
 
 ```
 00:05,00998
@@ -271,12 +271,24 @@ Solved. The problem was due to lack of USBD_CDC_ReceivePacket calls. So it seems
 
 # Case
 * [ ] Make sure the battery holder is well supported by case's back wall. It has to be fixed in place. This way we can ignore the screws that would normally fix the holder to the PCB.
-* [ ] Pod grilem musi być wytłoczenie, bo głośniczek jest za wysoki.
+* [x] Pod grilem musi być wytłoczenie, bo głośniczek jest za wysoki.
 * [ ] Fotorezystor musi mieć lepszy dostęp do światła.
+* [x] Układ ekranów się zmienił
+* [x] Tunel na IR jak w micro
+* [x] Wycięcie na power wyższe o 2mm bo chińskie się nie mieszczą
+* [x] Oznaczenie terminatora i power. 
+* [x] Ten znak power jest brzydki
+* [x] Terminator
+
+## Micro
+* [x] Otwór na terminator
+* [x] Oznaczenie gdzie się włącza terminator
+* [x] Ścianka oddzielająca czujnik od reszty
+* [x] Kondensatory przeszkadzają, wycięcie lub coś.
 
 # UI 
 * [ ] On screen menu
-  * [ ] Brightness (1/2/3/auto). Auto as default.
+  * [ ] ~~Brightness (1/2/3/auto). Auto as default.~~
   * [ ] 1 or 2 participants
   * [x] Loop mode / normal
   * [x] Date / time setting
@@ -299,3 +311,7 @@ Solved. The problem was due to lack of USBD_CDC_ReceivePacket calls. So it seems
 * [ ] Proper application.
 * [ ] Filming in slow motion (adjustable fps).
 * [ ] Receiver that can be connected to an Arduino or RasPI instead of the "regular" receiver. If I ever consider doing this, take the path of minimal effor, and change only the connector and protocol (TTL instead of CAN).
+
+# Requestes
+* Better visibility in the sun (black displays). 2x
+* 
