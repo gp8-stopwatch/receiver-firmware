@@ -131,30 +131,11 @@
 * [ ] When history is short (16B per page) results are working somewhat oddly:
 * [x] after 10 mins there's something wrong going on with the time display. No leading 1 or something. Reported by Pyxis.
 * [x] When the terminator is flipped to OFF and nothing is connected, CAN initialization fails, and the program hangs (in Error_Handler).
-
-```
-00:05,00998
-
-result
-Hi 00:00,00000
-
-00:05,00998
-00:10,02000
-
-result
-Hi 00:00,00000
-
-00:05,00998
-00:05,00998
-
-result
-Hi 00:00,00000
-
-00:05,00998
-00:10,01998
-00:05,00998
-00:10,01998
-```
+* [ ] New bunch of bugs 23/04/2021
+  * [ ] Synchronization problem. Ext trigger is generated AFTER valid trigger event, which can be at least `minTriggerEvent` ms long (default 10ms), but there is no upper limit on how long it should be. So ext trigger is delayed unknown amount of time! I somehow forgot about it.
+  * [ ] System comprised of main RX and 2x micro RX sometimes hangs after some time. I.e. program runs (at least on the main RX), USB is OK, but no trigger is detected. After resetting the main RX (without power cycle which would also reset the two micros) everything gets back to normal, so I suspect the problem lies on the main RX part.
+  * [ ] Display went crazy (at leas on RelWithDebInfo). Like in Debug, but after some time, and it changes - like timers not synchronized properly
+  * [ ] fps setting works OK only to ~1000 fps (at least on CA displays. Black CC ones not tested on this commit). Above 1000 fps digits (or only dots?) are oddly shifted.
 
 # Piotr
 * [x] Zapis ustawień
