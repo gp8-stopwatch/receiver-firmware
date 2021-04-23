@@ -277,10 +277,9 @@ Variables
 
 # Trigger features test
 * F1. Blind time. Use signal gen, and decrease pulse period until the stopwatch catches every second one (meaning that the period is too short, and everything works).
-* F2. Noise detection. 
-* F3. No beam detection. 
+* F2. Noise detection. If one (of no mater how many) RX detects noise, there should be "nobeam" displayed on the screen.
+* F3. No beam detection. If one (of no mater how many) RX detects no signal, there should be "nobeam" displayed on the screen.
 * F4. Minimum trigger length duration. Same as 1, but this time the pulse length gets adjusted.
-* F5. DutyTresholdPercent. How to test this? Some manual test in noisy environment.
 
 # Battery test cases
 * a
