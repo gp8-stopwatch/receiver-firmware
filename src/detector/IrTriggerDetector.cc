@@ -385,6 +385,7 @@ void EdgeFilter::run (Result1us now)
                 if (longHighState && longLowState && isBeamClean ()) {
                         __disable_irq ();
                         extTriggerToHigh (resultLS (now));
+                        now = stopWatch.getTimeFromIsr (); // Update now variable.
                         getProtocol ().sendSynchronization (resultLS (now - highStateStart));
                         callback->report (DetectorEventType::trigger, currentHighStateStart);
                         triggerOutputPin ();
