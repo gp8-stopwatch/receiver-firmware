@@ -41,6 +41,9 @@ public:
         /// IRQ context
         void onEdge (Edge const &e, EdgePolarity pol);
 
+        /// non-IRQ
+        void onSynchronization (Result1usLS time) { synchronizationDelay = lsResult (time); }
+
         /// "main" context. As frequently as possible.
 #ifndef UNIT_TEST
         void run ();
@@ -75,6 +78,8 @@ private:
         PwmState pwmState;
         Result1us highStateStart{};
         Result1us lowStateStart{};
+
+        Result1us synchronizationDelay{};
 
         /*--------------------------------------------------------------------------*/
         /* Noise calculations                                                       */

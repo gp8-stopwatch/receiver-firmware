@@ -191,7 +191,8 @@ void IrTriggerDetector::checkForEventCondition (Edge const &e)
                 if (longHighState && longLowState) {
                         if (isBeamClean ()) {
                                 extTriggerToHigh (e.getTimePoint ());
-                                // TODO in micro implementation, there's no need for the FSM and report like below.
+                                // TODO make protocol a field
+                                getProtocol ().sendSynchronization (resultLS (e.getFullTimePoint () - highStateStart));
                                 callback->report (DetectorEventType::trigger, highStateStart);
                                 triggerOutputPin ();
                                 reset (); // To prevent reporting twice
@@ -384,6 +385,7 @@ void EdgeFilter::run (Result1us now)
                 if (longHighState && longLowState && isBeamClean ()) {
                         __disable_irq ();
                         extTriggerToHigh (resultLS (now));
+                        getProtocol ().sendSynchronization (resultLS (now - highStateStart));
                         callback->report (DetectorEventType::trigger, currentHighStateStart);
                         triggerOutputPin ();
                         reset ();

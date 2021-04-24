@@ -119,11 +119,13 @@ private:
 
 /**
  * Glue code
+ * TODO can't it be simplified? i.e. CanProtocil directly call fsm and ext
  */
 class FastStateMachineProtocolCallback : public IProtocolCallback {
 public:
-        FastStateMachineProtocolCallback (FastStateMachine &fs) : fastStateMachine{fs} {}
-        void onMessage (Message msg /* , Result1us time */) override
+        FastStateMachineProtocolCallback (FastStateMachine &fs, ExtTriggerDetector &e) : fastStateMachine{fs}, ext{e} {}
+
+        void onMessage (Message msg, Result1usLS time) override
         {
 
                 switch (msg) {
@@ -135,6 +137,10 @@ public:
                 case Message::NOISE:
                         fastStateMachine.run ({Event::Type::noise});
                         break;
+
+                case Message::SYNCHRONIZATION:
+                        ext.onSynchronization (time);
+                        break;
 #endif
 
                 default:
@@ -144,4 +150,5 @@ public:
 
 private:
         FastStateMachine &fastStateMachine;
+        ExtTriggerDetector &ext;
 };

@@ -70,6 +70,7 @@ using Result1usLS = ResultT<uint32_t>;
 constexpr Result10us result1To10 (Result1us r) { return uint64_t (r) / 10 + ((uint64_t (r) % 10 < 5) ? (0) : (1)); }
 constexpr Result1us msToResult1us (uint32_t r) { return {r * 1000}; }
 constexpr Result1usLS resultLS (Result1us r) { return {static_cast<uint32_t> (static_cast<uint64_t> (r) & 0x0000'0000'ffff'ffffULL)}; }
+constexpr Result1us lsResult (Result1usLS r) { return Result1us{uint32_t (r)}; }
 
 /**
  * How to display a result.

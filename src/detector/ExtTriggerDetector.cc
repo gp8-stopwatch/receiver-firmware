@@ -53,13 +53,13 @@ void ExtTriggerDetector::onEdge (Edge const &e, EdgePolarity pol)
                                 stateChangePin (false);
                         }
 
-                        checkForEventCondition (e);
+                        checkForEventCondition (e); // TODO czy to jest potrzebne? Założenie jest takie, że to jest super czysty sygnał
                         return;
                 }
 
                 ++noiseCounter;
         }
-        else {
+        else { // TODO czy to jest potrzebne? Założenie jest takie, że to jest super czysty sygnał
                 if ((last.getTimePoint () - last1.getTimePoint ()) >= EXT_TRIGGER_DURATION_RX_US) { // Long high edge
                         if (pwmState != PwmState::high) {
                                 pwmState = PwmState::high;
@@ -85,7 +85,7 @@ void ExtTriggerDetector::checkForEventCondition (Edge const &e)
                 bool longLowState = resultLS (e.getFullTimePoint () - lowStateStart) >= EXT_TRIGGER_DURATION_RX_US;
 
                 if (longHighState && longLowState) {
-                        callback->report (DetectorEventType::trigger, highStateStart);
+                        callback->report (DetectorEventType::trigger, highStateStart - synchronizationDelay);
                         triggerOutputPin ();
                         reset (); // To prevent reporting twice
                 }
@@ -171,7 +171,7 @@ void ExtTriggerDetector::run (Result1us now)
 
                 if (longHighState && longLowState) {
                         __disable_irq ();
-                        callback->report (DetectorEventType::trigger, currentHighStateStart);
+                        callback->report (DetectorEventType::trigger, currentHighStateStart - synchronizationDelay);
                         triggerOutputPin ();
                         reset ();
                         __enable_irq ();

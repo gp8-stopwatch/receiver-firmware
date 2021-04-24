@@ -25,7 +25,8 @@ enum class Message : uint8_t {
         INFO_REQ,       // master -> slave, and then:
         INFO_RESP,      // slave -> master
         CONFIG_REQUEST, // slave -> master, and then:
-        CONFIG_RESP     // master -> slave
+        CONFIG_RESP,    // master -> slave
+        SYNCHRONIZATION // slave -> master
 };
 
 /*****************************************************************************/
@@ -38,7 +39,7 @@ struct IProtocolCallback {
         IProtocolCallback &operator= (IProtocolCallback &&) = default;
         virtual ~IProtocolCallback () = default;
 
-        virtual void onMessage (Message msg) = 0;
+        virtual void onMessage (Message msg, Result1usLS time) = 0;
 };
 
 using InfoRespDataCollection = etl::vector<InfoRespData, 16>;
@@ -58,6 +59,7 @@ public:
         void sendInfoRequest ();
         void sendConfigRequest () { can.send (CanFrame{uid, true, 1, uint8_t (Message::CONFIG_REQUEST)}, CAN_SEND_TIMEOUT); }
         void sendConfigResp ();
+        void sendSynchronization (Result1usLS delay);
 
         /*--------------------------------------------------------------------------*/
         /* Responses asynchronously                                                 */

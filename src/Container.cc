@@ -403,7 +403,7 @@ void init ()
         // });
 
 #ifdef WITH_CAN
-        static FastStateMachineProtocolCallback callback{getFastStateMachine ()};
+        static FastStateMachineProtocolCallback callback{getFastStateMachine (), getExtDetector ()};
         getProtocol ().setCallback (&callback);
 #endif
         getFastStateMachine ().setIrTriggerDetector (&getIrDetector ());

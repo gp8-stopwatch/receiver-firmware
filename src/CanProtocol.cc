@@ -85,10 +85,22 @@ void CanProtocol::onCanNewFrame (CanFrame const &frame)
         case Message::NO_BEAM:
         case Message::NOISE:
                 if (callback != nullptr) {
-                        callback->onMessage (Message (messageId));
+                        callback->onMessage (Message (messageId), 0);
                 }
 
                 break;
+
+        case Message::SYNCHRONIZATION: {
+                if (callback != nullptr) {
+                        uint32_t t{};
+                        t |= uint32_t (frame.data.at (1));
+                        t |= uint32_t (frame.data.at (2)) << 8;
+                        t |= uint32_t (frame.data.at (3)) << 16;
+                        t |= uint32_t (frame.data.at (4)) << 24;
+                        callback->onMessage (Message (messageId), t);
+                }
+        } break;
+
 #endif
 
         case Message::INFO_REQ: {
@@ -131,4 +143,17 @@ void CanProtocol::sendConfigResp ()
 {
         uint16_t tmp = getConfig ().getMinTreggerEventMs ();
         can.send (CanFrame{uid, true, 3, uint8_t (Message::CONFIG_RESP), uint8_t (tmp & 0xff), uint8_t (tmp >> 8)}, CAN_SEND_TIMEOUT);
+}
+
+/****************************************************************************/
+
+void CanProtocol::sendSynchronization (Result1usLS delay)
+{
+        CanFrame cf{uid, true, 5, uint8_t (Message::SYNCHRONIZATION)};
+        auto d = uint32_t (delay);
+        cf.data.at (1) = d & 0x000000ffu;
+        cf.data.at (2) = (d & 0x0000ff00u) >> 8;
+        cf.data.at (3) = (d & 0x00ff0000u) >> 16;
+        cf.data.at (4) = (d & 0xff000000u) >> 24;
+        can.send (cf, CAN_SEND_TIMEOUT);
 }
