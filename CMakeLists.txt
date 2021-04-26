@@ -25,7 +25,7 @@ set(WITH_SOUND ON CACHE BOOL "Compile buzzer support")
 set(WITH_DISPLAY ON CACHE BOOL "Compile 7 segment LED display support")
 set(WITH_MENU ON CACHE BOOL "Menu support. Disabling it considerably reduces binary size in debug mode.")
 ## UWAGA!!!
-set(WITH_COMMON_ANODE OFF CACHE BOOL "ON means common anode 7 segments, OFF means common cathode")
+set(WITH_COMMON_ANODE ON CACHE BOOL "ON means common anode 7 segments, OFF means common cathode")
 set(WITH_USB ON CACHE BOOL "USB serial smulation support")
 set(WITH_FLASH ON CACHE BOOL "Store settings and results to flash")
 set(WITH_HISTORY ON CACHE BOOL "Store settings and results to flash")

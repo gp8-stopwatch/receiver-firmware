@@ -94,11 +94,11 @@ void printDate (RTC_DateTypeDef const &date, Time const &time)
         usbWrite (buf);
         usbWrite ("-");
 
-        itoa ((unsigned int)(date.Month), buf, 2);
+        itoa ((unsigned int)(date.Month + 1), buf, 2);
         usbWrite (buf);
         usbWrite ("-");
 
-        itoa ((unsigned int)(date.Date), buf, 2);
+        itoa ((unsigned int)(date.Date + 1), buf, 2);
         usbWrite (buf);
         usbWrite (" ");
 
