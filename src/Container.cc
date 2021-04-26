@@ -284,8 +284,8 @@ void init ()
         static Gpio sd (GPIOA, GPIO_PIN_3);
         static Gpio se (GPIOA, GPIO_PIN_6);
         static Gpio sf (GPIOA, GPIO_PIN_7);
-        static Gpio sg (GPIOA, GPIO_PIN_5);  // A5
-        static Gpio sdp (GPIOA, GPIO_PIN_8); // A8
+        static Gpio sg (GPIOA, GPIO_PIN_5); // A5
+        // static Gpio sdp (GPIOA, GPIO_PIN_8); // A8
 
         // Everything turned ON:
         // d1 = d2 = d3 = d4 = d5 = d6 = true;

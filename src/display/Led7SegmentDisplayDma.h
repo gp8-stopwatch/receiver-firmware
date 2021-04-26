@@ -66,6 +66,7 @@ private:
         // friend void DMA1_Channel2_3_IRQHandler ();
 
         void init (uint16_t fps);
+        void init2 (uint16_t fps);
 
         static constexpr int DISPLAY_NUM = 6;
         static constexpr uint16_t calculatePeriod (uint32_t fps) { return 1000000 / (fps * 24); } // TODO why 24 instead of 12?
@@ -127,8 +128,8 @@ private:
 #endif
 
         static constexpr std::array<uint32_t, DISPLAY_NUM * 2> enableBuffer{
-                ENABLE0_ON, ALL_ENABLE_OFF, ENABLE1_ON, ALL_ENABLE_OFF, ENABLE2_ON, ALL_ENABLE_OFF,
-                ENABLE3_ON, ALL_ENABLE_OFF, ENABLE4_ON, ALL_ENABLE_OFF, ENABLE5_ON, ALL_ENABLE_OFF,
+                ALL_ENABLE_OFF, ENABLE0_ON, ALL_ENABLE_OFF, ENABLE1_ON, ALL_ENABLE_OFF, ENABLE2_ON,
+                ALL_ENABLE_OFF, ENABLE3_ON, ALL_ENABLE_OFF, ENABLE4_ON, ALL_ENABLE_OFF, ENABLE5_ON,
         };
 
         /// Corresponds to DSEG7 font as found on https://www.keshikan.net/fonts-e.html

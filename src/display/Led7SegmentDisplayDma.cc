@@ -28,6 +28,38 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
 void Led7SegmentDisplayDma::init (uint16_t fps)
 {
+
+        // {
+        //         /**TIM15 GPIO Configuration
+        //         PB14     ------> TIM15_CH1
+        //         */
+        //         __HAL_RCC_GPIOB_CLK_ENABLE ();
+        //         GPIO_InitTypeDef GPIO_InitStruct{};
+        //         GPIO_InitStruct.Pin = GPIO_PIN_14;
+        //         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        //         GPIO_InitStruct.Pull = GPIO_NOPULL;
+        //         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        //         GPIO_InitStruct.Alternate = GPIO_AF1_TIM15;
+        //         HAL_GPIO_Init (GPIOB, &GPIO_InitStruct);
+        // }
+
+        // {
+        //         __HAL_RCC_GPIOA_CLK_ENABLE ();
+        //         /**TIM1 GPIO Configuration
+        //         PA8     ------> TIM1_CH1
+        //         */
+        //         GPIO_InitTypeDef GPIO_InitStruct{};
+        //         GPIO_InitStruct.Pin = GPIO_PIN_8;
+        //         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        //         GPIO_InitStruct.Pull = GPIO_NOPULL;
+        //         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        //         GPIO_InitStruct.Alternate = GPIO_AF2_TIM1;
+        //         HAL_GPIO_Init (GPIOA, &GPIO_InitStruct);
+        // }
+
+        DBGMCU->APB2FZ |= DBGMCU_APB2_FZ_DBG_TIM1_STOP;
+        DBGMCU->APB2FZ |= DBGMCU_APB2_FZ_DBG_TIM15_STOP;
+
         TIM1->CR1 &= ~TIM_CR1_CEN;
         TIM15->CR1 &= ~TIM_CR1_CEN;
 
@@ -63,6 +95,10 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         htimEn.Init.RepetitionCounter = 0;
         htimEn.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
 
+        HAL_TIM_PWM_DeInit (&htimEn);
+
+        // TIM1->CR1 &= ~TIM_CR1_DIR; // Count UP
+
         /*
          * In the above piece of code I configured the TIM1 in the so called "center aligned"
          * mode. If the calculatePeriod (fps) retured 50, and we would substract 1 as usual,
@@ -91,7 +127,9 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         dmaHandle.Init.Priority = DMA_PRIORITY_HIGH;
         dmaHandle.Instance = DMA1_Channel2;
 
-        DMA1_Channel2->CCR |= DMA_CCR_TCIE; // Transfer complete enable
+        HAL_DMA_DeInit (&dmaHandle);
+
+        // DMA1_Channel2->CCR |= DMA_CCR_TCIE; // Transfer complete enable
 
         __HAL_LINKDMA (&htimEn, hdma[TIM_DMA_ID_CC1], dmaHandle);
 
@@ -102,6 +140,13 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         if (HAL_TIM_PWM_Init (&htimEn) != HAL_OK) {
                 Error_Handler ();
         }
+
+        TIM1->SR = 0;
+        __HAL_TIM_DISABLE_DMA (&htimEn, TIM_DMA_CC1);
+        __HAL_TIM_ENABLE_DMA (&htimEn, TIM_DMA_CC1);
+
+        // TIM1->DIER &= ~TIM_DIER_CC1DE;
+        // TIM1->DIER |= TIM_DIER_CC1DE;
 
         /*
          * enableBuffer (24 elements, each 32 bit) is transferred constatntly (thanks
@@ -117,8 +162,6 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
                 Error_Handler ();
         }
 
-        __HAL_TIM_ENABLE_DMA (&htimEn, TIM_DMA_CC1);
-
         /*--------------------------------------------------------------------------*/
 
         /*
@@ -127,7 +170,7 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
          * center aligned mode.
          */
         TIM_SlaveConfigTypeDef sSlaveConfig{};
-        sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
+        sSlaveConfig.SlaveMode = TIM_SLAVEMODE_TRIGGER;
         sSlaveConfig.InputTrigger = TIM_TS_ITR0; // TIM15 is the master. See table 62 or 71.
         sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
         sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1;
@@ -193,6 +236,8 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         htimSeg.Init.RepetitionCounter = 0;
         htimSeg.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
 
+        HAL_TIM_PWM_DeInit (&htimSeg);
+
         /*
          * Above, the period is set to twice the value compared to TIM1 minus 1 but the
          * mode is UP instead of the "center-aligned". If calculatePeriod (fps) gave 50,
@@ -201,7 +246,11 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
          */
 
         __HAL_RCC_TIM15_CLK_ENABLE ();
+        dmaHandle.Init.Priority = DMA_PRIORITY_LOW; // Different priority than the other channel
         dmaHandle.Instance = DMA1_Channel5;
+
+        HAL_DMA_DeInit (&dmaHandle);
+
         __HAL_LINKDMA (&htimSeg, hdma[TIM_DMA_ID_UPDATE], dmaHandle);
 
         if (HAL_DMA_Init (htimSeg.hdma[TIM_DMA_ID_UPDATE]) != HAL_OK) {
@@ -209,9 +258,16 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         }
 
         // PWM because of this OC channel used as described above.
-        if (HAL_TIM_Base_Init (&htimSeg) != HAL_OK) {
+        if (HAL_TIM_PWM_Init (&htimSeg) != HAL_OK) {
                 Error_Handler ();
         }
+
+        TIM15->SR = 0;
+        __HAL_TIM_DISABLE_DMA (&htimSeg, TIM_DMA_UPDATE);
+        __HAL_TIM_ENABLE_DMA (&htimSeg, TIM_DMA_UPDATE);
+
+        // TIM15->DIER &= ~TIM_DIER_UDE;
+        // TIM15->DIER |= TIM_DIER_UDE;
 
         if (HAL_DMA_Start (&dmaHandle, reinterpret_cast<uint32_t> (displayBuffer.data ()), reinterpret_cast<uint32_t> (&GPIOA->BSRR),
                            displayBuffer.size ())
@@ -219,32 +275,357 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
                 Error_Handler ();
         }
 
-        __HAL_TIM_ENABLE_DMA (&htimSeg, TIM_DMA_UPDATE);
-
         /*--------------------------------------------------------------------------*/
 
         TIM_MasterConfigTypeDef sMasterConfig{};
-        sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE; // I think that this has no effect
+        sMasterConfig.MasterOutputTrigger = TIM_TRGO_ENABLE;
         sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
 
         if (HAL_TIMEx_MasterConfigSynchronization (&htimSeg, &sMasterConfig) != HAL_OK) {
                 Error_Handler ();
         }
 
+        // sSlaveConfig.SlaveMode = TIM_SLAVEMODE_TRIGGER;
+        // sSlaveConfig.InputTrigger = TIM_TS_TI1F_ED; // As described on page 433 in the RM.
+        // sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+        // sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1;
+
+        // if (HAL_TIM_SlaveConfigSynchro (&htimSeg, &sSlaveConfig) != HAL_OK) {
+        //         Error_Handler ();
+        // }
+
+        TIM15->SMCR |= TIM_SMCR_MSM;
+
         /*--------------------------------------------------------------------------*/
 
-        if (HAL_TIM_PWM_Start (&htimEn, TIM_CHANNEL_1) != HAL_OK) { // Slave
+        sConfig.OCMode = TIM_OCMODE_PWM1;
+        sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+        sConfig.OCFastMode = TIM_OCFAST_DISABLE;
+        sConfig.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+        sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+        sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
+        sConfig.Pulse = calculatePeriod (fps) * 2 - 100;
+
+        if (HAL_TIM_PWM_ConfigChannel (&htimSeg, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
                 Error_Handler ();
         }
+
+        /*--------------------------------------------------------------------------*/
+
+        /*
+         * This does not start the TIM1 if it's configured in slave mode (which it is).
+         * BUT it is necessary to show the PWM output on the PA8.
+         */
+        if (HAL_TIM_PWM_Start (&htimEn, TIM_CHANNEL_1) != HAL_OK) { // Slave TIM1
+                Error_Handler ();
+        }
+
+        TIM1->CNT = 0;
+        TIM1->EGR |= TIM_EGR_UG;
+        TIM15->CNT = 0;
+        TIM15->EGR |= TIM_EGR_UG;
 
         /*
          * This strange value is configured to assure that promptly after this line
          * we would get the UP event on the TIM15, and as a consequence on the TIM1
          * as well because they are synchronized.
          */
-        TIM15->CNT = calculatePeriod (fps) * 2 - 2;
+        // TIM15->CNT = calculatePeriod (fps) * 2 - 2;
 
-        if (HAL_TIM_Base_Start (&htimSeg) != HAL_OK) { // Master
+        // for (int i = 0; i < 1000; ++i) {
+        //         __NOP ();
+        // }
+
+        if (HAL_TIM_PWM_Start (&htimSeg, TIM_CHANNEL_1) != HAL_OK) { // Master TIM15
+                Error_Handler ();
+        }
+
+        // instance = this;
+        // HAL_NVIC_SetPriority (DMA1_Channel2_3_IRQn, 3, 0);
+        // HAL_NVIC_EnableIRQ (DMA1_Channel2_3_IRQn);
+
+        init2 (fps);
+}
+
+void Led7SegmentDisplayDma::init2 (uint16_t fps)
+{
+        // TIM1->CR1 &= ~TIM_CR1_CEN;
+        // TIM15->CR1 &= ~TIM_CR1_CEN;
+
+        /*
+         * Only counter overflow generates an update event. If it wer set to 0,
+         * then also setting UG bit and update generation through slave mode
+         * controller would generarte this.
+         */
+        // TIM1->CR1 |= TIM_CR1_URS;
+        // TIM15->CR1 |= TIM_CR1_URS;
+
+        // ARR register is not buffered (0)
+        // TIM1->CR1 &= TIM_CR1_ARPE;
+        // TIM16->CR1 &= TIM_CR1_ARPE;
+
+        /*
+         * Brightness is physically changed by changing the duty cycle of TIM1 channel1.
+         */
+        /* prevBrightness =  */ brightness = MAX_BRIGHTNESS;
+        recalculateBrightnessTable (fps);
+
+        /*--------------------------------------------------------------------------*/
+        /* Enable (common pin) timer & DMA. This enables individual displays.       */
+        /*--------------------------------------------------------------------------*/
+
+        TIM_HandleTypeDef htimEn{};
+
+        htimEn.Instance = TIM1;
+        htimEn.Init.Prescaler = PRESCALER - 1;
+        htimEn.Init.Period = calculatePeriod (fps) /* - 1 */;     // Period is constant and equals 50 (not 49). Read below.
+        htimEn.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3; // This is very important, read next comment below.
+        htimEn.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+        htimEn.Init.RepetitionCounter = 0;
+        htimEn.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+
+        HAL_TIM_PWM_DeInit (&htimEn);
+
+        // TIM1->CR1 &= ~TIM_CR1_DIR; // Count UP
+
+        /*
+         * In the above piece of code I configured the TIM1 in the so called "center aligned"
+         * mode. If the calculatePeriod (fps) retured 50, and we would substract 1 as usual,
+         * the counter register would follow this progression: 0, 1, 2 ... 47, 48, 49, 48, 47 ... 2, 1,  |  0, 1, 2 ...
+         *
+         * I marked the end of the cycle with pipe character "|"" which helps to realize, that the
+         * true number of counter incerements in ecah update cycle would not equal 100 but rather 98!
+         * Notice that after 49 (i.e. after 50th tick) the counter register counts from 48 to 1, so we
+         * have 50 + 48 ticks.
+         *
+         * And this is why the "-1" is commented out in the above code, but is left in the TIM15
+         * configuration.
+         */
+
+        __HAL_RCC_TIM1_CLK_ENABLE ();
+        __HAL_RCC_DMA1_CLK_ENABLE ();
+
+        DMA_HandleTypeDef dmaHandle{};
+
+        dmaHandle.Init.Direction = DMA_MEMORY_TO_PERIPH;
+        dmaHandle.Init.PeriphInc = DMA_PINC_DISABLE;
+        dmaHandle.Init.MemInc = DMA_MINC_ENABLE;
+        dmaHandle.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+        dmaHandle.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+        dmaHandle.Init.Mode = DMA_CIRCULAR;
+        dmaHandle.Init.Priority = DMA_PRIORITY_HIGH;
+        dmaHandle.Instance = DMA1_Channel2;
+
+        HAL_DMA_DeInit (&dmaHandle);
+
+        // DMA1_Channel2->CCR |= DMA_CCR_TCIE; // Transfer complete enable
+
+        __HAL_LINKDMA (&htimEn, hdma[TIM_DMA_ID_CC1], dmaHandle);
+
+        if (HAL_DMA_Init (htimEn.hdma[TIM_DMA_ID_CC1]) != HAL_OK) {
+                Error_Handler ();
+        }
+
+        if (HAL_TIM_PWM_Init (&htimEn) != HAL_OK) {
+                Error_Handler ();
+        }
+
+        TIM1->SR = 0;
+        __HAL_TIM_DISABLE_DMA (&htimEn, TIM_DMA_CC1);
+        __HAL_TIM_ENABLE_DMA (&htimEn, TIM_DMA_CC1);
+
+        // TIM1->DIER &= ~TIM_DIER_CC1DE;
+        // TIM1->DIER |= TIM_DIER_CC1DE;
+
+        /*
+         * enableBuffer (24 elements, each 32 bit) is transferred constatntly (thanks
+         * to the DMA circular mode) to the GPIOB->BSRR. First 16 bits of every element
+         * of this buffer is for clearing, and less signifficat 16 bits are for setting.
+         *
+         * Enable buffer is 4 (MAX_BRIGHTNESS) times bigger than the displayBuffer (which has only 6 elements).
+         * This is why TIM1 has to update 4 times faster. This is for brightness setting impl.
+         */
+        if (HAL_DMA_Start (&dmaHandle, reinterpret_cast<uint32_t> (enableBuffer.data ()), reinterpret_cast<uint32_t> (&GPIOB->BSRR),
+                           enableBuffer.size ())
+            != HAL_OK) {
+                Error_Handler ();
+        }
+
+        /*--------------------------------------------------------------------------*/
+
+        /*
+         * TIM1 is configured as a slave (this is the only option to synchronize TIM1 and
+         * TIM15. I need TIM1 as this is the only remaining timer which implements the
+         * center aligned mode.
+         */
+        TIM_SlaveConfigTypeDef sSlaveConfig{};
+        sSlaveConfig.SlaveMode = TIM_SLAVEMODE_TRIGGER;
+        sSlaveConfig.InputTrigger = TIM_TS_ITR0; // TIM15 is the master. See table 62 or 71.
+        sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+        sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1;
+
+        if (HAL_TIM_SlaveConfigSynchro (&htimEn, &sSlaveConfig) != HAL_OK) {
+                Error_Handler ();
+        }
+
+        /*--------------------------------------------------------------------------*/
+
+        /*
+         * And this is how the brightness is implemented. The TIM1 is set up in the
+         * center aligned mode (lets assume ARR == 50). Both timers would follow
+         * this plot:
+         *
+         *              -            -            -            -
+         *             / \          / \          / \          / \
+         *            /   \        /   \        /   \        /   \
+         *  TIM1     /     \      /     \      /     \      /     \
+         *          a       b    /       \    /       \    /       \
+         *         /         \  /         \  /         \  /         \
+         *        /           \/           \/           \/           \
+         *
+         *                    c            |            -            -
+         *                  -/|          -/|          -/|          -/|
+         *                -/  |        -/  |        -/  |        -/  |
+         *  TIM15       -/    |      -/    |      -/    |      -/    |
+         *            -/      |    -/      |    -/      |    -/      |
+         *          -/        |  -/        |  -/        |  -/        |
+         *        -/          |-/          |-/          |-/          |
+         *
+         * As time passes, at the point "a" the apropriate enable pin gets turned
+         * ON by the DMA, and then it gets turned off at the point "b". DMA is fired
+         * when the counter (CNT) value matches that configured  in the output compare channel 1
+         * (see directly below). This match occurs 2 times every TIM15 perid. At the point
+         * "c" next character is transferred byt he DMA to the "segment" pins. Changing
+         * the distance between points "a" and "b" the brightness is altered.
+         */
+
+        TIM_OC_InitTypeDef sConfig{};
+        sConfig.OCMode = TIM_OCMODE_PWM1;
+        sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+        sConfig.OCFastMode = TIM_OCFAST_DISABLE;
+        sConfig.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+        sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+        sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
+        sConfig.Pulse = brightnessLookup.at (brightness - 1); // <- this controls the brightness. Low Pulse value means high intensity.
+
+        if (HAL_TIM_PWM_ConfigChannel (&htimEn, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
+                Error_Handler ();
+        }
+
+        /*--------------------------------------------------------------------------*/
+        /* Segment timer & DMA. This drives single segments.                        */
+        /*--------------------------------------------------------------------------*/
+
+        TIM_HandleTypeDef htimSeg{};
+        htimSeg.Instance = TIM15;
+        htimSeg.Init.Prescaler = PRESCALER - 1;
+        htimSeg.Init.Period = calculatePeriod (fps) * 2 - 1; // Counter counts from 0 to 99, meaning 100 ticks.
+        htimSeg.Init.CounterMode = TIM_COUNTERMODE_UP;
+        htimSeg.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+        htimSeg.Init.RepetitionCounter = 0;
+        htimSeg.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+
+        HAL_TIM_PWM_DeInit (&htimSeg);
+
+        /*
+         * Above, the period is set to twice the value compared to TIM1 minus 1 but the
+         * mode is UP instead of the "center-aligned". If calculatePeriod (fps) gave 50,
+         * then the counter would conunt from 0 to 99 which is exactly 100 times. As You
+         * can see this is two times more than what TIM1 counts to.
+         */
+
+        __HAL_RCC_TIM15_CLK_ENABLE ();
+        dmaHandle.Init.Priority = DMA_PRIORITY_LOW; // Different priority than the other channel
+        dmaHandle.Instance = DMA1_Channel5;
+
+        HAL_DMA_DeInit (&dmaHandle);
+
+        __HAL_LINKDMA (&htimSeg, hdma[TIM_DMA_ID_UPDATE], dmaHandle);
+
+        if (HAL_DMA_Init (htimSeg.hdma[TIM_DMA_ID_UPDATE]) != HAL_OK) {
+                Error_Handler ();
+        }
+
+        // PWM because of this OC channel used as described above.
+        if (HAL_TIM_PWM_Init (&htimSeg) != HAL_OK) {
+                Error_Handler ();
+        }
+
+        TIM15->SR = 0;
+        __HAL_TIM_DISABLE_DMA (&htimSeg, TIM_DMA_UPDATE);
+        __HAL_TIM_ENABLE_DMA (&htimSeg, TIM_DMA_UPDATE);
+
+        // TIM15->DIER &= ~TIM_DIER_UDE;
+        // TIM15->DIER |= TIM_DIER_UDE;
+
+        if (HAL_DMA_Start (&dmaHandle, reinterpret_cast<uint32_t> (displayBuffer.data ()), reinterpret_cast<uint32_t> (&GPIOA->BSRR),
+                           displayBuffer.size ())
+            != HAL_OK) {
+                Error_Handler ();
+        }
+
+        /*--------------------------------------------------------------------------*/
+
+        TIM_MasterConfigTypeDef sMasterConfig{};
+        sMasterConfig.MasterOutputTrigger = TIM_TRGO_ENABLE;
+        sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
+
+        if (HAL_TIMEx_MasterConfigSynchronization (&htimSeg, &sMasterConfig) != HAL_OK) {
+                Error_Handler ();
+        }
+
+        // sSlaveConfig.SlaveMode = TIM_SLAVEMODE_TRIGGER;
+        // sSlaveConfig.InputTrigger = TIM_TS_TI1F_ED; // As described on page 433 in the RM.
+        // sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+        // sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1;
+
+        // if (HAL_TIM_SlaveConfigSynchro (&htimSeg, &sSlaveConfig) != HAL_OK) {
+        //         Error_Handler ();
+        // }
+
+        TIM15->SMCR |= TIM_SMCR_MSM;
+
+        /*--------------------------------------------------------------------------*/
+
+        sConfig.OCMode = TIM_OCMODE_PWM1;
+        sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+        sConfig.OCFastMode = TIM_OCFAST_DISABLE;
+        sConfig.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+        sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+        sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
+        sConfig.Pulse = calculatePeriod (fps) * 2 - 100;
+
+        if (HAL_TIM_PWM_ConfigChannel (&htimSeg, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
+                Error_Handler ();
+        }
+
+        /*--------------------------------------------------------------------------*/
+
+        /*
+         * This does not start the TIM1 if it's configured in slave mode (which it is).
+         * BUT it is necessary to show the PWM output on the PA8.
+         */
+        if (HAL_TIM_PWM_Start (&htimEn, TIM_CHANNEL_1) != HAL_OK) { // Slave TIM1
+                Error_Handler ();
+        }
+
+        TIM1->CNT = 0;
+        TIM1->EGR |= TIM_EGR_UG;
+        TIM15->CNT = 0;
+        TIM15->EGR |= TIM_EGR_UG;
+
+        /*
+         * This strange value is configured to assure that promptly after this line
+         * we would get the UP event on the TIM15, and as a consequence on the TIM1
+         * as well because they are synchronized.
+         */
+        // TIM15->CNT = calculatePeriod (fps) * 2 - 2;
+
+        // for (int i = 0; i < 1000; ++i) {
+        //         __NOP ();
+        // }
+
+        if (HAL_TIM_PWM_Start (&htimSeg, TIM_CHANNEL_1) != HAL_OK) { // Master TIM15
                 Error_Handler ();
         }
 
@@ -252,7 +633,6 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         // HAL_NVIC_SetPriority (DMA1_Channel2_3_IRQn, 3, 0);
         // HAL_NVIC_EnableIRQ (DMA1_Channel2_3_IRQn);
 }
-
 /*****************************************************************************/
 
 // extern "C" void DMA1_Channel2_3_IRQHandler ()
