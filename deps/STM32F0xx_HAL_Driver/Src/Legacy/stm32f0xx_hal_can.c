@@ -95,7 +95,6 @@
 #include "Legacy/stm32f0xx_hal_can_legacy.h"
 #include "stm32f0xx_hal.h"
 
-
 /** @addtogroup STM32F0xx_HAL_Driver
  * @{
  */
@@ -572,6 +571,7 @@ HAL_StatusTypeDef HAL_CAN_Transmit (CAN_HandleTypeDef *hcan, uint32_t Timeout)
                 SET_BIT (hcan->Instance->sTxMailBox[transmitmailbox].TIR, CAN_TI0R_TXRQ);
 
                 /* Get tick */
+
                 tickstart = HAL_GetTick ();
 
                 /* Check End of transmission flag */

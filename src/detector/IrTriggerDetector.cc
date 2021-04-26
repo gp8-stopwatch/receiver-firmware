@@ -386,11 +386,11 @@ void EdgeFilter::run (Result1us now)
                         __disable_irq ();
                         extTriggerToHigh (resultLS (now));
                         now = stopWatch.getTimeFromIsr (); // Update now variable.
-                        getProtocol ().sendSynchronization (resultLS (now - highStateStart));
                         callback->report (DetectorEventType::trigger, currentHighStateStart);
                         triggerOutputPin ();
                         reset ();
                         __enable_irq ();
+                        getProtocol ().sendSynchronization (resultLS (now - currentHighStateStart));
                 }
         }
 }
