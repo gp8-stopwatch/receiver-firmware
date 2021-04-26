@@ -82,9 +82,15 @@ void IrTriggerDetector::onEdge (Edge const &e, EdgePolarity pol)
 
         queue.push (e);
 
-        // if (!active || blindState == BlindState::blind) {
-        //         return;
-        // }
+        if (!active) {
+                return;
+        }
+
+#ifdef WITH_BLIND_MANAGER
+        if (blindManager->isBlind ()) {
+                return;
+        }
+#endif
 
         /*--------------------------------------------------------------------------*/
         /* State transitions depending on last level length.                        */
