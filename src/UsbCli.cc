@@ -243,8 +243,8 @@ auto &getCli ()
                                          int i = std::atoi (arg.c_str ());
 
                                          if (i < MIN_FPS || i > MAX_FPS) {
-                                                 usbWrite ("Correct values are [20, 10000]\r\n\r\n"); // TODO FPS is assumed to be between 20 and
-                                                                                                      // 10000. Hardcoded
+                                                 usbWrite ("Correct values are [20, 1000]\r\n\r\n"); // TODO FPS is assumed to be between 20 and
+                                                                                                     // 1000. Hardcoded
                                                  return;
                                          }
 

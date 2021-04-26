@@ -28,7 +28,6 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
 void Led7SegmentDisplayDma::init (uint16_t fps)
 {
-
         // {
         //         /**TIM15 GPIO Configuration
         //         PB14     ------> TIM15_CH1
@@ -344,6 +343,9 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         // HAL_NVIC_SetPriority (DMA1_Channel2_3_IRQn, 3, 0);
         // HAL_NVIC_EnableIRQ (DMA1_Channel2_3_IRQn);
 
+        // TODO workaround - DMA state is reset this way. I dno't know how to fix this properly.
+        // Somehow running the (slightly modified) init method for the second time in a row, resolves
+        // the problem (display coruption when using fps command).
         init2 (fps);
 }
 
@@ -367,8 +369,8 @@ void Led7SegmentDisplayDma::init2 (uint16_t fps)
         /*
          * Brightness is physically changed by changing the duty cycle of TIM1 channel1.
          */
-        /* prevBrightness =  */ brightness = MAX_BRIGHTNESS;
-        recalculateBrightnessTable (fps);
+        // /* prevBrightness =  */ brightness = MAX_BRIGHTNESS;
+        // recalculateBrightnessTable (fps);
 
         /*--------------------------------------------------------------------------*/
         /* Enable (common pin) timer & DMA. This enables individual displays.       */
@@ -633,6 +635,7 @@ void Led7SegmentDisplayDma::init2 (uint16_t fps)
         // HAL_NVIC_SetPriority (DMA1_Channel2_3_IRQn, 3, 0);
         // HAL_NVIC_EnableIRQ (DMA1_Channel2_3_IRQn);
 }
+
 /*****************************************************************************/
 
 // extern "C" void DMA1_Channel2_3_IRQHandler ()
