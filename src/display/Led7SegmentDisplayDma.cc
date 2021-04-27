@@ -11,6 +11,8 @@
 #include "StopWatch.h"
 #include <array>
 
+// Led7SegmentDisplayDma *instance{};
+
 /****************************************************************************/
 
 uint16_t flipFont (uint16_t font)
@@ -28,6 +30,7 @@ Led7SegmentDisplayDma::Led7SegmentDisplayDma ()
 
 void Led7SegmentDisplayDma::init (uint16_t fps)
 {
+        // instance = this;
 
         // {
         //         /**TIM15 GPIO Configuration
@@ -78,8 +81,9 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
 
         /*
          * Brightness is physically changed by changing the duty cycle of TIM1 channel1.
+         * TODO For smoe reason the scren initializes properly only with brigthness set to max
          */
-        /* prevBrightness =  */ brightness = MAX_BRIGHTNESS;
+        /* prevBrightness = */ brightness = MAX_BRIGHTNESS;
         recalculateBrightnessTable (fps);
 
         /*--------------------------------------------------------------------------*/
@@ -245,7 +249,7 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         // TIM1->DIER = 0;
         // TIM1->DIER |= TIM_DIER_CC1DE | TIM_DIER_UDE;
 
-        // DMA1_Channel5->CCR |= DMA_CCR_TEIE;
+        // DMA1_Channel5->CCR |= DMA_CCR_TCIE;
 
         if (HAL_DMA_Start (&dmaHandle, reinterpret_cast<uint32_t> (displayBuffer.data ()), reinterpret_cast<uint32_t> (&GPIOA->BSRR),
                            displayBuffer.size ())
@@ -333,6 +337,7 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
                 Error_Handler ();
         }
 
+        // HAL_Delay (10);
         // TIM1->CNT = 0;
         // TIM1->EGR |= TIM_EGR_UG;
         // TIM15->CNT = 0;
@@ -385,22 +390,22 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
 //         // }
 // }
 
-// extern "C" void DMA1_Channel4_5_6_7_IRQHandler ()
-// {
-//         // Clear the flag
-//         DMA1->IFCR = DMA_FLAG_TC5;
-//         DMA1->IFCR = DMA_FLAG_TE5;
+extern "C" void DMA1_Channel4_5_6_7_IRQHandler ()
+{
+        // Clear the flag
+        DMA1->IFCR = DMA_FLAG_TC5;
+        // DMA1->IFCR = DMA_FLAG_TE5;
 
-//         if (DMA1->ISR & DMA_FLAG_TE5) {
-//                 while (true) {
-//                 }
-//         }
+        // if (DMA1->ISR & DMA_FLAG_TE5) {
+        //         while (true) {
+        //         }
+        // }
 
-//         // if (instance->brightness != instance->prevBrightness) {
-//         //         instance->prevBrightness = instance->brightness;
-//         //         TIM1->CCR1 = instance->brightnessLookup.at (instance->brightness - 1);
-//         // }
-// }
+        // if (instance->brightness != instance->prevBrightness) {
+        //         instance->prevBrightness = instance->brightness;
+        //         TIM1->CCR1 = instance->brightnessLookup.at (instance->brightness - 1);
+        // }
+}
 
 /*****************************************************************************/
 
@@ -568,6 +573,7 @@ void Led7SegmentDisplayDma::setFps (unsigned int fps)
         fps = std::max<uint16_t> (MIN_FPS, fps);
         fps = std::min<uint16_t> (MAX_FPS, fps);
         if (prevFps != fps) {
+                init (fps);
                 init (fps);
                 prevFps = fps;
         }

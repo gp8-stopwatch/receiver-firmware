@@ -20,6 +20,7 @@
 #endif
 
 // extern "C" void DMA1_Channel2_3_IRQHandler ();
+// extern "C" void DMA1_Channel4_5_6_7_IRQHandler ();
 
 /**
  * See AN4666 Application note. Parallel synchronous transmission using GPIO and DMA
@@ -64,6 +65,7 @@ public:
 
 private:
         // friend void DMA1_Channel2_3_IRQHandler ();
+        // friend void DMA1_Channel4_5_6_7_IRQHandler ();
 
         void init (uint16_t fps);
         void init2 (uint16_t fps);
