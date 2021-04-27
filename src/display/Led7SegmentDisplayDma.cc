@@ -61,6 +61,7 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         // DBGMCU->APB2FZ |= DBGMCU_APB2_FZ_DBG_TIM15_STOP;
 
         TIM1->CR1 &= ~TIM_CR1_CEN;
+        TIM1->DIER = 0;
         // TIM15->CR1 &= ~TIM_CR1_CEN;
 
         /*
@@ -141,11 +142,11 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
                 Error_Handler ();
         }
 
-        TIM1->SR = 0;
-        // __HAL_TIM_DISABLE_DMA (&htimEn, TIM_DMA_CC1);
-        // __HAL_TIM_ENABLE_DMA (&htimEn, TIM_DMA_CC1);
-        TIM1->DIER = 0;
-        TIM1->DIER |= TIM_DIER_CC1DE;
+        // TIM1->SR = 0;
+        // // __HAL_TIM_DISABLE_DMA (&htimEn, TIM_DMA_CC1);
+        // // __HAL_TIM_ENABLE_DMA (&htimEn, TIM_DMA_CC1);
+        // TIM1->DIER = 0;
+        // TIM1->DIER |= TIM_DIER_CC1DE;
 
         /*
          * enableBuffer (12 elements, each 32 bit) is transferred constatntly (thanks
@@ -216,6 +217,7 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
         sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
         sConfig.Pulse = brightnessLookup.at (brightness - 1); // <- this controls the brightness. Low Pulse value means high intensity.
+        // sConfig.Pulse = 3; // <- this controls the brightness. Low Pulse value means high intensity.
 
         if (HAL_TIM_PWM_ConfigChannel (&htimEn, &sConfig, TIM_CHANNEL_1) != HAL_OK) {
                 Error_Handler ();
@@ -236,12 +238,12 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
 
         // HAL_Delay (1);
 
-        TIM1->SR = 0;
-        // __HAL_TIM_DISABLE_DMA (&htimEn, TIM_DMA_UPDATE);
-        // __HAL_TIM_ENABLE_DMA (&htimEn, TIM_DMA_UPDATE);
+        // TIM1->SR = 0;
+        // // __HAL_TIM_DISABLE_DMA (&htimEn, TIM_DMA_UPDATE);
+        // // __HAL_TIM_ENABLE_DMA (&htimEn, TIM_DMA_UPDATE);
 
-        TIM1->DIER = 0;
-        TIM1->DIER |= TIM_DIER_CC1DE | TIM_DIER_UDE;
+        // TIM1->DIER = 0;
+        // TIM1->DIER |= TIM_DIER_CC1DE | TIM_DIER_UDE;
 
         // DMA1_Channel5->CCR |= DMA_CCR_TEIE;
 
@@ -250,6 +252,8 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
             != HAL_OK) {
                 Error_Handler ();
         }
+
+        TIM1->DIER |= TIM_DIER_CC1DE | TIM_DIER_UDE;
 
         // HAL_Delay (1);
 
