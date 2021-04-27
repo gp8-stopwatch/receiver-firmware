@@ -129,7 +129,7 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
 
         HAL_DMA_DeInit (&dmaHandle);
 
-        DMA1_Channel2->CCR |= /* DMA_CCR_TCIE */ DMA_CCR_TEIE; // Transfer complete enable
+        // DMA1_Channel2->CCR |= /* DMA_CCR_TCIE */ DMA_CCR_TEIE; // Transfer complete enable
 
         __HAL_LINKDMA (&htimEn, hdma[TIM_DMA_ID_CC1], dmaHandle);
 
@@ -240,7 +240,7 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         // TIM15->DIER &= ~TIM_DIER_UDE;
         // TIM15->DIER |= TIM_DIER_UDE;
 
-        DMA1_Channel5->CCR |= DMA_CCR_TEIE;
+        // DMA1_Channel5->CCR |= DMA_CCR_TEIE;
 
         if (HAL_DMA_Start (&dmaHandle, reinterpret_cast<uint32_t> (displayBuffer.data ()), reinterpret_cast<uint32_t> (&GPIOA->BSRR),
                            displayBuffer.size ())
@@ -345,11 +345,11 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         // }
 
         // instance = this;
-        HAL_NVIC_SetPriority (DMA1_Channel2_3_IRQn, 3, 0);
-        HAL_NVIC_EnableIRQ (DMA1_Channel2_3_IRQn);
+        // HAL_NVIC_SetPriority (DMA1_Channel2_3_IRQn, 3, 0);
+        // HAL_NVIC_EnableIRQ (DMA1_Channel2_3_IRQn);
 
-        HAL_NVIC_SetPriority (DMA1_Channel4_5_6_7_IRQn, 3, 0);
-        HAL_NVIC_EnableIRQ (DMA1_Channel4_5_6_7_IRQn);
+        // HAL_NVIC_SetPriority (DMA1_Channel4_5_6_7_IRQn, 3, 0);
+        // HAL_NVIC_EnableIRQ (DMA1_Channel4_5_6_7_IRQn);
 
         // TODO workaround - DMA state is reset this way. I dno't know how to fix this properly.
         // Somehow running the (slightly modified) init method for the second time in a row, resolves
@@ -359,39 +359,39 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
 
 /*****************************************************************************/
 
-extern "C" void DMA1_Channel2_3_IRQHandler ()
-{
-        // Clear the flag
-        DMA1->IFCR = DMA_FLAG_TC2;
-        DMA1->IFCR = DMA_FLAG_TE2;
+// extern "C" void DMA1_Channel2_3_IRQHandler ()
+// {
+//         // Clear the flag
+//         DMA1->IFCR = DMA_FLAG_TC2;
+//         DMA1->IFCR = DMA_FLAG_TE2;
 
-        if (DMA1->ISR & DMA_FLAG_TE2) {
-                while (true) {
-                }
-        }
+//         if (DMA1->ISR & DMA_FLAG_TE2) {
+//                 while (true) {
+//                 }
+//         }
 
-        // if (instance->brightness != instance->prevBrightness) {
-        //         instance->prevBrightness = instance->brightness;
-        //         TIM1->CCR1 = instance->brightnessLookup.at (instance->brightness - 1);
-        // }
-}
+//         // if (instance->brightness != instance->prevBrightness) {
+//         //         instance->prevBrightness = instance->brightness;
+//         //         TIM1->CCR1 = instance->brightnessLookup.at (instance->brightness - 1);
+//         // }
+// }
 
-extern "C" void DMA1_Channel4_5_6_7_IRQHandler ()
-{
-        // Clear the flag
-        DMA1->IFCR = DMA_FLAG_TC5;
-        DMA1->IFCR = DMA_FLAG_TE5;
+// extern "C" void DMA1_Channel4_5_6_7_IRQHandler ()
+// {
+//         // Clear the flag
+//         DMA1->IFCR = DMA_FLAG_TC5;
+//         DMA1->IFCR = DMA_FLAG_TE5;
 
-        if (DMA1->ISR & DMA_FLAG_TE5) {
-                while (true) {
-                }
-        }
+//         if (DMA1->ISR & DMA_FLAG_TE5) {
+//                 while (true) {
+//                 }
+//         }
 
-        // if (instance->brightness != instance->prevBrightness) {
-        //         instance->prevBrightness = instance->brightness;
-        //         TIM1->CCR1 = instance->brightnessLookup.at (instance->brightness - 1);
-        // }
-}
+//         // if (instance->brightness != instance->prevBrightness) {
+//         //         instance->prevBrightness = instance->brightness;
+//         //         TIM1->CCR1 = instance->brightnessLookup.at (instance->brightness - 1);
+//         // }
+// }
 
 /*****************************************************************************/
 
