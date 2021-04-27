@@ -60,7 +60,7 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         // DBGMCU->APB2FZ |= DBGMCU_APB2_FZ_DBG_TIM1_STOP;
         // DBGMCU->APB2FZ |= DBGMCU_APB2_FZ_DBG_TIM15_STOP;
 
-        // TIM1->CR1 &= ~TIM_CR1_CEN;
+        TIM1->CR1 &= ~TIM_CR1_CEN;
         // TIM15->CR1 &= ~TIM_CR1_CEN;
 
         /*
@@ -97,8 +97,6 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
 
         HAL_TIM_PWM_DeInit (&htimEn);
 
-        // TIM1->CR1 &= ~TIM_CR1_DIR; // Count UP
-
         /*
          * In the above piece of code I configured the TIM1 in the so called "center aligned"
          * mode. If the calculatePeriod (fps) retured 50, and we would substract 1 as usual,
@@ -127,7 +125,7 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         dmaHandle.Init.Priority = DMA_PRIORITY_HIGH;
         dmaHandle.Instance = DMA1_Channel2;
 
-        HAL_DMA_DeInit (&dmaHandle);
+        // HAL_DMA_DeInit (&dmaHandle);
 
         // DMA1_Channel2->CCR |= /* DMA_CCR_TCIE */ DMA_CCR_TEIE; // Transfer complete enable
 
@@ -137,16 +135,17 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
                 Error_Handler ();
         }
 
+        // HAL_Delay (1);
+
         if (HAL_TIM_PWM_Init (&htimEn) != HAL_OK) {
                 Error_Handler ();
         }
 
         TIM1->SR = 0;
-        __HAL_TIM_DISABLE_DMA (&htimEn, TIM_DMA_CC1);
-        __HAL_TIM_ENABLE_DMA (&htimEn, TIM_DMA_CC1);
-
-        // TIM1->DIER &= ~TIM_DIER_CC1DE;
-        // TIM1->DIER |= TIM_DIER_CC1DE;
+        // __HAL_TIM_DISABLE_DMA (&htimEn, TIM_DMA_CC1);
+        // __HAL_TIM_ENABLE_DMA (&htimEn, TIM_DMA_CC1);
+        TIM1->DIER = 0;
+        TIM1->DIER |= TIM_DIER_CC1DE;
 
         /*
          * enableBuffer (12 elements, each 32 bit) is transferred constatntly (thanks
@@ -158,6 +157,8 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
             != HAL_OK) {
                 Error_Handler ();
         }
+
+        // HAL_Delay (1);
 
         /*--------------------------------------------------------------------------*/
 
@@ -225,7 +226,7 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
         dmaHandle.Init.Priority = DMA_PRIORITY_LOW; // Different priority than the other channel
         dmaHandle.Instance = DMA1_Channel5;
 
-        HAL_DMA_DeInit (&dmaHandle);
+        // HAL_DMA_DeInit (&dmaHandle);
 
         __HAL_LINKDMA (&htimEn, hdma[TIM_DMA_ID_UPDATE], dmaHandle);
 
@@ -233,12 +234,14 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
                 Error_Handler ();
         }
 
-        TIM1->SR = 0;
-        __HAL_TIM_DISABLE_DMA (&htimEn, TIM_DMA_UPDATE);
-        __HAL_TIM_ENABLE_DMA (&htimEn, TIM_DMA_UPDATE);
+        // HAL_Delay (1);
 
-        // TIM15->DIER &= ~TIM_DIER_UDE;
-        // TIM15->DIER |= TIM_DIER_UDE;
+        TIM1->SR = 0;
+        // __HAL_TIM_DISABLE_DMA (&htimEn, TIM_DMA_UPDATE);
+        // __HAL_TIM_ENABLE_DMA (&htimEn, TIM_DMA_UPDATE);
+
+        TIM1->DIER = 0;
+        TIM1->DIER |= TIM_DIER_CC1DE | TIM_DIER_UDE;
 
         // DMA1_Channel5->CCR |= DMA_CCR_TEIE;
 
@@ -247,6 +250,8 @@ void Led7SegmentDisplayDma::init (uint16_t fps)
             != HAL_OK) {
                 Error_Handler ();
         }
+
+        // HAL_Delay (1);
 
         /*--------------------------------------------------------------------------*/
         /* Segment timer & DMA. This drives single segments.                        */
