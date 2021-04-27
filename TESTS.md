@@ -246,6 +246,33 @@ A6. So called *crude test*. Simply trigger two independent receivers and observe
 A7. Field test with slow-mo camera 
 A8. Test with a motorized rig
 
+A9.
+
+
+```
+                                          +------------+ 
+                                          |            | 
+                                          | signal     | 
+                                          | generator  | 
+         +-------------+                  |            | 
+         |             |                  +------|-----+ 
++---------  receiver 1 <\                        |       
+|        |             | ---\                    |       
+|        +-------------+     -IR\                |       
+|             mod2               --\     +-------|------+
+|                                   ---\ |              |
+| CANbus                                -- transmitter  |
+|                                    --/ |              |
+|                                 --/    +--------------+
+|                              IR/                       
+|        +-------------+    --/                          
+|        |             | --/                             
+----------  MICRO      </                                
+         |             |                                 
+         +-------------+                                 
+              mod2                                       
+```
+
 # Triggering tests cases
 Test if triggering works at all (does not care about the acuracy).
 Variables

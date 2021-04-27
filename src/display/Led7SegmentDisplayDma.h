@@ -127,9 +127,9 @@ private:
 
 #endif
 
-        static constexpr std::array<uint32_t, DISPLAY_NUM * 2> enableBuffer{
-                ALL_ENABLE_OFF, ENABLE0_ON, ALL_ENABLE_OFF, ENABLE1_ON, ALL_ENABLE_OFF, ENABLE2_ON,
-                ALL_ENABLE_OFF, ENABLE3_ON, ALL_ENABLE_OFF, ENABLE4_ON, ALL_ENABLE_OFF, ENABLE5_ON,
+        /* static constexpr  */ std::array<uint32_t, DISPLAY_NUM * 2> enableBuffer{
+                ENABLE5_ON, ALL_ENABLE_OFF, ENABLE0_ON, ALL_ENABLE_OFF, ENABLE1_ON, ALL_ENABLE_OFF,
+                ENABLE2_ON, ALL_ENABLE_OFF, ENABLE3_ON, ALL_ENABLE_OFF, ENABLE4_ON, ALL_ENABLE_OFF,
         };
 
         /// Corresponds to DSEG7 font as found on https://www.keshikan.net/fonts-e.html

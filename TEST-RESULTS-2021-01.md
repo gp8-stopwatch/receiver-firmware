@@ -120,16 +120,13 @@ Not exactly. Regular receiver was connected instead of a micro.
 
 # Trigger tests
 ## Signal gen
-
-| date       | commit                                   | T1S | T1L | T2S | T2L | T3S | T3L | T4S | T4L |
+| date       | commit                                   | T1S | T1L | T2S | T2L | T3S | T3L | T4S | T4L | R+M+2T S | R+M+2T L |
 | ---------- | ---------------------------------------- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 29/01/2021 | bf5f4a350ed8785d101482f470f3750ee874db31 | 1   | 1   | 0   | 1   | -   | 0   | 0   | 0   |
 | 01/02/2021 | 370fdfe0efcb8603183507f3ec150dc834ba9f74 | 1   | 1   | 1   | 1   | 1   | 1   | 1   | 1   |
 | 04/02/2021 | 76dd615aece5b7e01a427604c6f95659b56e8da2 | 1   | 1   | 1   | 1   |
 | 04/26/2021 | a31f82955594369df9f90a7d36f28afc32410489 | 0   | 0   | 1   | 1   | 0   | 0   | 1   | 1   |
-
-
-
+| 04/26/2021 | cee8fc2f7d8d03168c86c11b9d3d367cba7ff0b7 | 1   | 1   | 1   | 1   | 0   | 0   | 1   | 1   | 1        | 1        |
 
 
 

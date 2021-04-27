@@ -133,10 +133,14 @@
 * [x] When the terminator is flipped to OFF and nothing is connected, CAN initialization fails, and the program hangs (in Error_Handler).
 * [ ] New bunch of bugs 23/04/2021
   * [ ] Synchronization problem. Ext trigger is generated AFTER valid trigger event, which can be at least `minTriggerEvent` ms long (default 10ms), but there is no upper limit on how long it should be. So ext trigger is delayed unknown amount of time! I somehow forgot about it.
-  * [ ] System comprised of main RX and 2x micro RX sometimes hangs after some time. I.e. program runs (at least on the main RX), USB is OK, but no trigger is detected. After resetting the main RX (without power cycle which would also reset the two micros) everything gets back to normal, so I suspect the problem lies on the main RX part.
+  * [x] System comprised of main RX and 2x micro RX sometimes hangs after some time. I.e. program runs (at least on the main RX), USB is OK, but no trigger is detected. After resetting the main RX (without power cycle which would also reset the two micros) everything gets back to normal, so I suspect the problem lies on the main RX part. EDIT loose cables are the most probable culprit.
   * [ ] Display went crazy (at leas on RelWithDebInfo). Like in Debug, but after some time, and it changes - like timers not synchronized properly. All 3 optimization levels are affected. EDIT : CC @ Release seems to work OK at least after ~1 hour.
   * [ ] fps setting works OK only to ~1000 fps (at least on CA displays. Black CC ones not tested on this commit). Above 1000 fps digits (or only dots?) are oddly shifted.
+  * [ ] FLASH memrory write (after finished course) desynchronizes the two DMAs. The higher the fps, the more prominent this bug gets.
 * [x] After a few days / (?) month is 1 month off (is 03, should be 04) and days as well (is 25, should be 26). Date displayed on the LED screen is OK, this is USB where it is wrong. EDIT I've added +1 in printDate, and fixed the problem.
+* [ ] T3 does not work.
+* [ ] T4 without synchronization is more acurate (40-50µs margin instead of ~150µs).
+  
 
 # Piotr
 * [x] Zapis ustawień
