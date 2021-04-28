@@ -72,7 +72,7 @@ public:
          */
         static constexpr int MIN_NOISE_SPIKE_1US = 100;
         static constexpr uint32_t NOISE_CALCULATION_PERIOD_US = static_cast<uint32_t> (resultLS (msToResult1us (NOISE_CALCULATION_PERIOD_MS)));
-        static constexpr uint32_t MAX_NOISE_EVENTS_NUMBER_PER_PERIOD = 150; // Empoirical for trigger 10 ms
+        static constexpr uint32_t MAX_NOISE_EVENTS_NUMBER_PER_PERIOD = 50; // Empirical for trigger 10 ms
 
         // TODO turn off this EXTI as well.
         bool isActive () const { return active; }
