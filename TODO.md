@@ -140,6 +140,9 @@
 * [x] After a few days / (?) month is 1 month off (is 03, should be 04) and days as well (is 25, should be 26). Date displayed on the LED screen is OK, this is USB where it is wrong. EDIT I've added +1 in printDate, and fixed the problem.
 * [ ] T3 does not work.
 * [ ] T4 without synchronization is more acurate (40-50µs margin instead of ~150µs).
+* [x] noBeam bug. Intenal IR (regular RX only). Turn TX and RX on (what sequence?). Make short course, and stop. Turn TX off. no noBeam is shown. Turn TX back again : noBeam is shown this time, and from now on the logic is flipped over! 
+* [ ] Micro RX + Regular RX receiving from the same TX (very unususal scenario I know). Wierd things start to happen with the state machine - results make no sense, erratic behaviour. It's like blind time didn't work.
+* [ ] Noise level sometimes stays at 1 when using the "periph"
   
 
 # Piotr

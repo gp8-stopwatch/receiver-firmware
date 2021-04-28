@@ -34,12 +34,6 @@ Gpio extTriggerOutEnable (EXT_TRIGGER_OUT_ENABLE_PORT, EXT_TRIGGER_OUT_ENABLE_PI
 
 void IrTriggerDetector::onEdge (Edge const &e, EdgePolarity pol)
 {
-#ifdef WITH_BLIND_MANAGER
-        if (blindManager->isBlind ()) {
-                return;
-        }
-#endif
-
         /*
          * This can happen when noise frequency is very high, and the µC can't keep up,
          * and its misses an EXTI event. This way we can end up with two consecutive edges

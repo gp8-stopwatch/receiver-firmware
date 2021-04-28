@@ -89,7 +89,7 @@ private:
         void reset ()
         {
                 highStateStart = /* middleStateStart =  */ lowStateStart;
-                pwmState = PwmState::middle; // TODO ?
+                // pwmState = PwmState::middle; // TODO ?
         }
 
         /// Final check if we have proper trigger event
