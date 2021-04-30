@@ -52,8 +52,6 @@ void IrTriggerDetector::onEdge (Edge const &e, EdgePolarity pol)
          * [x] Zaimplementować blind time przed kolejnymi testami.
          * TODO EDIT : chyba jednak nie jest to błąd. Przy dużych zakłóceniach widoczne błędne działanie algorytmu. Screeny w katalogu doc. z
          * dnia 24/02/2021
-         * TODO Testy powinny symulowac dwór. Czysty sygnał zakłócamy żarówką 100W. Testy z odbiciami są prostsze (nie trzeba żarówki) ale to nie
-         * ten use-case.
          * [x] No beam detection stops working after 2 triggers (start + stop) EDIT due to wrong blindState management
          * [x] There was a opposite situation - there was no ir detected even though IS was not obstructed. Yellow trace was hi even though blue
          * was low. EDIT due to wrong blindState management
@@ -90,10 +88,24 @@ void IrTriggerDetector::onEdge (Edge const &e, EdgePolarity pol)
         /* State transitions depending on last level length.                        */
         /*--------------------------------------------------------------------------*/
 
+        /**
+         * This part looks for full trigger event (clean signal). Such an event consists of:
+         * - Rising edge (IR element has positive low logic) which means that the IR light emmiter
+         *   was covered by something (or turned off).
+         * - High level lasting for `minTriggerEvent1Us` or more.
+         * - Falling edge (which means the IR light was uncovered).
+         * - Low level (IR present) for `minTriggerEvent1Us` or more.
+         *
+         * Assuming that minTriggerEvent1Us is set to 10ms, then the clean trigger event would look
+         * like this:
+         *       ________
+         * _____|        |________.______
+         *         10ms+   10ms+
+         */
         auto &last = queue.back ();
         auto &last1 = queue.back1 ();
 
-        if (queue.getFirstPolarity () == EdgePolarity::rising) {
+        if (queue.getFirstPolarity () == EdgePolarity::rising) { // queue has 3 elements, so first polarity == last polarity
                 if ((last.getTimePoint () - last1.getTimePoint ()) >= minTriggerEvent1Us) { // Long low edge
                         if (pwmState != PwmState::low) {
                                 pwmState = PwmState::low;
@@ -101,7 +113,7 @@ void IrTriggerDetector::onEdge (Edge const &e, EdgePolarity pol)
                                 stateChangePin (false);
                         }
 
-                        checkForEventCondition (e);
+                        checkForEventCondition (e); // This method is used here and in the noise-mitigation part as well
                         return;
                 }
         }
