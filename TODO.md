@@ -142,7 +142,7 @@
 * [ ] T4 without synchronization is more acurate (40-50µs margin instead of ~150µs).
 * [x] noBeam bug. Intenal IR (regular RX only). Turn TX and RX on (what sequence?). Make short course, and stop. Turn TX off. no noBeam is shown. Turn TX back again : noBeam is shown this time, and from now on the logic is flipped over! 
 * [ ] Micro RX + Regular RX receiving from the same TX (very unususal scenario I know). Wierd things start to happen with the state machine - results make no sense, erratic behaviour. It's like blind time didn't work.
-* [ ] Noise level sometimes stays at 1 when using the "periph"
+* [ ] I've had a situation where noBeam wasn't displayed when TX was turned off (although this occured after tests with a signal gen instead of the real TX).
   
 
 # Piotr
@@ -221,7 +221,7 @@ Solved. The problem was due to lack of USBD_CDC_ReceivePacket calls. So it seems
 * [x] Przetestować RTC z tym małym LDO.
 * [x] Battery protection in software (for overdischarge)  EDIT : **6.4mA in standby mode (a lot)**!
   * [x] When powered off no software is running. What is the current draw of ldo plus rtc? 0.5µA (includeing RTC + low Q LDO)
-  * [x] Measure what all elements except the µC and LEDs are drawing, and whether we should optimize this, or leave alone.
+  * [x] Measure what all elements except the µC and LEDs are drawing, and whether we should optimize this, or leave as is.
   * [x] When powered on, simply go to sleep, calculate current, maybe modify HW so it draws less quiescent current.
   * [x] Same for the transmitter
 * [ ] Battery protection in hardware. While software protection works, a peripheral powered from +BATT can be attached to the CANbus port thus draving a current. I this peripheral doesn't have its protection, then the battery can be over-discharged.
@@ -300,7 +300,27 @@ Solved. The problem was due to lack of USBD_CDC_ReceivePacket calls. So it seems
 * [ ] Proper application.
 * [ ] Filming in slow motion (adjustable fps).
 * [ ] Receiver that can be connected to an Arduino or RasPI instead of the "regular" receiver. If I ever consider doing this, take the path of minimal effor, and change only the connector and protocol (TTL instead of CAN).
+* [ ] *cost* : soft power on/off. 
+  * Pros : no power switch (cost), one less THT, no NCP170 LDO for VBAT. 
+  * Cons : programming. External peripherals would have to go to sleep as well. How!?
+* [ ] *cost*  : CAN replaced by some other protocol like LVDS implemented in STM32Gxx built-in op-amps.
+  * [ ] Pros : huge gain (2x), stm32Gxxx without CAN is possibly (??) cheaper. It depends if there are USB versions but without the CAN.
+  * [ ] Cons : is it even possible? Programming, testing, all the usual stuff.
+* [ ] *cost* : MLVDS replaced by STM32Gxx built-in op-amps.
+  * [ ] pros : even bigger cost drop.
+  * [ ] cons : as the above, and accuracy problems in addition.
+* [ ] *cost* Soft buttons in the transmitter instead of 2 switches 
+  * [ ] pros : cost, no THT, flexibility.
+  * [ ] cons : programming, additional signal level indicator 
+* [ ] *THT* : smd LEDs under the soft buttons. Buttons made of clear PLA? Clear light channel (but this is an additional part).
+* [ ] High count hihg pitch test connector-for-everything (4 layer board). 
+* *accuracy*, *noise immunity*. IR sensor from sctratch. 
+  * As described in the [INTERNALS.md](INTERNALS.md) *EDIT it's not! include these measurements.* the TSSP 4056 has very broad spectrum of carrier frequencies it sees. Its sensitivity drops when the frequency is off, but even at the DC IR it outputs a signal (well it's a noise). It would be interesting to test what would happen if I implemented very narrow band pass filter for 56kHz (or even 1MHz for better accuracy). I suspect that the sensor would then be less sensitive to the DC, but to the carrier as well. Barely just anything would be able to confuse the sensor. Any small distortion in the carreir frequency. Another thing is the DC light : it would lower the dynamic range.
 
 # Requestes
-* Better visibility in the sun (black displays). 2x
-* 
+* [x] Better visibility in the sun (black displays). 2x
+* Czas wykrywania no beam do ustawienia (1 sekunda to za mało zdaniem Piotra).
+  * Czy zmieszczą się ustawienia? Możneby powiększyć bufor. To by było maxTrigger
+* Szkoły jazdy - prędkość.
+* To że ekran rusza z opóźnieniem jest konfundujące dla użytkowników.
+* 2 contestants at the same time.
