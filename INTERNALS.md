@@ -82,15 +82,39 @@ A closeup of the above:
 ![Very noisy](doc/ir-trigger-plots/trigger-examples/very-noisy-closeup.png)
 
 ## Response time
+The datasheet of the TSSP4056 contains the following plot:
 
+![Datasheet response plot](doc/tssp-response-time-datasheet.png)
 
+The delay of the response is between 125µs and 268µs. So the dispersion of the response is 143µs for one measurement (keep in mind that the device triggers 2 times to obtain the time difference). So I wanted to verify what I've found in the datasheet.
 
+Note : carrier signal period is 17.86µs.
+
+First a word of caution to always check if we are measuring the system in environment which is the same, or very simmilar to the conditions under the device is operated by the end users. And I mean everything that can have impact on the measurements. For instance see the response plots below. I was using the regular transmitter that will be sold to customers, but I connected a function generator to the "test trigger input". This input disables the IR light (gating) when the logic level is high. These are the responses I was getting:
+
+![Response](doc/ir-trigger-plots/response-time/MAP002.BMP.png)
+
+![Response](doc/ir-trigger-plots/response-time/MAP001.BMP.png)
+
+You can clearly see that my methodology was wrong because I was getting variations which weren't random. This was clearly caused by clumsy transmitter input.
+
+Then I connected the IR diode directly (with BJT) to the signal gen, and this was the result:
+
+![Response direct](doc/ir-trigger-plots/response-time/MAP003.BMP.png)
+
+The dispersion in the latter case was way to small compared to the TSSP datasheet (It's hard to tell from the image, but I'd say it's around 2µs). 
+
+Finally I simply cut of the carrier signal by hand thus intruducing some randomness in this process. Those are the boundary cases I've got (around 75µs, no DC light):
+
+![](doc/ir-trigger-plots/response-time/response-time-nonoise/dispersion.png)
+
+I cycled the carrier signal on and off many (tens) times and pretty consistently got the two responses above. Most of the time I got the faster one (yellow channel) but one in ten times I got the red one which was about 70-75µ slower than the rest. I'd say it is pretty consistent with my previous accuracy test results (TESTS*.md) but those were made using the faulty TX test trigger, so I don't think thery are reliable (so why do they match?!).
 
 # Trigger
 ## Trigger and noise mitigation algorithm
 `IrTriggerDetector.cc` contains the trigger algorithm. Instead of sampling the IR sensor signal in small intervals, it uses EXTI IRQ. Note that there are only 3 different EXTI ISR (interrupt service routines) available on the `stm32f072`, and all three are used by different peripherals: the IR trigger, the EXT trigger, and the button. 
 
-The main complexity arises from the fact, that I do not sample the IR signal continuously (like a DSP woudl do), but to minimze memory usage, I react to the IR signal changes in an ISR (`onEdge`). The drawback of this approach is that I'm equally interested both in IR signal changes as well as in how long the signal **did not change**. And as such I had to implement another function which periodiacally does just that : it checks how long the IR signal was steady. This second method is named `run`. This approach makes the code much more complex (or so I suspect, because I haven't implement it differently) because the algorithm is split into two tightly coupled methods which depend on time, input events and each other.
+The main complexity arises from the fact that I do not sample the IR signal continuously (like a DSP woud do), but to minimze memory usage, I react to the IR signal changes in an ISR (`onEdge`). The drawback of this approach is that I'm equally interested both in IR signal changes as well as in how long the signal **did not change**. And as such I had to implement another function that periodiacally does just that : it checks how long the IR signal was steady. This second method is named `run`. This approach makes the code much more complex (or so I suspect, because I haven't implemented it differently) because the algorithm is split into two tightly coupled methods which depend on time, input events and each other.
 
 Detecting a clean IR trigger event is the simplest case. Such an event looks like this (minTriggerEvent is set to 10ms. This can be changed using an USB command):
 
